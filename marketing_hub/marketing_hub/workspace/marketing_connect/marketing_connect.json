@@ -1,0 +1,59 @@
+{
+    "charts": [],
+    "content": "[{\"id\":\"setup_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Setup & Configuration</b></span>\",\"col\":12}},{\"id\":\"ad_account_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Ad Account\",\"col\":3}},{\"id\":\"connector_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Connector\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"accounts_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounts & Connections\",\"col\":4}},{\"id\":\"social_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Social Media\",\"col\":4}}]",
+    "creation": "2026-01-18 12:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "link",
+    "idx": 1,
+    "is_hidden": 0,
+    "label": "Marketing Connect",
+    "links": [
+        {
+            "label": "Accounts & Connections",
+            "type": "Card Break"
+        },
+        {
+            "label": "Ad Account",
+            "link_to": "Ad Account",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Analytics Connector",
+            "link_to": "Analytics Connector",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Social Media",
+            "type": "Card Break"
+        },
+        {
+            "label": "Social Media Account",
+            "link_to": "Social Media Account",
+            "link_type": "DocType",
+            "type": "Link"
+        }
+    ],
+    "modified": "2026-01-18 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Marketing Connect",
+    "public": 1,
+    "shortcuts": [
+        {
+            "label": "New Ad Account",
+            "link_to": "Ad Account",
+            "type": "DocType"
+        },
+        {
+            "label": "New Connector",
+            "link_to": "Analytics Connector",
+            "type": "DocType"
+        }
+    ],
+    "title": "Marketing Connect"
+}

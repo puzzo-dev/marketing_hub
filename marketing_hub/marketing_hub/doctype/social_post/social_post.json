@@ -1,0 +1,292 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:POST-{####}",
+ "creation": "2026-01-17 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "post_title",
+  "campaign",
+  "platform",
+  "post_type",
+  "status",
+  "column_break_1",
+  "scheduled_time",
+  "published_time",
+  "account_id",
+  "post_id",
+  "section_break_2",
+  "content",
+  "media_attachment",
+  "media_type",
+  "video_thumbnail",
+  "link_url",
+  "section_break_3",
+  "hashtags",
+  "mentions",
+  "location",
+  "column_break_2",
+  "target_audience",
+  "enable_comments",
+  "enable_sharing",
+  "section_break_4",
+  "impressions",
+  "reach",
+  "clicks",
+  "likes",
+  "comments_count",
+  "shares",
+  "engagement_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "post_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Post Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Platform",
+   "options": "Facebook\nInstagram\nTwitter/X\nLinkedIn\nTikTok\nYouTube\nPinterest",
+   "reqd": 1
+  },
+  {
+   "fieldname": "post_type",
+   "fieldtype": "Select",
+   "label": "Post Type",
+   "options": "Text\nImage\nVideo\nCarousel\nStory\nReel\nLive",
+   "default": "Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nScheduled\nPublished\nFailed\nDeleted",
+   "default": "Draft",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "scheduled_time",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Time"
+  },
+  {
+   "fieldname": "published_time",
+   "fieldtype": "Datetime",
+   "label": "Published Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "label": "Account ID",
+   "description": "Platform account ID"
+  },
+  {
+   "fieldname": "post_id",
+   "fieldtype": "Data",
+   "label": "Post ID",
+   "read_only": 1,
+   "description": "Platform post ID after publishing"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Text Editor",
+   "label": "Post Content",
+   "reqd": 1
+  },
+  {
+   "fieldname": "media_attachment",
+   "fieldtype": "Attach",
+   "label": "Media Attachment"
+  },
+  {
+   "fieldname": "media_type",
+   "fieldtype": "Select",
+   "label": "Media Type",
+   "options": "\nImage\nVideo\nGIF",
+   "depends_on": "media_attachment"
+  },
+  {
+   "fieldname": "video_thumbnail",
+   "fieldtype": "Attach Image",
+   "label": "Video Thumbnail",
+   "depends_on": "eval:doc.media_type=='Video'"
+  },
+  {
+   "fieldname": "link_url",
+   "fieldtype": "Data",
+   "label": "Link URL"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Targeting & Settings"
+  },
+  {
+   "fieldname": "hashtags",
+   "fieldtype": "Small Text",
+   "label": "Hashtags",
+   "description": "Comma-separated hashtags (e.g., #marketing, #digital)"
+  },
+  {
+   "fieldname": "mentions",
+   "fieldtype": "Small Text",
+   "label": "Mentions",
+   "description": "Comma-separated mentions (e.g., @username)"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_audience",
+   "fieldtype": "Small Text",
+   "label": "Target Audience",
+   "description": "Audience targeting criteria"
+  },
+  {
+   "fieldname": "enable_comments",
+   "fieldtype": "Check",
+   "label": "Enable Comments",
+   "default": 1
+  },
+  {
+   "fieldname": "enable_sharing",
+   "fieldtype": "Check",
+   "label": "Enable Sharing",
+   "default": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Engagement Metrics"
+  },
+  {
+   "fieldname": "impressions",
+   "fieldtype": "Int",
+   "label": "Impressions",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "reach",
+   "fieldtype": "Int",
+   "label": "Reach",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "clicks",
+   "fieldtype": "Int",
+   "label": "Clicks",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "likes",
+   "fieldtype": "Int",
+   "label": "Likes",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "comments_count",
+   "fieldtype": "Int",
+   "label": "Comments",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "shares",
+   "fieldtype": "Int",
+   "label": "Shares",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "engagement_rate",
+   "fieldtype": "Percent",
+   "label": "Engagement Rate",
+   "read_only": 1,
+   "precision": 2
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-17 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Social Post",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

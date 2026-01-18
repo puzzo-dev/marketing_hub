@@ -8,7 +8,43 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["frappe_whatsapp"]
+
+# Fixtures
+# --------
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Campaign-channels_used",
+                    "Campaign-is_omni_campaign",
+                    "Campaign-client",
+                    "Campaign-project",
+                    "Campaign-roas",
+                    "Lead-utm_campaign",
+                    "Lead-utm_source",
+                    "Lead-utm_medium"
+                ]
+            ]
+        ]
+    },
+    {
+        "dt": "Workspace",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Marketing Hub"
+                ]
+            ]
+        ]
+    }
+]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -26,7 +62,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/marketing_hub/css/marketing_hub.css"
-# app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
+app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/marketing_hub/css/marketing_hub.css"
@@ -43,7 +79,9 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+    "Campaign": "public/js/campaign.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -117,13 +155,16 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Campaign": "marketing_hub.utils.permissions.get_campaign_permission_query_conditions",
+	"Campaign Activity": "marketing_hub.utils.permissions.get_campaign_activity_permission_query_conditions",
+	"Marketing Segment": "marketing_hub.utils.permissions.get_marketing_segment_permission_query_conditions",
+}
+
+has_permission = {
+	"Campaign": "marketing_hub.utils.permissions.has_campaign_permission",
+	"Campaign Activity": "marketing_hub.utils.permissions.has_campaign_activity_permission",
+}
 
 # DocType Class
 # ---------------
@@ -137,34 +178,29 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Lead": {
+        "on_update": "marketing_hub.utils.attribution_engine.get_real_lead_source"
+    },
+    "Campaign Activity": {
+        "on_update": "marketing_hub.utils.omni_blast.execute_if_scheduled"
+    },
+    "Campaign": {
+        "validate": "marketing_hub.utils.permissions.validate_campaign_limits"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"marketing_hub.tasks.all"
-# 	],
-# 	"daily": [
-# 		"marketing_hub.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"marketing_hub.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"marketing_hub.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"marketing_hub.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+    "daily": [
+        "marketing_hub.utils.analytics_sync.sync_all_connectors"
+    ],
+    "all": [
+        "marketing_hub.utils.auto_post.publish_scheduled_posts"
+    ]
+}
 
 # Testing
 # -------

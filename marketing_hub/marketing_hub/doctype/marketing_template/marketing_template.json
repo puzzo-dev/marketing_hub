@@ -1,0 +1,237 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:TMPL-{####}",
+ "creation": "2026-01-17 17:20:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "channel",
+  "template_type",
+  "column_break_4",
+  "status",
+  "category",
+  "section_break_7",
+  "subject",
+  "headline",
+  "body_text",
+  "call_to_action",
+  "section_break_12",
+  "primary_asset",
+  "secondary_assets",
+  "section_break_15",
+  "ad_specs_section",
+  "character_limit",
+  "image_specs",
+  "video_specs",
+  "column_break_20",
+  "link_url",
+  "utm_parameters",
+  "section_break_23",
+  "variables",
+  "section_break_25",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Channel",
+   "options": "Email\nWhatsApp\nSMS\nPush Notification\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nReddit Ads\nSocial Media\nWebsite",
+   "reqd": 1
+  },
+  {
+   "fieldname": "template_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Template Type",
+   "options": "Text\nImage\nVideo\nCarousel\nCollection\nStory\nReel\nSearch\nDisplay\nShopping\nDynamic"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nReview\nApproved\nActive\nArchived"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "description": "For Email/Ads",
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject/Title"
+  },
+  {
+   "description": "Primary headline for ads",
+   "fieldname": "headline",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "fieldname": "body_text",
+   "fieldtype": "Text Editor",
+   "label": "Body Text"
+  },
+  {
+   "fieldname": "call_to_action",
+   "fieldtype": "Data",
+   "label": "Call to Action"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break",
+   "label": "Creative Assets"
+  },
+  {
+   "fieldname": "primary_asset",
+   "fieldtype": "Link",
+   "label": "Primary Asset",
+   "options": "Content Asset"
+  },
+  {
+   "fieldname": "secondary_assets",
+   "fieldtype": "Table",
+   "label": "Additional Assets",
+   "options": "Template Asset Item"
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break",
+   "label": "Channel Specifications"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "ad_specs_section",
+   "fieldtype": "Section Break",
+   "label": "Ad Specifications"
+  },
+  {
+   "description": "Character limit for this channel",
+   "fieldname": "character_limit",
+   "fieldtype": "Int",
+   "label": "Character Limit"
+  },
+  {
+   "description": "e.g., 1200x628 (Facebook), 1080x1080 (Instagram)",
+   "fieldname": "image_specs",
+   "fieldtype": "Small Text",
+   "label": "Image Specifications"
+  },
+  {
+   "description": "Video requirements (format, duration, aspect ratio)",
+   "fieldname": "video_specs",
+   "fieldtype": "Small Text",
+   "label": "Video Specifications"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "link_url",
+   "fieldtype": "Data",
+   "label": "Link URL"
+  },
+  {
+   "description": "UTM parameters (auto-generated or custom)",
+   "fieldname": "utm_parameters",
+   "fieldtype": "Small Text",
+   "label": "UTM Parameters"
+  },
+  {
+   "fieldname": "section_break_23",
+   "fieldtype": "Section Break",
+   "label": "Dynamic Content"
+  },
+  {
+   "description": "Variables like {customer_name}, {product_name}, etc.",
+   "fieldname": "variables",
+   "fieldtype": "Code",
+   "label": "Template Variables",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "section_break_25",
+   "fieldtype": "Section Break",
+   "label": "Additional Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-17 17:20:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Marketing Template",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

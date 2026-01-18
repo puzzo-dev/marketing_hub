@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:segment_name",
+ "creation": "2026-01-17 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "segment_name",
+  "company",
+  "status",
+  "column_break_1",
+  "segment_type",
+  "based_on",
+  "segment_size",
+  "section_break_2",
+  "filter_conditions",
+  "filters_json",
+  "section_break_3",
+  "description",
+  "column_break_4",
+  "last_calculated",
+  "auto_refresh"
+ ],
+ "fields": [
+  {
+   "fieldname": "segment_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Segment Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nCalculating",
+   "default": "Active"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "segment_type",
+   "fieldtype": "Select",
+   "label": "Segment Type",
+   "options": "Customer\nLead\nContact\nCustom",
+   "reqd": 1,
+   "default": "Lead"
+  },
+  {
+   "fieldname": "based_on",
+   "fieldtype": "Select",
+   "label": "Based On",
+   "options": "Demographics\nBehavior\nEngagement\nTransaction History\nCampaign Response\nCustom Filters",
+   "default": "Custom Filters"
+  },
+  {
+   "fieldname": "segment_size",
+   "fieldtype": "Int",
+   "label": "Segment Size",
+   "read_only": 1,
+   "default": 0
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Filters"
+  },
+  {
+   "fieldname": "filter_conditions",
+   "fieldtype": "Text Editor",
+   "label": "Filter Description"
+  },
+  {
+   "fieldname": "filters_json",
+   "fieldtype": "Code",
+   "label": "Filters (JSON)",
+   "options": "JSON",
+   "description": "Define filters in JSON format. Example: {\"status\": \"Lead\", \"territory\": \"North America\"}"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_calculated",
+   "fieldtype": "Datetime",
+   "label": "Last Calculated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "auto_refresh",
+   "fieldtype": "Check",
+   "label": "Auto Refresh",
+   "default": 0,
+   "description": "Automatically recalculate segment size daily"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-17 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Marketing Segment",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

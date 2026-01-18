@@ -1,0 +1,262 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:{campaign}-{activity_type}-{###}",
+    "creation": "2026-01-18 03:56:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "activity_name",
+        "campaign",
+        "activity_type",
+        "column_break_3",
+        "status",
+        "scheduled_date",
+        "channel_configuration_section",
+        "channels",
+        "channel_config",
+        "targeting_section",
+        "segment",
+        "filter_criteria",
+        "column_break_10",
+        "target_count",
+        "execution_metrics_section",
+        "started_at",
+        "completed_at",
+        "column_break_14",
+        "sent_count",
+        "delivered_count",
+        "failed_count",
+        "column_break_18",
+        "opened_count",
+        "clicked_count",
+        "error_tracking_section",
+        "error_log",
+        "retry_count",
+        "max_retries"
+    ],
+    "fields": [
+        {
+            "fieldname": "activity_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Activity Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "campaign",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Campaign",
+            "options": "Campaign",
+            "reqd": 1
+        },
+        {
+            "fieldname": "activity_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Activity Type",
+            "options": "Email Blast\nWhatsApp Blast\nSMS Blast\nSocial Post\nAd Campaign\nOmni-Channel Blast",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nIn Progress\nCompleted\nFailed\nCancelled"
+        },
+        {
+            "fieldname": "scheduled_date",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date"
+        },
+        {
+            "fieldname": "channel_configuration_section",
+            "fieldtype": "Section Break",
+            "label": "Channel Configuration"
+        },
+        {
+            "description": "Comma-separated channels (e.g., Email, WhatsApp, Meta Ads)",
+            "fieldname": "channels",
+            "fieldtype": "Small Text",
+            "label": "Channels"
+        },
+        {
+            "description": "JSON configuration for each channel",
+            "fieldname": "channel_config",
+            "fieldtype": "Code",
+            "label": "Channel Config",
+            "options": "JSON"
+        },
+        {
+            "fieldname": "targeting_section",
+            "fieldtype": "Section Break",
+            "label": "Targeting"
+        },
+        {
+            "fieldname": "segment",
+            "fieldtype": "Link",
+            "label": "Marketing Segment",
+            "options": "Marketing Segment"
+        },
+        {
+            "description": "JSON filter criteria for targeting",
+            "fieldname": "filter_criteria",
+            "fieldtype": "Code",
+            "label": "Filter Criteria",
+            "options": "JSON"
+        },
+        {
+            "fieldname": "column_break_10",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "target_count",
+            "fieldtype": "Int",
+            "label": "Target Count",
+            "read_only": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "execution_metrics_section",
+            "fieldtype": "Section Break",
+            "label": "Execution Metrics"
+        },
+        {
+            "fieldname": "started_at",
+            "fieldtype": "Datetime",
+            "label": "Started At",
+            "read_only": 1
+        },
+        {
+            "fieldname": "completed_at",
+            "fieldtype": "Datetime",
+            "label": "Completed At",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_14",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "sent_count",
+            "fieldtype": "Int",
+            "label": "Sent",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "delivered_count",
+            "fieldtype": "Int",
+            "label": "Delivered",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "failed_count",
+            "fieldtype": "Int",
+            "label": "Failed",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_18",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "opened_count",
+            "fieldtype": "Int",
+            "label": "Opened",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "clicked_count",
+            "fieldtype": "Int",
+            "label": "Clicked",
+            "read_only": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "error_tracking_section",
+            "fieldtype": "Section Break",
+            "label": "Error Tracking"
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "retry_count",
+            "fieldtype": "Int",
+            "label": "Retry Count",
+            "read_only": 1
+        },
+        {
+            "default": "3",
+            "fieldname": "max_retries",
+            "fieldtype": "Int",
+            "label": "Max Retries"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-01-18 03:56:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Campaign Activity",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

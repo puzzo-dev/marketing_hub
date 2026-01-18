@@ -1,0 +1,48 @@
+{
+    "charts": [],
+    "content": "[{\"id\":\"settings_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings & Configuration</b></span>\",\"col\":12}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"General\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}}]",
+    "creation": "2026-01-18 12:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "settings",
+    "idx": 3,
+    "is_hidden": 0,
+    "label": "Marketing Settings",
+    "links": [
+        {
+            "label": "General",
+            "type": "Card Break"
+        },
+        {
+            "label": "Marketing Settings",
+            "link_to": "Marketing Settings",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Marketing Segment",
+            "link_to": "Marketing Segment",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Templates",
+            "type": "Card Break"
+        },
+        {
+            "label": "Marketing Template",
+            "link_to": "Marketing Template",
+            "link_type": "DocType",
+            "type": "Link"
+        }
+    ],
+    "modified": "2026-01-18 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Marketing Settings",
+    "public": 1,
+    "shortcuts": [],
+    "title": "Marketing Settings"
+}

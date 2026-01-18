@@ -1,0 +1,288 @@
+{
+    "charts": [
+        {
+            "chart_name": "Campaign Performance Overview",
+            "label": "Campaign Performance"
+        },
+        {
+            "chart_name": "Channel Distribution",
+            "label": "Channels"
+        },
+        {
+            "chart_name": "Monthly ROAS Trend",
+            "label": "ROAS Trend"
+        }
+    ],
+    "content": "[{\"id\":\"dashboard_section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Marketing Dashboard</b></span>\",\"col\":12}},{\"id\":\"quick_actions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Campaign\",\"col\":3}},{\"id\":\"analytics_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sync Analytics\",\"col\":3}},{\"id\":\"blast_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Activity\",\"col\":3}},{\"id\":\"reports_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ROAS Report\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"advertising_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Advertising & Analytics</b></span>\",\"col\":12}},{\"id\":\"ad_account_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Advertising Accounts\",\"col\":4}},{\"id\":\"analytics_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Analytics Data\",\"col\":4}},{\"id\":\"reports_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Performance Reports\",\"col\":4}},{\"id\":\"spacer_2\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"execution_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Campaign Execution</b></span>\",\"col\":12}},{\"id\":\"campaigns_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"activity_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Activities\",\"col\":4}},{\"id\":\"segments_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Targeting\",\"col\":4}},{\"id\":\"spacer_3\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"content_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Content Management</b></span>\",\"col\":12}},{\"id\":\"assets_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Assets\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}},{\"id\":\"social_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Social Media\",\"col\":4}}]",
+    "creation": "2026-01-17 16:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "broadcast",
+    "idx": 0,
+    "is_hidden": 0,
+    "label": "Marketing Hub",
+    "links": [
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Advertising Accounts",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "System Manager",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Ad Account",
+            "link_count": 0,
+            "link_to": "Ad Account",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Analytics Connector",
+            "link_count": 0,
+            "link_to": "Analytics Connector",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Analytics Data",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Analytics Daily Log",
+            "link_count": 0,
+            "link_to": "Analytics Daily Log",
+            "link_type": "DocType",
+            "onboard": 0,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Performance Reports",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 1,
+            "label": "Campaign Analytics",
+            "link_count": 0,
+            "link_to": "Campaign Analytics",
+            "link_type": "Report",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 1,
+            "label": "ROAS Analysis",
+            "link_count": 0,
+            "link_to": "ROAS Analysis",
+            "link_type": "Report",
+            "onboard": 0,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Campaigns",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Campaign",
+            "link_count": 0,
+            "link_to": "Campaign",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Activities",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Campaign Activity",
+            "link_count": 0,
+            "link_to": "Campaign Activity",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Targeting",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Marketing Segment",
+            "link_count": 0,
+            "link_to": "Marketing Segment",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Lead",
+            "link_count": 0,
+            "link_to": "Lead",
+            "link_type": "DocType",
+            "onboard": 0,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Assets",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Content Asset",
+            "link_count": 0,
+            "link_to": "Content Asset",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Templates",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Marketing Template",
+            "link_count": 0,
+            "link_to": "Marketing Template",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Campaign Content",
+            "link_count": 0,
+            "link_to": "Campaign Content",
+            "link_type": "DocType",
+            "onboard": 0,
+            "only_for": "",
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Social Media",
+            "link_count": 0,
+            "onboard": 0,
+            "only_for": "",
+            "type": "Card Break"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Social Post",
+            "link_count": 0,
+            "link_to": "Social Post",
+            "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
+            "type": "Link"
+        }
+    ],
+    "modified": "2026-01-18 04:20:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Marketing Hub",
+    "public": 1,
+    "shortcuts": [
+        {
+            "color": "Green",
+            "label": "New Campaign",
+            "link_to": "Campaign",
+            "type": "DocType",
+            "url": ""
+        },
+        {
+            "color": "Blue",
+            "label": "Sync Analytics",
+            "link_to": "Analytics Connector",
+            "type": "DocType",
+            "url": ""
+        },
+        {
+            "color": "Orange",
+            "label": "New Activity",
+            "link_to": "Campaign Activity",
+            "type": "DocType",
+            "stats_filter": "{\"status\": \"Scheduled\"}"
+        },
+        {
+            "color": "Grey",
+            "label": "ROAS Report",
+            "link_to": "ROAS Analysis",
+            "type": "Report",
+            "is_query_report": 1
+        }
+    ],
+    "title": "Marketing Hub"
+}

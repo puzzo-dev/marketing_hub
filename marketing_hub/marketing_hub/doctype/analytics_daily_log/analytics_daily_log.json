@@ -1,0 +1,290 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:LOG-{connector}-{YYYY}-{MM}-{DD}-{###}",
+    "creation": "2026-01-18 03:56:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "log_date",
+        "connector",
+        "campaign",
+        "column_break_3",
+        "campaign_id_platform",
+        "channel",
+        "metrics_section",
+        "impressions",
+        "clicks",
+        "conversions",
+        "column_break_9",
+        "reach",
+        "engagement",
+        "video_views",
+        "financial_metrics_section",
+        "spend",
+        "revenue",
+        "column_break_15",
+        "roas",
+        "cpc",
+        "cpm",
+        "column_break_19",
+        "ctr",
+        "conversion_rate",
+        "engagement_metrics_section",
+        "link_clicks",
+        "post_engagement",
+        "column_break_24",
+        "shares",
+        "comments",
+        "metadata_section",
+        "raw_data",
+        "sync_timestamp"
+    ],
+    "fields": [
+        {
+            "fieldname": "log_date",
+            "fieldtype": "Date",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Log Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "connector",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Analytics Connector",
+            "options": "Analytics Connector",
+            "reqd": 1
+        },
+        {
+            "fieldname": "campaign",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Campaign",
+            "options": "Campaign"
+        },
+        {
+            "fieldname": "column_break_3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "campaign_id_platform",
+            "fieldtype": "Data",
+            "label": "Platform Campaign ID"
+        },
+        {
+            "fieldname": "channel",
+            "fieldtype": "Select",
+            "label": "Channel",
+            "options": "Meta Ads\nGoogle Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nEmail\nWhatsApp\nSMS"
+        },
+        {
+            "fieldname": "metrics_section",
+            "fieldtype": "Section Break",
+            "label": "Metrics"
+        },
+        {
+            "default": "0",
+            "fieldname": "impressions",
+            "fieldtype": "Int",
+            "label": "Impressions"
+        },
+        {
+            "default": "0",
+            "fieldname": "clicks",
+            "fieldtype": "Int",
+            "label": "Clicks"
+        },
+        {
+            "default": "0",
+            "fieldname": "conversions",
+            "fieldtype": "Int",
+            "label": "Conversions"
+        },
+        {
+            "fieldname": "column_break_9",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "reach",
+            "fieldtype": "Int",
+            "label": "Reach"
+        },
+        {
+            "default": "0",
+            "fieldname": "engagement",
+            "fieldtype": "Int",
+            "label": "Engagement"
+        },
+        {
+            "default": "0",
+            "fieldname": "video_views",
+            "fieldtype": "Int",
+            "label": "Video Views"
+        },
+        {
+            "fieldname": "financial_metrics_section",
+            "fieldtype": "Section Break",
+            "label": "Financial Metrics"
+        },
+        {
+            "default": "0",
+            "fieldname": "spend",
+            "fieldtype": "Currency",
+            "label": "Spend"
+        },
+        {
+            "default": "0",
+            "fieldname": "revenue",
+            "fieldtype": "Currency",
+            "label": "Revenue"
+        },
+        {
+            "fieldname": "column_break_15",
+            "fieldtype": "Column Break"
+        },
+        {
+            "description": "Return on Ad Spend (Revenue / Spend)",
+            "fieldname": "roas",
+            "fieldtype": "Float",
+            "label": "ROAS",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "description": "Cost per Click (Spend / Clicks)",
+            "fieldname": "cpc",
+            "fieldtype": "Currency",
+            "label": "CPC",
+            "read_only": 1
+        },
+        {
+            "description": "Cost per Mille (Spend / Impressions * 1000)",
+            "fieldname": "cpm",
+            "fieldtype": "Currency",
+            "label": "CPM",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_19",
+            "fieldtype": "Column Break"
+        },
+        {
+            "description": "Click-through Rate (Clicks / Impressions * 100)",
+            "fieldname": "ctr",
+            "fieldtype": "Percent",
+            "label": "CTR",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "description": "Conversion Rate (Conversions / Clicks * 100)",
+            "fieldname": "conversion_rate",
+            "fieldtype": "Percent",
+            "label": "Conversion Rate",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "engagement_metrics_section",
+            "fieldtype": "Section Break",
+            "label": "Engagement Metrics"
+        },
+        {
+            "default": "0",
+            "fieldname": "link_clicks",
+            "fieldtype": "Int",
+            "label": "Link Clicks"
+        },
+        {
+            "default": "0",
+            "fieldname": "post_engagement",
+            "fieldtype": "Int",
+            "label": "Post Engagement"
+        },
+        {
+            "fieldname": "column_break_24",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "shares",
+            "fieldtype": "Int",
+            "label": "Shares"
+        },
+        {
+            "default": "0",
+            "fieldname": "comments",
+            "fieldtype": "Int",
+            "label": "Comments"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "metadata_section",
+            "fieldtype": "Section Break",
+            "label": "Metadata"
+        },
+        {
+            "fieldname": "raw_data",
+            "fieldtype": "Code",
+            "label": "Raw Data",
+            "options": "JSON"
+        },
+        {
+            "fieldname": "sync_timestamp",
+            "fieldtype": "Datetime",
+            "label": "Sync Timestamp",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-01-18 03:56:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Analytics Daily Log",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales User"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

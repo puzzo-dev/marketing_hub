@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Campaign - Marketing Hub</title>
+    <link rel="stylesheet" href="/assets/marketing_hub/www/marketing/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        .form-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="marketing-portal">
+        {% include "marketing_hub/www/marketing/sidebar.html" %}
+
+        <div class="portal-main">
+            <div class="page-header">
+                <div>
+                    <a href="/marketing/campaigns"
+                        style="color: var(--text-light); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">
+                        &larr; Back to Campaigns
+                    </a>
+                    <h1 class="page-title">New Campaign</h1>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <form id="new-campaign-form">
+                    <div class="form-group">
+                        <label class="form-label">Campaign Name</label>
+                        <input type="text" name="campaign_name" class="form-control"
+                            placeholder="e.g. Q1 Product Launch" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="What is the goal of this campaign?"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="form-group">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">End Date (Optional)</label>
+                            <input type="date" name="end_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/marketing/campaigns" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-primary" id="submit-btn" style="border: none;">Create
+                            Campaign</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.frappe = {};
+        frappe.csrf_token = "{{ frappe.session.csrf_token }}";
+
+        document.getElementById('new-campaign-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Creating...';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch('/api/method/marketing_hub.www.marketing.campaigns.new.create_campaign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Frappe-CSRF-Token': frappe.csrf_token
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message && data.message.status === 'Success') {
+                        // Redirect to list
+                        window.location.href = '/marketing/campaigns';
+                    } else {
+                        alert('Error: ' + (data.message ? data.message.message : 'Unknown error'));
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please check console.');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>

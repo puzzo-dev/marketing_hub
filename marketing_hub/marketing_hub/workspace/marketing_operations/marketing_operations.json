@@ -1,0 +1,59 @@
+{
+    "charts": [],
+    "content": "[{\"id\":\"ops_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Daily Operations</b></span>\",\"col\":12}},{\"id\":\"activity_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Activity\",\"col\":3}},{\"id\":\"post_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Post\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"execution_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Execution\",\"col\":4}},{\"id\":\"logs_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Logs & Tracking\",\"col\":4}}]",
+    "creation": "2026-01-18 12:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "activity",
+    "idx": 2,
+    "is_hidden": 0,
+    "label": "Marketing Operations",
+    "links": [
+        {
+            "label": "Execution",
+            "type": "Card Break"
+        },
+        {
+            "label": "Campaign Activity",
+            "link_to": "Campaign Activity",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Social Post",
+            "link_to": "Social Post",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Logs & Tracking",
+            "type": "Card Break"
+        },
+        {
+            "label": "Analytics Daily Log",
+            "link_to": "Analytics Daily Log",
+            "link_type": "DocType",
+            "type": "Link"
+        }
+    ],
+    "modified": "2026-01-18 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Marketing Operations",
+    "public": 1,
+    "shortcuts": [
+        {
+            "label": "New Activity",
+            "link_to": "Campaign Activity",
+            "type": "DocType"
+        },
+        {
+            "label": "New Post",
+            "link_to": "Social Post",
+            "type": "DocType"
+        }
+    ],
+    "title": "Marketing Operations"
+}

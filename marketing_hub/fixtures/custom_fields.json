@@ -1,0 +1,78 @@
+[
+    {
+        "doctype": "Custom Field",
+        "name": "Campaign-channels_used",
+        "dt": "Campaign",
+        "fieldname": "channels_used",
+        "label": "Channels",
+        "fieldtype": "Small Text",
+        "insert_after": "campaign_name",
+        "description": "Select channels (comma-separated): Email, WhatsApp, SMS, Push Notification, Google Ads, Meta Ads, TikTok Ads, Twitter/X Ads, Reddit Ads, LinkedIn Ads, Trade Show, TV, Radio, Telecalling, Outdoor, Print, Event, Omni-Channel"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Campaign-is_omni_campaign",
+        "dt": "Campaign",
+        "fieldname": "is_omni_campaign",
+        "label": "Omni-Channel Campaign",
+        "fieldtype": "Check",
+        "insert_after": "channels_used"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Campaign-client",
+        "dt": "Campaign",
+        "fieldname": "client",
+        "label": "Client (Agency Mode)",
+        "fieldtype": "Link",
+        "options": "Customer",
+        "insert_after": "is_omni_campaign"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Campaign-project",
+        "dt": "Campaign",
+        "fieldname": "project",
+        "label": "Project",
+        "fieldtype": "Link",
+        "options": "Project",
+        "insert_after": "client"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Campaign-roas",
+        "dt": "Campaign",
+        "fieldname": "roas",
+        "label": "ROAS (Return on Ad Spend)",
+        "fieldtype": "Float",
+        "precision": "2",
+        "insert_after": "project"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Lead-utm_campaign",
+        "dt": "Lead",
+        "fieldname": "utm_campaign",
+        "label": "UTM Campaign",
+        "fieldtype": "Data",
+        "insert_after": "source"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Lead-utm_source",
+        "dt": "Lead",
+        "fieldname": "utm_source",
+        "label": "UTM Source",
+        "fieldtype": "Data",
+        "insert_after": "utm_campaign"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Lead-utm_medium",
+        "dt": "Lead",
+        "fieldname": "utm_medium",
+        "label": "UTM Medium",
+        "fieldtype": "Data",
+        "insert_after": "utm_source"
+    }
+]

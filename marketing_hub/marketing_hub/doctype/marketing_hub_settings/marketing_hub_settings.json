@@ -1,0 +1,474 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "creation": "2026-01-17 16:30:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "column_break_2",
+  "agency_mode",
+  "section_break_4",
+  "general_settings_section",
+  "default_campaign_naming_series",
+  "default_lead_source",
+  "enable_auto_attribution",
+  "column_break_8",
+  "enable_utm_tracking",
+  "enable_session_tracking",
+  "session_timeout_days",
+  "section_break_12",
+  "omni_channel_settings_section",
+  "enable_email_blast",
+  "default_email_sender",
+  "column_break_16",
+  "enable_whatsapp_blast",
+  "enable_sms_blast",
+  "section_break_19",
+  "social_media_settings_section",
+  "enable_auto_post",
+  "auto_post_interval_minutes",
+  "column_break_23",
+  "default_social_platforms",
+  "require_post_approval",
+  "section_break_26",
+  "advertising_settings_section",
+  "enable_google_ads",
+  "enable_meta_ads",
+  "enable_linkedin_ads",
+  "column_break_31",
+  "enable_tiktok_ads",
+  "enable_twitter_ads",
+  "sync_frequency",
+  "section_break_35",
+  "analytics_settings_section",
+  "enable_analytics_sync",
+  "analytics_sync_schedule",
+  "column_break_39",
+  "default_attribution_model",
+  "track_conversions",
+  "section_break_42",
+  "agency_settings_section",
+  "max_campaigns_per_client",
+  "enable_client_portal",
+  "column_break_46",
+  "enable_white_label",
+  "client_approval_required",
+  "section_break_49",
+  "content_settings_section",
+  "enable_content_library",
+  "enable_version_control",
+  "column_break_53",
+  "enable_brand_guidelines",
+  "default_content_approval_workflow",
+  "section_break_56",
+  "notification_settings_section",
+  "notify_campaign_completion",
+  "notify_blast_execution",
+  "column_break_60",
+  "notify_analytics_sync",
+  "notification_recipients"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Enable Agency Mode to manage multiple clients",
+   "fieldname": "agency_mode",
+   "fieldtype": "Check",
+   "label": "Agency Mode"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "general_settings_section",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "fieldname": "default_campaign_naming_series",
+   "fieldtype": "Select",
+   "label": "Default Campaign Naming Series",
+   "options": "CAM-.YYYY.-.####\nMKT-.YYYY.-.####\nAD-.YYYY.-.####"
+  },
+  {
+   "fieldname": "default_lead_source",
+   "fieldtype": "Data",
+   "label": "Default Lead Source"
+  },
+  {
+   "default": "1",
+   "description": "Automatically attribute leads to campaigns based on UTM parameters",
+   "fieldname": "enable_auto_attribution",
+   "fieldtype": "Check",
+   "label": "Enable Auto Attribution"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Track UTM parameters for campaign attribution",
+   "fieldname": "enable_utm_tracking",
+   "fieldtype": "Check",
+   "label": "Enable UTM Tracking"
+  },
+  {
+   "default": "1",
+   "description": "Track user sessions for better attribution",
+   "fieldname": "enable_session_tracking",
+   "fieldtype": "Check",
+   "label": "Enable Session Tracking"
+  },
+  {
+   "default": "30",
+   "description": "Number of days to track session data",
+   "fieldname": "session_timeout_days",
+   "fieldtype": "Int",
+   "label": "Session Timeout (Days)"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "omni_channel_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Omni-Channel Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_email_blast",
+   "fieldtype": "Check",
+   "label": "Enable Email Blast"
+  },
+  {
+   "fieldname": "default_email_sender",
+   "fieldtype": "Data",
+   "label": "Default Email Sender"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Requires frappe_whatsapp app",
+   "fieldname": "enable_whatsapp_blast",
+   "fieldtype": "Check",
+   "label": "Enable WhatsApp Blast"
+  },
+  {
+   "default": "0",
+   "description": "Requires SMS gateway integration",
+   "fieldname": "enable_sms_blast",
+   "fieldtype": "Check",
+   "label": "Enable SMS Blast"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "social_media_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Social Media Settings"
+  },
+  {
+   "default": "1",
+   "description": "Automatically publish scheduled social posts",
+   "fieldname": "enable_auto_post",
+   "fieldtype": "Check",
+   "label": "Enable Auto Post"
+  },
+  {
+   "default": "15",
+   "description": "Check for scheduled posts every N minutes",
+   "fieldname": "auto_post_interval_minutes",
+   "fieldtype": "Int",
+   "label": "Auto Post Interval (Minutes)"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_social_platforms",
+   "fieldtype": "MultiSelect",
+   "label": "Default Social Platforms",
+   "options": "Meta\nTwitter\nLinkedIn\nInstagram\nTikTok\nYouTube"
+  },
+  {
+   "default": "0",
+   "description": "Require approval before publishing posts",
+   "fieldname": "require_post_approval",
+   "fieldtype": "Check",
+   "label": "Require Post Approval"
+  },
+  {
+   "fieldname": "section_break_26",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "advertising_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Advertising Platform Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_google_ads",
+   "fieldtype": "Check",
+   "label": "Enable Google Ads"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_meta_ads",
+   "fieldtype": "Check",
+   "label": "Enable Meta Ads"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_linkedin_ads",
+   "fieldtype": "Check",
+   "label": "Enable LinkedIn Ads"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_tiktok_ads",
+   "fieldtype": "Check",
+   "label": "Enable TikTok Ads"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_twitter_ads",
+   "fieldtype": "Check",
+   "label": "Enable Twitter/X Ads"
+  },
+  {
+   "default": "Daily",
+   "description": "How often to sync analytics data",
+   "fieldname": "sync_frequency",
+   "fieldtype": "Select",
+   "label": "Analytics Sync Frequency",
+   "options": "Hourly\nDaily\nWeekly"
+  },
+  {
+   "fieldname": "section_break_35",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "analytics_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Analytics Settings"
+  },
+  {
+   "default": "1",
+   "description": "Sync analytics data from advertising platforms",
+   "fieldname": "enable_analytics_sync",
+   "fieldtype": "Check",
+   "label": "Enable Analytics Sync"
+  },
+  {
+   "default": "0 2 * * *",
+   "description": "Cron expression for analytics sync schedule",
+   "fieldname": "analytics_sync_schedule",
+   "fieldtype": "Data",
+   "label": "Analytics Sync Schedule (Cron)"
+  },
+  {
+   "fieldname": "column_break_39",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Last Touch",
+   "fieldname": "default_attribution_model",
+   "fieldtype": "Select",
+   "label": "Default Attribution Model",
+   "options": "First Touch\nLast Touch\nLinear\nTime Decay\nPosition Based"
+  },
+  {
+   "default": "1",
+   "description": "Track conversion events from campaigns",
+   "fieldname": "track_conversions",
+   "fieldtype": "Check",
+   "label": "Track Conversions"
+  },
+  {
+   "fieldname": "section_break_42",
+   "fieldtype": "Section Break"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.agency_mode==1",
+   "fieldname": "agency_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Agency Settings"
+  },
+  {
+   "default": "10",
+   "description": "Maximum active campaigns per client",
+   "fieldname": "max_campaigns_per_client",
+   "fieldtype": "Int",
+   "label": "Max Campaigns per Client"
+  },
+  {
+   "default": "0",
+   "description": "Enable client portal access",
+   "fieldname": "enable_client_portal",
+   "fieldtype": "Check",
+   "label": "Enable Client Portal"
+  },
+  {
+   "fieldname": "column_break_46",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Hide agency branding from client reports",
+   "fieldname": "enable_white_label",
+   "fieldtype": "Check",
+   "label": "Enable White Label"
+  },
+  {
+   "default": "1",
+   "description": "Require client approval before campaign execution",
+   "fieldname": "client_approval_required",
+   "fieldtype": "Check",
+   "label": "Client Approval Required"
+  },
+  {
+   "fieldname": "section_break_49",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "content_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Content Management Settings"
+  },
+  {
+   "default": "1",
+   "description": "Enable centralized content asset library",
+   "fieldname": "enable_content_library",
+   "fieldtype": "Check",
+   "label": "Enable Content Library"
+  },
+  {
+   "default": "1",
+   "description": "Track content versions and revisions",
+   "fieldname": "enable_version_control",
+   "fieldtype": "Check",
+   "label": "Enable Version Control"
+  },
+  {
+   "fieldname": "column_break_53",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Enforce brand guidelines for content",
+   "fieldname": "enable_brand_guidelines",
+   "fieldtype": "Check",
+   "label": "Enable Brand Guidelines"
+  },
+  {
+   "fieldname": "default_content_approval_workflow",
+   "fieldtype": "Link",
+   "label": "Default Content Approval Workflow",
+   "options": "Workflow"
+  },
+  {
+   "fieldname": "section_break_56",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notification_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Notification Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "notify_campaign_completion",
+   "fieldtype": "Check",
+   "label": "Notify Campaign Completion"
+  },
+  {
+   "default": "1",
+   "fieldname": "notify_blast_execution",
+   "fieldtype": "Check",
+   "label": "Notify Blast Execution"
+  },
+  {
+   "fieldname": "column_break_60",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "notify_analytics_sync",
+   "fieldtype": "Check",
+   "label": "Notify Analytics Sync"
+  },
+  {
+   "description": "Comma-separated email addresses",
+   "fieldname": "notification_recipients",
+   "fieldtype": "Small Text",
+   "label": "Notification Recipients"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 0,
+ "links": [],
+ "modified": "2026-01-17 16:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Marketing Hub Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

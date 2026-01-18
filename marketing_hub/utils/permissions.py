@@ -1,0 +1,302 @@
+"""
+Permission Handlers for Marketing Hub
+Implements role-based and user-based access control for campaigns
+"""
+
+import frappe
+from frappe import _
+
+
+def get_campaign_permission_query_conditions(user):
+	"""Filter campaigns based on user permissions"""
+	if not user:
+		user = frappe.session.user
+	
+	# System Manager and Marketing Manager see all campaigns
+	if "System Manager" in frappe.get_roles(user) or "Marketing Manager" in frappe.get_roles(user):
+		return ""
+	
+	# Sales Manager sees all campaigns (for now - can be restricted later)
+	if "Sales Manager" in frappe.get_roles(user):
+		return ""
+	
+	# Others see only campaigns they own or are assigned to
+	return f"""(
+		`tabCampaign`.owner = '{frappe.db.escape(user)}' 
+		OR `tabCampaign`.name IN (
+			SELECT DISTINCT parent 
+			FROM `tabUser Permission` 
+			WHERE allow = 'Campaign' 
+			AND user = '{frappe.db.escape(user)}'
+			AND applicable_for IN ('', NULL, 'Marketing Hub')
+		)
+	)"""
+
+
+def has_campaign_permission(doc, ptype, user):
+	"""Check if user has specific permission on campaign"""
+	if not user:
+		user = frappe.session.user
+	
+	# System Manager has full access
+	if "System Manager" in frappe.get_roles(user):
+		return True
+	
+	# Marketing Manager has full access
+	if "Marketing Manager" in frappe.get_roles(user):
+		return True
+	
+	# Sales Manager has full access (can be restricted)
+	if "Sales Manager" in frappe.get_roles(user):
+		return True
+	
+	# Owner has full access to their campaigns
+	if doc.owner == user:
+		return True
+	
+	# Check User Permissions
+	user_perms = frappe.get_all(
+		"User Permission",
+		filters={
+			"user": user,
+			"allow": "Campaign",
+			"for_value": doc.name
+		},
+		limit=1
+	)
+	
+	if user_perms:
+		# User has permission via User Permission doctype
+		if ptype == "read":
+			return True
+		elif ptype in ("write", "submit", "cancel"):
+			# Check if they have write permission specifically
+			return frappe.has_permission("Campaign", ptype, user=user)
+		elif ptype == "delete":
+			# Only owners, System Manager, Marketing Manager can delete
+			return False
+	
+	return False
+
+
+def get_campaign_activity_permission_query_conditions(user):
+	"""Filter campaign activities based on parent campaign permissions"""
+	if not user:
+		user = frappe.session.user
+	
+	# System Manager and Marketing Manager see all
+	if "System Manager" in frappe.get_roles(user) or "Marketing Manager" in frappe.get_roles(user):
+		return ""
+	
+	# Sales Manager sees all
+	if "Sales Manager" in frappe.get_roles(user):
+		return ""
+	
+	# Others see activities from campaigns they can access
+	return f"""(
+		`tabCampaign Activity`.parent IN (
+			SELECT name FROM `tabCampaign`
+			WHERE owner = '{frappe.db.escape(user)}'
+			OR name IN (
+				SELECT DISTINCT for_value 
+				FROM `tabUser Permission` 
+				WHERE allow = 'Campaign' 
+				AND user = '{frappe.db.escape(user)}'
+			)
+		)
+	)"""
+
+
+def has_campaign_activity_permission(doc, ptype, user):
+	"""Check if user has permission on campaign activity"""
+	if not user:
+		user = frappe.session.user
+	
+	# Check parent campaign permission
+	if doc.parent:
+		try:
+			campaign = frappe.get_doc("Campaign", doc.parent)
+			return has_campaign_permission(campaign, ptype, user)
+		except frappe.DoesNotExistError:
+			return False
+	
+	return False
+
+
+def get_marketing_segment_permission_query_conditions(user):
+	"""Marketing segments visible to all marketing roles"""
+	if not user:
+		user = frappe.session.user
+	
+	# Marketing roles see all segments
+	marketing_roles = ["System Manager", "Marketing Manager", "Sales Manager", 
+					   "Marketing Executive", "Marketing Analyst"]
+	
+	user_roles = frappe.get_roles(user)
+	if any(role in marketing_roles for role in user_roles):
+		return ""
+	
+	# Others see only their own
+	return f"`tabMarketing Segment`.owner = '{frappe.db.escape(user)}'"
+
+
+def has_workspace_access(user=None):
+	"""Check if user has access to Marketing Hub workspace"""
+	if not user:
+		user = frappe.session.user
+	
+	# Define roles that have workspace access
+	allowed_roles = [
+		"System Manager",
+		"Sales Manager",
+		"Sales User",
+		"Marketing Manager",
+		"Marketing Executive",
+		"Marketing Analyst",
+		"HR Manager",
+		"HR User"
+	]
+	
+	user_roles = frappe.get_roles(user)
+	return any(role in allowed_roles for role in user_roles)
+
+
+def setup_workspace_visibility(login_manager=None):
+	"""Called on session creation to set workspace visibility"""
+	user = frappe.session.user
+	
+	if user == "Guest":
+		return
+	
+	# Check if user should see Marketing Hub workspace
+	has_access = has_workspace_access(user)
+	
+	try:
+		workspace = frappe.get_doc("Workspace", "Marketing Hub")
+		
+		# Update visibility (this won't work as expected - workspaces are role-based)
+		# Instead, we'll use role-based filtering in the workspace JSON
+		
+		# Log access for audit
+		if has_access:
+			frappe.logger().debug(f"User {user} has Marketing Hub workspace access")
+		else:
+			frappe.logger().debug(f"User {user} does not have Marketing Hub workspace access")
+	except frappe.DoesNotExistError:
+		frappe.logger().warning("Marketing Hub workspace not found")
+
+
+@frappe.whitelist()
+def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can_execute=1):
+	"""Assign a user to a campaign via User Permission"""
+	# Check if caller has permission to assign
+	if not frappe.has_permission("Campaign", "write"):
+		frappe.throw(_("You don't have permission to assign users to campaigns"))
+	
+	# Check if campaign exists
+	if not frappe.db.exists("Campaign", campaign):
+		frappe.throw(_("Campaign {0} not found").format(campaign))
+	
+	# Check if user exists
+	if not frappe.db.exists("User", user):
+		frappe.throw(_("User {0} not found").format(user))
+	
+	# Check if already assigned
+	existing = frappe.db.exists("User Permission", {
+		"user": user,
+		"allow": "Campaign",
+		"for_value": campaign
+	})
+	
+	if existing:
+		frappe.msgprint(_("User {0} is already assigned to this campaign").format(user))
+		return existing
+	
+	# Create User Permission
+	user_perm = frappe.new_doc("User Permission")
+	user_perm.user = user
+	user_perm.allow = "Campaign"
+	user_perm.for_value = campaign
+	user_perm.applicable_for = "Marketing Hub"
+	user_perm.insert(ignore_permissions=True)
+	
+	# Log the assignment
+	frappe.logger().info(f"Assigned user {user} to campaign {campaign} as {role}")
+	
+	return {
+		"success": True,
+		"message": _("User {0} assigned successfully").format(user),
+		"permission": user_perm.name
+	}
+
+
+@frappe.whitelist()
+def remove_user_from_campaign(campaign, user):
+	"""Remove user assignment from campaign"""
+	# Check if caller has permission
+	if not frappe.has_permission("Campaign", "write"):
+		frappe.throw(_("You don't have permission to modify campaign assignments"))
+	
+	# Find and delete User Permission
+	user_perms = frappe.get_all(
+		"User Permission",
+		filters={
+			"user": user,
+			"allow": "Campaign",
+			"for_value": campaign
+		},
+		pluck="name"
+	)
+	
+	for perm in user_perms:
+		frappe.delete_doc("User Permission", perm, ignore_permissions=True)
+	
+	frappe.logger().info(f"Removed user {user} from campaign {campaign}")
+	
+	return {
+		"success": True,
+		"message": _("User {0} removed from campaign").format(user)
+	}
+
+
+@frappe.whitelist()
+def get_campaign_assigned_users(campaign):
+	"""Get list of users assigned to a campaign"""
+	if not frappe.has_permission("Campaign", "read"):
+		frappe.throw(_("You don't have permission to view campaign assignments"))
+	
+	assigned_users = frappe.get_all(
+		"User Permission",
+		filters={
+			"allow": "Campaign",
+			"for_value": campaign
+		},
+		fields=["user", "creation", "modified"]
+	)
+	
+	# Enrich with user details
+	for assignment in assigned_users:
+		user_doc = frappe.get_cached_doc("User", assignment.user)
+		assignment.full_name = user_doc.full_name
+		assignment.user_image = user_doc.user_image
+		assignment.email = user_doc.email
+	
+	return assigned_users
+
+
+def validate_campaign_limits(doc, method):
+	"""Validate campaign limits for agency mode"""
+	# Only check for agency mode
+	if not doc.client:
+		return
+	
+	# Import here to avoid circular dependency
+	from marketing_hub.utils.agency_mode import check_client_subscription
+	
+	try:
+		result = check_client_subscription(doc.client, doc.name)
+		
+		if not result.get("valid"):
+			frappe.throw(_(result.get("message", "Campaign limit exceeded")))
+	except Exception as e:
+		frappe.log_error(f"Campaign limit validation error: {str(e)}", "Marketing Hub Permissions")

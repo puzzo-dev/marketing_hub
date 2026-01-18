@@ -1,0 +1,238 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{campaign}-{channel}-{###}",
+ "creation": "2026-01-17 17:20:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign",
+  "channel",
+  "column_break_3",
+  "status",
+  "scheduled_date",
+  "section_break_6",
+  "template",
+  "section_break_8",
+  "custom_subject",
+  "custom_headline",
+  "custom_body",
+  "custom_cta",
+  "section_break_13",
+  "custom_link_url",
+  "utm_campaign",
+  "utm_source",
+  "utm_medium",
+  "section_break_17",
+  "custom_assets",
+  "section_break_19",
+  "preview_html",
+  "section_break_21",
+  "sent_count",
+  "delivered_count",
+  "opened_count",
+  "clicked_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Campaign",
+   "reqd": 1
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Channel",
+   "options": "Email\nWhatsApp\nSMS\nPush Notification\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nReddit Ads",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nScheduled\nLive\nPaused\nCompleted"
+  },
+  {
+   "fieldname": "scheduled_date",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Date"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Template"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Marketing Template",
+   "options": "Marketing Template"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break",
+   "label": "Custom Content (Override Template)"
+  },
+  {
+   "fieldname": "custom_subject",
+   "fieldtype": "Data",
+   "label": "Subject/Title"
+  },
+  {
+   "fieldname": "custom_headline",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "fieldname": "custom_body",
+   "fieldtype": "Text Editor",
+   "label": "Body Text"
+  },
+  {
+   "fieldname": "custom_cta",
+   "fieldtype": "Data",
+   "label": "Call to Action"
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break",
+   "label": "Tracking"
+  },
+  {
+   "fieldname": "custom_link_url",
+   "fieldtype": "Data",
+   "label": "Link URL"
+  },
+  {
+   "fetch_from": "campaign.name",
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "UTM Campaign"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "UTM Source"
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "UTM Medium"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break",
+   "label": "Creative Assets"
+  },
+  {
+   "fieldname": "custom_assets",
+   "fieldtype": "Table",
+   "label": "Assets",
+   "options": "Template Asset Item"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break",
+   "label": "Preview"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "HTML",
+   "label": "Preview",
+   "options": "<div class=\"text-muted\">Save to generate preview</div>"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_21",
+   "fieldtype": "Section Break",
+   "label": "Performance Metrics"
+  },
+  {
+   "default": "0",
+   "fieldname": "sent_count",
+   "fieldtype": "Int",
+   "label": "Sent",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "delivered_count",
+   "fieldtype": "Int",
+   "label": "Delivered",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "opened_count",
+   "fieldtype": "Int",
+   "label": "Opened",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "clicked_count",
+   "fieldtype": "Int",
+   "label": "Clicked",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-17 17:20:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Campaign Content",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

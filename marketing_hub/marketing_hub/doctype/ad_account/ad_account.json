@@ -1,0 +1,219 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:AD-{platform}-{####}",
+    "creation": "2026-01-18 03:52:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "account_name",
+        "platform",
+        "account_id",
+        "column_break_3",
+        "company",
+        "is_active",
+        "oauth_credentials_section",
+        "client_id",
+        "client_secret",
+        "column_break_8",
+        "access_token",
+        "refresh_token",
+        "token_expiry",
+        "platform_specific_section",
+        "ad_account_id",
+        "pixel_id",
+        "customer_id",
+        "column_break_15",
+        "account_urn",
+        "business_id",
+        "sync_status_section",
+        "last_sync",
+        "sync_status",
+        "column_break_20",
+        "error_log"
+    ],
+    "fields": [
+        {
+            "fieldname": "account_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Account Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "platform",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Platform",
+            "options": "Meta Ads\nGoogle Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nReddit Ads",
+            "reqd": 1
+        },
+        {
+            "fieldname": "account_id",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Account ID",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "company",
+            "fieldtype": "Link",
+            "label": "Company",
+            "options": "Company"
+        },
+        {
+            "default": "1",
+            "fieldname": "is_active",
+            "fieldtype": "Check",
+            "label": "Is Active"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "oauth_credentials_section",
+            "fieldtype": "Section Break",
+            "label": "OAuth Credentials"
+        },
+        {
+            "fieldname": "client_id",
+            "fieldtype": "Data",
+            "label": "Client ID"
+        },
+        {
+            "fieldname": "client_secret",
+            "fieldtype": "Password",
+            "label": "Client Secret"
+        },
+        {
+            "fieldname": "column_break_8",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "access_token",
+            "fieldtype": "Password",
+            "label": "Access Token"
+        },
+        {
+            "fieldname": "refresh_token",
+            "fieldtype": "Password",
+            "label": "Refresh Token"
+        },
+        {
+            "fieldname": "token_expiry",
+            "fieldtype": "Datetime",
+            "label": "Token Expiry"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "platform_specific_section",
+            "fieldtype": "Section Break",
+            "label": "Platform Specific"
+        },
+        {
+            "depends_on": "eval:doc.platform=='Meta Ads'",
+            "description": "For Meta Ads (e.g., act_123456789)",
+            "fieldname": "ad_account_id",
+            "fieldtype": "Data",
+            "label": "Ad Account ID"
+        },
+        {
+            "depends_on": "eval:doc.platform=='Meta Ads'",
+            "fieldname": "pixel_id",
+            "fieldtype": "Data",
+            "label": "Pixel ID"
+        },
+        {
+            "depends_on": "eval:doc.platform=='Google Ads'",
+            "fieldname": "customer_id",
+            "fieldtype": "Data",
+            "label": "Customer ID"
+        },
+        {
+            "fieldname": "column_break_15",
+            "fieldtype": "Column Break"
+        },
+        {
+            "depends_on": "eval:doc.platform=='LinkedIn Ads'",
+            "fieldname": "account_urn",
+            "fieldtype": "Data",
+            "label": "Account URN"
+        },
+        {
+            "depends_on": "eval:doc.platform=='Meta Ads'",
+            "fieldname": "business_id",
+            "fieldtype": "Data",
+            "label": "Business ID"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "sync_status_section",
+            "fieldtype": "Section Break",
+            "label": "Sync Status"
+        },
+        {
+            "fieldname": "last_sync",
+            "fieldtype": "Datetime",
+            "label": "Last Sync",
+            "read_only": 1
+        },
+        {
+            "default": "Pending",
+            "fieldname": "sync_status",
+            "fieldtype": "Select",
+            "label": "Sync Status",
+            "options": "Success\nFailed\nPending"
+        },
+        {
+            "fieldname": "column_break_20",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-01-18 03:52:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Ad Account",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}
