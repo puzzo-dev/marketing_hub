@@ -10,6 +10,7 @@
     "idx": 3,
     "is_hidden": 0,
     "label": "Marketing Settings",
+    "parent_page": "Marketing Hub",
     "links": [
         {
             "label": "General",

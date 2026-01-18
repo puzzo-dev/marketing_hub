@@ -70,7 +70,8 @@ body {
     font-weight: 500;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
     background-color: var(--primary-light);
     color: var(--primary-color);
 }
@@ -119,7 +120,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 24px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .stat-label {
@@ -168,7 +169,7 @@ body {
 
 .campaign-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .campaign-info h4 {
@@ -247,4 +248,20 @@ body {
 .section-title {
     font-size: 18px;
     font-weight: 600;
+}
+
+/* Metrics Formatting */
+.roas-high {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.roas-medium {
+    font-weight: 600;
+    color: var(--warning-color);
+}
+
+.roas-low {
+    font-weight: 600;
+    color: var(--text-color);
 }

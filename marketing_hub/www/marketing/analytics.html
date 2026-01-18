@@ -81,7 +81,7 @@
                                 {'fieldtype': 'Currency'}) }}</td>
                             <td style="padding: 16px 12px; text-align: right;">
                                 <span
-                                    style="font-weight: 600; color: {% if row.roas >= 2 %}var(--success-color){% elif row.roas >= 1 %}var(--warning-color){% else %}var(--text-color){% endif %};">
+                                    class="{% if row.roas >= 2 %}roas-high{% elif row.roas >= 1 %}roas-medium{% else %}roas-low{% endif %}">
                                     {{ "%.2f"|format(row.roas) }}x
                                 </span>
                             </td>
