@@ -10,6 +10,22 @@ app_license = "mit"
 
 required_apps = ["frappe_whatsapp"]
 
+add_to_apps_screen = [
+    {
+        "name": "marketing_hub",
+        "logo": "/assets/marketing_hub/desk/favicon.ico",
+        "title": "Marketing Hub",
+        "route": "/marketing",
+    }
+]
+
+website_route_rules = [
+    {
+        "from_route": "/marketing/<path:app_path>",
+        "to_route": "marketing",
+    },
+]
+
 # Fixtures
 # --------
 fixtures = [
@@ -65,7 +81,7 @@ fixtures = [
 app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/marketing_hub/css/marketing_hub.css"
+web_include_css = "/assets/marketing_hub/css/portal.css"
 # web_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include custom scss in every website theme (without file extension ".scss")

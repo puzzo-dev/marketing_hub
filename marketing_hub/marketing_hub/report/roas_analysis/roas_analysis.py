@@ -134,9 +134,9 @@ def get_campaign_data(filters):
 			c.name as campaign,
 			c.channels_used as channels
 		FROM `tabCampaign` c
-		WHERE c.docstatus = 0
+		WHERE c.docstatus < 2
 		{conditions}
-		ORDER BY c.start_date DESC
+		ORDER BY c.creation DESC
 	""".format(conditions=conditions), filters, as_dict=1)
 
 	data = []
@@ -144,7 +144,8 @@ def get_campaign_data(filters):
 	for campaign in campaigns:
 		row = get_campaign_metrics(campaign.campaign)
 		row["campaign"] = campaign.campaign
-		row["channels"] = campaign.channels or ""
+		# Handle channels_used which is a multiselect field (newline separated)
+		row["channels"] = campaign.channels.replace("\n", ", ") if campaign.channels else "-"
 
 		# Only include if meets minimum ROAS threshold
 		min_roas = filters.get("min_roas", 0)
@@ -162,7 +163,7 @@ def get_channel_data(filters):
 	campaigns = frappe.db.sql("""
 		SELECT name, channels_used
 		FROM `tabCampaign`
-		WHERE docstatus = 0
+		WHERE docstatus < 2
 		{conditions}
 	""".format(conditions=conditions), filters, as_dict=1)
 
@@ -170,7 +171,7 @@ def get_channel_data(filters):
 	channel_data = {}
 
 	for campaign in campaigns:
-		channels = (campaign.channels_used or "").split(",")
+		channels = (campaign.channels_used or "").replace("\n", ",").split(",")
 		metrics = get_campaign_metrics(campaign.name)
 
 		for channel in channels:
@@ -223,7 +224,7 @@ def get_monthly_data(filters):
 	monthly_data = frappe.db.sql("""
 		SELECT
 			DATE_FORMAT(date, '%%Y-%%m') as month,
-			SUM(spend) as spend,
+			SUM(cost) as spend,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`
@@ -271,10 +272,10 @@ def get_monthly_data(filters):
 
 def get_campaign_metrics(campaign):
 	"""Get metrics for a single campaign"""
-	# Get spend and engagement from Analytics Daily Log
+	# Get cost and engagement from Analytics Daily Log
 	analytics = frappe.db.sql("""
 		SELECT
-			SUM(spend) as spend,
+			SUM(cost) as cost,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`
@@ -282,7 +283,7 @@ def get_campaign_metrics(campaign):
 	""", campaign, as_dict=1)
 
 	metrics = {
-		"spend": analytics[0].spend if analytics and analytics[0].spend else 0,
+		"spend": analytics[0].cost if analytics and analytics[0].cost else 0,
 		"impressions": analytics[0].impressions if analytics and analytics[0].impressions else 0,
 		"clicks": analytics[0].clicks if analytics and analytics[0].clicks else 0
 	}
@@ -291,12 +292,11 @@ def get_campaign_metrics(campaign):
 	leads_count = frappe.db.count("Lead", filters={"campaign_name": campaign})
 	metrics["leads"] = leads_count
 
-	# Get revenue from Sales Orders
+	# Get revenue from Sales Orders (directly linked to campaign)
 	revenue = frappe.db.sql("""
 		SELECT COALESCE(SUM(so.grand_total), 0) as revenue
 		FROM `tabSales Order` so
-		INNER JOIN `tabLead` l ON so.party_name = l.name
-		WHERE l.campaign_name = %s
+		WHERE so.campaign = %s
 		AND so.docstatus = 1
 	""", campaign, as_dict=1)
 
@@ -319,10 +319,10 @@ def get_conditions(filters):
 		conditions.append("c.name = %(campaign)s")
 
 	if filters.get("from_date"):
-		conditions.append("c.start_date >= %(from_date)s")
+		conditions.append("DATE(c.creation) >= %(from_date)s")
 
 	if filters.get("to_date"):
-		conditions.append("c.end_date <= %(to_date)s")
+		conditions.append("DATE(c.creation) <= %(to_date)s")
 
 	return " AND " + " AND ".join(conditions) if conditions else ""
 

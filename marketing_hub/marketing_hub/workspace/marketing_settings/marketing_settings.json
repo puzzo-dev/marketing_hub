@@ -1,6 +1,6 @@
 {
     "charts": [],
-    "content": "[{\"id\":\"settings_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings & Configuration</b></span>\",\"col\":12}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"General\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}}]",
+    "content": "[{\"id\":\"settings_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings & Configuration</b></span>\",\"col\":12}},{\"id\":\"settings_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Hub Settings\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}},{\"id\":\"oauth_card\",\"type\":\"card\",\"data\":{\"card_name\":\"OAuth & Integration\",\"col\":4}}]",
     "creation": "2026-01-18 12:00:00.000000",
     "docstatus": 0,
     "doctype": "Workspace",
@@ -13,18 +13,32 @@
     "parent_page": "Marketing Hub",
     "links": [
         {
-            "label": "General",
+            "label": "Configuration",
             "type": "Card Break"
         },
         {
-            "label": "Marketing Settings",
-            "link_to": "Marketing Settings",
+            "label": "Marketing Hub Settings",
+            "link_to": "Marketing Hub Settings",
             "link_type": "DocType",
+            "onboard": 1,
+            "only_for": "",
             "type": "Link"
         },
         {
             "label": "Marketing Segment",
             "link_to": "Marketing Segment",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Ad Account",
+            "link_to": "Ad Account",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "Analytics Connector",
+            "link_to": "Analytics Connector",
             "link_type": "DocType",
             "type": "Link"
         },
@@ -37,6 +51,23 @@
             "link_to": "Marketing Template",
             "link_type": "DocType",
             "type": "Link"
+        },
+        {
+            "label": "Content Asset",
+            "link_to": "Content Asset",
+            "link_type": "DocType",
+            "type": "Link"
+        },
+        {
+            "label": "OAuth & Integration",
+            "type": "Card Break"
+        },
+        {
+            "label": "Social Login Key",
+            "link_to": "Social Login Key",
+            "link_type": "DocType",
+            "only_for": "System Manager",
+            "type": "Link"
         }
     ],
     "modified": "2026-01-18 12:00:00.000000",
@@ -44,6 +75,13 @@
     "module": "Marketing Hub",
     "name": "Marketing Settings",
     "public": 1,
-    "shortcuts": [],
+    "shortcuts": [
+        {
+            "color": "Blue",
+            "label": "Marketing Hub Settings",
+            "link_to": "Marketing Hub Settings",
+            "type": "DocType"
+        }
+    ],
     "title": "Marketing Settings"
 }

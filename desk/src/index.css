@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md;
+  }
+
+  .campaign-card {
+    @apply rounded-lg border bg-white p-6 shadow-sm transition-all hover:border-blue-400 hover:shadow-md;
+  }
+
+  .post-card {
+    @apply rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md;
+  }
+}

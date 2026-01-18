@@ -10,10 +10,10 @@ frappe.query_reports["Campaign Performance"] = {
 			options: "Campaign"
 		},
 		{
-			fieldname: "status",
-			label: __("Status"),
-			fieldtype: "Select",
-			options: "\nPlanning\nIn Progress\nCompleted\nCancelled"
+			fieldname: "company",
+			label: __("Company"),
+			fieldtype: "Link",
+			options: "Company"
 		},
 		{
 			fieldname: "from_date",
