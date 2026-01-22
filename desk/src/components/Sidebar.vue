@@ -5,14 +5,20 @@
     v-model:collapsed="isCollapsed"
   >
     <template #header-logo>
-      <MarketingHubLogo class="h-full w-full rounded" />
+      <img 
+        v-if="marketingHubLogo" 
+        :src="marketingHubLogo" 
+        class="h-full w-full rounded object-contain" 
+        alt="Marketing Hub"
+      />
+      <MarketingHubLogo v-else class="h-full w-full rounded" />
     </template>
   </Sidebar>
 </template>
 
 <script setup>
 import { Sidebar } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarketingHubLogo from './Icons/MarketingHubLogo.vue'
 import { useSidebar } from '@/stores/sidebar'
@@ -26,29 +32,42 @@ import IconGrid from '~icons/lucide/grid'
 import IconBookOpen from '~icons/lucide/book-open'
 import IconHelpCircle from '~icons/lucide/help-circle'
 import IconLogOut from '~icons/lucide/log-out'
+import IconChevronRight from '~icons/lucide/chevron-right'
 
 const route = useRoute()
 const router = useRouter()
 const { isExpanded: isCollapsed } = useSidebar()
 
-// Get installed apps
+// Get installed apps with their full metadata (logo, title, route)
 const installedApps = computed(() => window.installed_apps || [])
 
-// App configuration
-const appConfig = {
-  frappe: { label: 'Frappe Desk', icon: IconGrid, url: '/app' },
-  erpnext: { label: 'ERPNext', icon: IconGrid, url: '/app' },
-  crm: { label: 'CRM', icon: IconGrid, url: '/crm' },
-  helpdesk: { label: 'Helpdesk', icon: IconGrid, url: '/helpdesk' },
-  marketing_hub: { label: 'Marketing Hub', icon: IconMegaphone, url: '/marketing' },
-  hrms: { label: 'HR', icon: IconGrid, url: '/app' },
-  insights: { label: 'Insights', icon: IconGrid, url: '/insights' },
-}
+// Get Marketing Hub logo from the installed apps
+const marketingHubLogo = computed(() => {
+  const marketingHub = installedApps.value.find(app => app.name === 'marketing_hub')
+  return marketingHub?.logo || null
+})
 
 // User data
 const userName = computed(() =>
   (typeof frappe !== 'undefined' && frappe?.session?.user_fullname) || 'User'
 )
+
+// Create app icon component using h() render function
+const createAppIcon = (logoUrl) => {
+  if (!logoUrl) return IconGrid
+  
+  // Return a functional component using h()
+  return {
+    name: 'AppIcon',
+    render() {
+      return h('img', {
+        src: logoUrl,
+        class: 'h-4 w-4 object-contain',
+        alt: 'App icon'
+      })
+    }
+  }
+}
 
 // Sidebar header with app switcher
 const sidebarHeader = computed(() => ({
@@ -57,40 +76,23 @@ const sidebarHeader = computed(() => ({
   logo: MarketingHubLogo,
   menuItems: [
     {
-      group: 'Installed Apps',
-      hideLabel: false,
-      items: installedApps.value
-        .map(app => {
-          const config = appConfig[app]
-          if (!config) return null
-          return {
-            label: config.label,
-            icon: config.icon,
-            onClick: () => window.location.href = config.url,
-          }
-        })
-        .filter(Boolean),
+      label: 'Apps',
+      icon: IconGrid,
+      submenu: installedApps.value.map(app => ({
+        label: app.title,
+        icon: createAppIcon(app.logo),
+        onClick: () => window.location.href = app.route,
+      })),
     },
     {
-      group: 'Account',
-      hideLabel: false,
-      items: [
-        {
-          label: 'My Settings',
-          icon: IconSettings,
-          onClick: () => window.location.href = '/app/user/' + frappe.session.user,
-        },
-        {
-          label: 'Switch to Desk',
-          icon: IconGrid,
-          onClick: () => window.location.href = '/app',
-        },
-      ],
+      label: 'Settings',
+      icon: IconSettings,
+      onClick: () => window.location.href = '/app/user/' + frappe.session.user,
     },
     {
-      group: 'Help',
-      hideLabel: false,
-      items: [
+      label: 'Help',
+      icon: IconHelpCircle,
+      submenu: [
         {
           label: 'Documentation',
           icon: IconBookOpen,
@@ -104,18 +106,13 @@ const sidebarHeader = computed(() => ({
       ],
     },
     {
-      group: '',
-      hideLabel: true,
-      items: [
-        {
-          label: 'Logout',
-          icon: IconLogOut,
-          onClick: () => window.location.href = '/api/method/logout',
-        },
-      ],
+      label: 'Logout',
+      icon: IconLogOut,
+      onClick: () => window.location.href = '/api/method/logout',
     },
   ],
 }))
+
 
 // Check if route is active
 function isActiveRoute(path) {

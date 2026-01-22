@@ -118,7 +118,7 @@ import { createResource } from "frappe-ui";
 import { computed } from "vue";
 
 const dashboard = createResource({
-  url: "marketing_hub.www.marketing.index.get_context",
+  url: "marketing_hub.www.marketing.index.get_dashboard_data",
   auto: true,
 });
 

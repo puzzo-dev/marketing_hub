@@ -13,7 +13,7 @@ required_apps = ["frappe_whatsapp"]
 add_to_apps_screen = [
     {
         "name": "marketing_hub",
-        "logo": "/assets/marketing_hub/desk/favicon.ico",
+        "logo": "/assets/marketing_hub/desk/logo.svg",
         "title": "Marketing Hub",
         "route": "/marketing",
     }
