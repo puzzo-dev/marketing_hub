@@ -1,10 +1,10 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-white">
+  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
     <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
       <div class="mb-5 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Social Media Posts</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your social media content</p>
+        <h1 class="text-2xl font-semibold text-ink-gray-9">Social Media Posts</h1>
+        <p class="mt-1 text-sm text-ink-gray-6">Manage your social media content</p>
       </div>
       <Button @click="$router.push('/marketing/social/new')">
         <template #prefix>
@@ -16,27 +16,27 @@
 
     <!-- Stats -->
     <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Total Posts</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
+        <div class="text-sm font-medium text-ink-gray-5">Total Posts</div>
+        <div class="mt-2 text-3xl font-bold text-ink-gray-9">
           {{ stats.total_posts }}
         </div>
       </div>
-      <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Scheduled</div>
-        <div class="mt-2 text-3xl font-bold text-orange-600">
+      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
+        <div class="text-sm font-medium text-ink-gray-5">Scheduled</div>
+        <div class="mt-2 text-3xl font-bold text-ink-amber-2">
           {{ stats.scheduled }}
         </div>
       </div>
-      <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Published</div>
-        <div class="mt-2 text-3xl font-bold text-green-600">
+      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
+        <div class="text-sm font-medium text-ink-gray-5">Published</div>
+        <div class="mt-2 text-3xl font-bold text-ink-green-2">
           {{ stats.published }}
         </div>
       </div>
-      <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Engagement Rate</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
+        <div class="text-sm font-medium text-ink-gray-5">Engagement Rate</div>
+        <div class="mt-2 text-3xl font-bold text-ink-gray-9">
           {{ stats.engagement_rate }}%
         </div>
       </div>
@@ -57,7 +57,7 @@
 
     <!-- Posts -->
     <div v-if="filteredPosts.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <div v-for="post in filteredPosts" :key="post.name" class="post-card">
+      <div v-for="post in filteredPosts" :key="post.name" class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm transition-shadow hover:shadow-md">
         <div class="mb-2 flex items-start justify-between">
           <div class="flex space-x-2">
             <Badge :label="post.platform" variant="subtle" theme="blue" />
@@ -77,8 +77,8 @@
           </Button>
         </div>
 
-        <h3 class="mb-1 font-semibold text-gray-900">{{ post.post_title }}</h3>
-        <p class="mb-3 text-sm text-gray-600">
+        <h3 class="mb-1 font-semibold text-ink-gray-9">{{ post.post_title }}</h3>
+        <p class="mb-3 text-sm text-ink-gray-6">
           {{ post.content.slice(0, 120) }}
           {{ post.content.length > 120 ? "..." : "" }}
         </p>
@@ -90,7 +90,7 @@
           class="mb-3 rounded"
         />
 
-        <div class="space-y-1 text-sm text-gray-500">
+        <div class="space-y-1 text-sm text-ink-gray-5">
           <div v-if="post.scheduled_time" class="flex items-center">
             <FeatherIcon name="clock" class="mr-1 h-4 w-4" />
             {{ formatDateTime(post.scheduled_time) }}
@@ -103,21 +103,21 @@
 
         <div
           v-if="post.status === 'Published' && post.impressions"
-          class="mt-3 grid grid-cols-2 gap-2 border-t pt-3 text-sm"
+          class="mt-3 grid grid-cols-2 gap-2 border-t border-outline-gray-1 pt-3 text-sm"
         >
           <div>
-            <div class="text-gray-500">Impressions</div>
-            <div class="font-semibold">{{ formatNumber(post.impressions) }}</div>
+            <div class="text-ink-gray-5">Impressions</div>
+            <div class="font-semibold text-ink-gray-9">{{ formatNumber(post.impressions) }}</div>
           </div>
           <div>
-            <div class="text-gray-500">Engagement</div>
-            <div class="font-semibold">{{ post.engagement_rate }}%</div>
+            <div class="text-ink-gray-5">Engagement</div>
+            <div class="font-semibold text-ink-gray-9">{{ post.engagement_rate }}%</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else class="rounded-lg border-2 border-dashed p-12 text-center">
+    <div v-else class="rounded-lg border-2 border-dashed border-outline-gray-2 bg-surface-cards p-12 text-center">
       <FeatherIcon name="share-2" class="mx-auto h-12 w-12 text-gray-400" />
       <h3 class="mt-2 text-sm font-medium text-gray-900">No social posts yet</h3>
       <p class="mt-1 text-sm text-gray-500">

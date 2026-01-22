@@ -3,17 +3,17 @@
     <template #default="{ open }">
       <button
         class="flex h-12 w-full items-center gap-2 rounded px-2 duration-200 ease-in-out"
-        :class="open ? 'bg-white shadow-sm' : 'hover:bg-gray-100'"
+        :class="open ? 'bg-surface-cards shadow-sm' : 'hover:bg-surface-gray-1'"
         title="Switch Apps"
       >
         <BrandLogo />
         <div v-if="isExpanded" class="flex flex-1 flex-col text-left">
-          <span class="text-sm font-medium text-gray-900">Marketing Hub</span>
+          <span class="text-sm font-medium text-ink-gray-9">Marketing Hub</span>
         </div>
         <component
           v-if="isExpanded"
           :is="IconChevronDown"
-          class="h-4 w-4 text-gray-500 flex-shrink-0"
+          class="h-4 w-4 text-ink-gray-5 flex-shrink-0"
         />
       </button>
     </template>

@@ -1,18 +1,18 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-white">
+  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
     <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
       <div class="mb-5">
-      <h1 class="text-2xl font-semibold text-gray-900">Analytics</h1>
-      <p class="mt-1 text-sm text-gray-600">
+      <h1 class="text-2xl font-semibold text-ink-gray-9">Analytics</h1>
+      <p class="mt-1 text-sm text-ink-gray-6">
         Performance breakdown by channel (Last 30 Days)
       </p>
     </div>
 
     <!-- Connectors Status -->
     <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <div v-for="connector in connectors" :key="connector.name" class="stat-card">
-        <h6 class="mb-1 font-semibold text-gray-900">{{ connector.platform }}</h6>
-        <div class="mb-2 text-sm text-gray-500">{{ connector.connector_name }}</div>
+      <div v-for="connector in connectors" :key="connector.name" class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
+        <h6 class="mb-1 font-semibold text-ink-gray-9">{{ connector.platform }}</h6>
+        <div class="mb-2 text-sm text-ink-gray-5">{{ connector.connector_name }}</div>
         <div class="flex items-center justify-between">
           <Badge
             :label="connector.sync_status"
