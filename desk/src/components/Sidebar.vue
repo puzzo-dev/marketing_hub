@@ -1,17 +1,17 @@
 <template>
   <div
-    class="flex h-full select-none flex-col border-r border-gray-200 bg-gray-50 p-3 text-base duration-300 ease-in-out"
+    class="flex h-full select-none flex-col border-r border-gray-100 bg-gray-50 p-3 text-base duration-300 ease-in-out"
     :style="{
       'min-width': width,
       'max-width': width,
     }"
   >
-    <UserMenu class="mb-3" :options="profileSettings" :is-expanded="isExpanded" />
+    <AppSwitcher class="mb-3" :is-expanded="isExpanded" />
 
     <SidebarLink
       label="Dashboard"
       class="my-0.5"
-      :icon="LucideLayoutDashboard"
+      :icon="IconLayoutDashboard"
       to="/marketing"
       :is-active="isActiveTab('/marketing')"
       :is-expanded="isExpanded"
@@ -21,7 +21,7 @@
       <SidebarLink
         label="Campaigns"
         class="my-0.5"
-        :icon="LucideMegaphone"
+        :icon="IconMegaphone"
         to="/marketing/campaigns"
         :is-active="isActiveTab('/marketing/campaigns')"
         :is-expanded="isExpanded"
@@ -30,7 +30,7 @@
       <SidebarLink
         label="Social Media"
         class="my-0.5"
-        :icon="LucideShare2"
+        :icon="IconShare2"
         to="/marketing/social"
         :is-active="isActiveTab('/marketing/social')"
         :is-expanded="isExpanded"
@@ -39,7 +39,7 @@
       <SidebarLink
         label="Analytics"
         class="my-0.5"
-        :icon="LucideBarChart3"
+        :icon="IconBarChart3"
         to="/marketing/analytics"
         :is-active="isActiveTab('/marketing/analytics')"
         :is-expanded="isExpanded"
@@ -47,25 +47,17 @@
     </div>
 
     <div class="mt-auto flex flex-col gap-1">
-      <SidebarLink
-        label="Switch to Desk"
-        class="my-0.5"
-        :icon="LucideGrid3x3"
-        :on-click="() => open('/app')"
-        :is-expanded="isExpanded"
-      />
-
       <button
         class="flex h-8 cursor-pointer items-center rounded px-2 text-gray-700 duration-200 ease-in-out hover:bg-gray-100"
         :class="{
           'w-full justify-start': isExpanded,
           'w-8 justify-center': !isExpanded,
         }"
-        @click="sidebarStore.toggle()"
+        @click="toggle()"
         :title="isExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
       >
         <component
-          :is="isExpanded ? LucidePanelLeftClose : LucidePanelLeftOpen"
+          :is="isExpanded ? IconPanelLeftClose : IconPanelLeftOpen"
           class="h-4 w-4 flex-shrink-0 text-gray-600"
         />
         <span
@@ -80,71 +72,22 @@
 </template>
 
 <script setup>
-import {
-  LucideLayoutDashboard,
-  LucideMegaphone,
-  LucideShare2,
-  LucideBarChart3,
-  LucideGrid3x3,
-  LucidePanelLeftClose,
-  LucidePanelLeftOpen,
-} from "lucide-vue-next";
 import { useRoute } from "vue-router";
-import { storeToRefs } from "pinia";
-import { useSidebarStore } from "@/stores/sidebar";
-import UserMenu from "./UserMenu.vue";
+import { useSidebar } from "@/stores/sidebar";
+import AppSwitcher from "./AppSwitcher.vue";
 import SidebarLink from "./SidebarLink.vue";
+import IconLayoutDashboard from "~icons/lucide/layout-dashboard";
+import IconMegaphone from "~icons/lucide/megaphone";
+import IconShare2 from "~icons/lucide/share-2";
+import IconBarChart3 from "~icons/lucide/bar-chart-2";
+import IconGrid3x3 from "~icons/lucide/grid-3x3";
+import IconPanelLeftClose from "~icons/lucide/panel-left-close";
+import IconPanelLeftOpen from "~icons/lucide/panel-left-open";
 
 const route = useRoute();
-const sidebarStore = useSidebarStore();
-const { isExpanded, width } = storeToRefs(sidebarStore);
-
-const profileSettings = [
-  {
-    label: "Installed Apps",
-    icon: "grid",
-    onClick: () => null,
-    children: [
-      {
-        label: "Marketing Hub",
-        icon: "layers",
-        onClick: () => window.location.href = "/marketing",
-      },
-      {
-        label: "CRM",
-        icon: "users",
-        onClick: () => window.location.href = "/crm",
-        condition: () => window.installed_apps?.includes?.('crm'),
-      },
-      {
-        label: "Helpdesk",
-        icon: "life-buoy",
-        onClick: () => window.location.href = "/helpdesk",
-        condition: () => window.installed_apps?.includes?.('helpdesk'),
-      },
-    ].filter(item => !item.condition || item.condition()),
-  },
-  {
-    label: "Switch to Desk",
-    icon: "grid",
-    onClick: () => open("/app"),
-  },
-  {
-    label: "Logout",
-    icon: "log-out",
-    onClick: () => logout(),
-  },
-];
+const { isExpanded, width, toggle } = useSidebar();
 
 function isActiveTab(path) {
   return route.path === path || route.path.startsWith(path + '/');
-}
-
-function open(url) {
-  window.location.href = url;
-}
-
-function logout() {
-  window.location.href = "/api/method/logout";
 }
 </script>

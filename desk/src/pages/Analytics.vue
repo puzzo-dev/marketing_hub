@@ -26,7 +26,7 @@
     </div>
 
     <!-- Performance Table -->
-    <div class="rounded-lg border bg-white shadow-sm">
+    <div class="rounded-lg border border-gray-100 bg-white shadow-sm">
       <div class="border-b px-6 py-4">
         <h5 class="font-semibold text-gray-900">Channel Performance</h5>
       </div>

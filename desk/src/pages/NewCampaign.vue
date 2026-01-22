@@ -7,7 +7,7 @@
       <p class="mt-1 text-sm text-gray-600">Create a new marketing campaign</p>
     </div>
 
-    <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="rounded-lg border border-gray-100 bg-white p-5 shadow-sm">
       <p class="text-center text-gray-600">
         Campaign creation form coming soon. For now, please use the Desk interface.
       </p>

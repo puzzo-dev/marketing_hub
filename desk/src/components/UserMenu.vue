@@ -1,71 +1,32 @@
 <template>
-  <Dropdown :options="options" placement="bottom-start">
+  <Dropdown :options="userOptions" placement="bottom-start" class="user-menu-dropdown">
     <template #default="{ open }">
       <button
-        class="flex h-12 w-full items-center gap-2 rounded-md px-2 py-2 duration-200 ease-in-out"
-        :class="
-          open
-            ? 'bg-white shadow-sm'
-            : 'hover:bg-gray-100'
-        "
+        class="flex h-9 w-full items-center gap-2 rounded px-2 text-sm duration-200 ease-in-out"
+        :class="open ? 'bg-white shadow-sm' : 'hover:bg-gray-100'"
       >
-        <BrandLogo class="flex-shrink-0" />
-        <div
-          v-show="isExpanded"
-          class="flex flex-1 flex-col text-left overflow-hidden"
-        >
-          <div class="text-sm font-medium leading-tight text-gray-900 truncate">
-            Marketing Hub
-          </div>
-          <div class="text-xs leading-tight text-gray-600 truncate">
-            {{ userName }}
-          </div>
+        <div class="flex h-6 w-6 items-center justify-center rounded bg-gray-600 text-white text-xs font-medium flex-shrink-0">
+          {{ userInitials }}
         </div>
-        <FeatherIcon
+        <span v-show="isExpanded" class="flex-1 text-left text-gray-700 truncate">
+          {{ userName }}
+        </span>
+        <component
           v-show="isExpanded"
-          name="chevron-down"
-          class="h-4 w-4 text-gray-500 flex-shrink-0"
-          aria-hidden="true"
+          :is="IconChevronDown"
+          class="h-3 w-3 text-gray-500 flex-shrink-0"
         />
       </button>
-    </template>
-    <template #dropdown-content="{ items }">
-      <div class="min-w-[180px] rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 py-1">
-        <template v-for="group in items" :key="group.group">
-          <div v-show="group.items?.length">
-            <div v-show="!group.hideLabel && group.group" class="px-3 py-2 text-xs font-medium text-gray-500">
-              {{ group.group }}
-            </div>
-            <div
-              v-for="item in group.items"
-              :key="item.label"
-              @click="item.onClick"
-              class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors"
-            >
-              <FeatherIcon
-                v-show="item.icon"
-                :name="item.icon"
-                class="h-4 w-4 text-gray-600"
-              />
-              <span>{{ item.label }}</span>
-            </div>
-          </div>
-        </template>
-      </div>
     </template>
   </Dropdown>
 </template>
 
 <script setup>
-import { Dropdown, FeatherIcon } from "frappe-ui";
-import BrandLogo from "./BrandLogo.vue";
+import { Dropdown } from "frappe-ui";
 import { computed } from "vue";
+import IconChevronDown from "~icons/lucide/chevron-down";
 
 defineProps({
-  options: {
-    type: Array,
-    required: true,
-  },
   isExpanded: {
     type: Boolean,
     default: true,
@@ -75,4 +36,59 @@ defineProps({
 const userName = computed(() =>
   (typeof frappe !== 'undefined' && frappe?.session?.user_fullname) || 'User'
 );
+
+const userInitials = computed(() => {
+  const name = userName.value;
+  const parts = name.split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+});
+
+const userOptions = computed(() => [
+  {
+    group: "Account",
+    hideLabel: false,
+    items: [
+      {
+        label: "My Settings",
+        icon: "settings",
+        onClick: () => window.location.href = "/app/user/" + frappe.session.user,
+      },
+      {
+        label: "Switch to Desk",
+        icon: "grid",
+        onClick: () => window.location.href = "/app",
+      },
+    ],
+  },
+  {
+    group: "Help",
+    hideLabel: false,
+    items: [
+      {
+        label: "Documentation",
+        icon: "book-open",
+        onClick: () => window.open("https://docs.erpnext.com", "_blank"),
+      },
+      {
+        label: "Support",
+        icon: "help-circle",
+        onClick: () => window.open("https://discuss.erpnext.com", "_blank"),
+      },
+    ],
+  },
+  {
+    group: "",
+    hideLabel: true,
+    items: [
+      {
+        label: "Log Out",
+        icon: "log-out",
+        onClick: () => window.location.href = "/api/method/logout",
+      },
+    ],
+  },
+]);
 </script>

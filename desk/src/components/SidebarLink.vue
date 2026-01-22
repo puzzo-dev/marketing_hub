@@ -9,25 +9,21 @@
     }"
     @click="handleNavigation"
   >
-    <Tooltip :text="label" v-show="!isExpanded" placement="right">
+    <Tooltip v-if="!isExpanded" :text="label" placement="right">
       <span class="flex-shrink-0 text-gray-600">
         <component :is="icon" class="h-4 w-4" />
       </span>
     </Tooltip>
-    <span
-      v-show="isExpanded"
-      class="flex-shrink-0 text-gray-600"
-    >
-      <component :is="icon" class="h-4 w-4" />
-    </span>
-
-    <div
-      v-show="isExpanded"
-      class="flex flex-1 items-center justify-between text-sm"
-    >
-      {{ label }}
-      <slot name="right" />
-    </div>
+    
+    <template v-else>
+      <span class="flex-shrink-0 text-gray-600">
+        <component :is="icon" class="h-4 w-4" />
+      </span>
+      <div class="flex flex-1 items-center justify-between text-sm">
+        {{ label }}
+        <slot name="right" />
+      </div>
+    </template>
   </div>
 </template>
 

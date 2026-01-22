@@ -13,7 +13,6 @@ import {
   TextInput,
   toast,
 } from "frappe-ui";
-import { createPinia } from "pinia";
 import App from "./App.vue";
 import "./index.css";
 import { router } from "./router";
@@ -31,11 +30,9 @@ const globalComponents = {
 
 setConfig("resourceFetcher", frappeRequest);
 
-const pinia = createPinia();
 const app = createApp(App);
 
 app.use(FrappeUI);
-app.use(pinia);
 app.use(router);
 
 for (const c in globalComponents) {

@@ -1,15 +1,15 @@
-import { computed } from "vue";
-import { defineStore } from "pinia";
-import { useStorage } from "@vueuse/core";
+import { ref, computed } from "vue";
 
-export const useSidebarStore = defineStore("sidebar", () => {
-  const isExpanded = useStorage("sidebar_is_expanded", true);
+const isExpanded = ref(localStorage.getItem('sidebar_is_expanded') !== 'false');
+
+export function useSidebar() {
   const width = computed(() => {
     return isExpanded.value ? "224px" : "50px";
   });
 
   function toggle(state) {
     isExpanded.value = state ?? !isExpanded.value;
+    localStorage.setItem('sidebar_is_expanded', isExpanded.value);
   }
 
   return {
@@ -17,4 +17,4 @@ export const useSidebarStore = defineStore("sidebar", () => {
     toggle,
     width,
   };
-});
+}
