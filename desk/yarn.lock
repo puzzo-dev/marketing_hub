@@ -489,6 +489,11 @@
   dependencies:
     tslib "^2.8.0"
 
+"@tailwindcss/container-queries@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tailwindcss/container-queries/-/container-queries-0.1.1.tgz#9a759ce2cb8736a4c6a0cb93aeb740573a731974"
+  integrity sha512-p18dswChx6WnTSaJCSGx6lTmrGzNNvm2FtXmiO6AuA1V4U5REyoqwmT6kgAsIMdjo07QdAfYXHJ4hnMtfHzWgA==
+
 "@tailwindcss/forms@^0.5.3":
   version "0.5.11"
   resolved "https://registry.yarnpkg.com/@tailwindcss/forms/-/forms-0.5.11.tgz#e77039e96fa7b87c3d001a991f77f9418e666700"
@@ -1670,6 +1675,11 @@ lucide-static@^0.535.0:
   version "0.535.0"
   resolved "https://registry.yarnpkg.com/lucide-static/-/lucide-static-0.535.0.tgz#3d8ad25360d166a4f584d97f2c08fd9b24be30d7"
   integrity sha512-wlYTSPpeyMjLjQ5jgSAENQwVfURVf2XHV5TDp8YPCJBEyWz+FJGuGB5LYBgOFvWIDOMW+AIoiA8sNd8My/nxlw==
+
+lucide-vue-next@^0.562.0:
+  version "0.562.0"
+  resolved "https://registry.yarnpkg.com/lucide-vue-next/-/lucide-vue-next-0.562.0.tgz#a4cc08c2d00b9664c768e5da76e6634212a02a23"
+  integrity sha512-LN0BLGKMFulv0lnfK29r14DcngRUhIqdcaL0zXTt2o0oS9odlrjCGaU3/X9hIihOjjN8l8e+Y9G/famcNYaI7Q==
 
 magic-string@^0.30.17, magic-string@^0.30.21, magic-string@^0.30.3:
   version "0.30.21"

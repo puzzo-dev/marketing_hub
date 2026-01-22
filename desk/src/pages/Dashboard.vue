@@ -1,42 +1,43 @@
 <template>
-  <div>
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Marketing Dashboard</h1>
-      <p class="mt-1 text-sm text-gray-500">Overview for {{ stats.month_name }}</p>
-    </div>
+  <div class="flex h-full flex-col overflow-auto bg-white">
+    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
+      <div class="mb-5">
+        <h1 class="text-2xl font-semibold text-gray-900">Marketing Dashboard</h1>
+        <p class="mt-1 text-sm text-gray-600">Overview for {{ stats.month_name }}</p>
+      </div>
 
     <!-- Stats Grid -->
-    <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Total Spend</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+        <div class="text-sm font-medium text-gray-600">Total Spend</div>
+        <div class="mt-2 text-2xl font-semibold text-gray-900">
           {{ formatCurrency(stats.spend) }}
         </div>
       </div>
       <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Active Campaigns</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+        <div class="text-sm font-medium text-gray-600">Active Campaigns</div>
+        <div class="mt-2 text-2xl font-semibold text-gray-900">
           {{ stats.active_campaigns }}
         </div>
       </div>
       <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Leads Generated</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+        <div class="text-sm font-medium text-gray-600">Leads Generated</div>
+        <div class="mt-2 text-2xl font-semibold text-gray-900">
           {{ stats.total_leads }}
         </div>
       </div>
       <div class="stat-card">
-        <div class="text-sm font-medium text-gray-500">Revenue</div>
-        <div class="mt-2 text-3xl font-bold text-gray-900">
+        <div class="text-sm font-medium text-gray-600">Revenue</div>
+        <div class="mt-2 text-2xl font-semibold text-gray-900">
           {{ formatCurrency(stats.revenue) }}
         </div>
       </div>
     </div>
 
     <!-- Active Campaigns -->
-    <div class="mb-8">
+    <div class="mb-6">
       <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-xl font-semibold text-gray-900">Active Campaigns</h2>
+        <h2 class="text-lg font-semibold text-gray-900">Active Campaigns</h2>
         <Button @click="$router.push('/marketing/campaigns/new')">
           <template #prefix>
             <FeatherIcon name="plus" class="h-4 w-4" />
@@ -107,6 +108,7 @@
         <h4 class="font-semibold text-gray-900">Analytics</h4>
         <p class="mt-1 text-sm text-gray-500">View metrics</p>
       </router-link>
+    </div>
     </div>
   </div>
 </template>

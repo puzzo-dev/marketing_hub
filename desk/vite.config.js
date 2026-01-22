@@ -5,6 +5,7 @@ import Icons from "unplugin-icons/vite";
 import Components from "unplugin-vue-components/vite";
 
 export default defineConfig({
+  base: "/assets/marketing_hub/desk/",
   plugins: [
     vue(),
     Icons({

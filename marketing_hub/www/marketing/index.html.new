@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="{{ frappe.session.csrf_token }}" />
     <title>Marketing Hub</title>
-    <script type="module" crossorigin src="/assets/marketing_hub/desk/assets/index-DS2NboZd.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/marketing_hub/desk/favicon.ico" />
+    <script type="module" crossorigin src="/assets/marketing_hub/desk/assets/index-CFQHX6aE.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/vendor-B2Hzb5Lw.js">
     <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-CwD8vFmJ.js">
     <link rel="stylesheet" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-Bw1RZ1YF.css">

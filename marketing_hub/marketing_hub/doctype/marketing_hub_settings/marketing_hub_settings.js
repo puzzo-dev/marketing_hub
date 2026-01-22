@@ -15,6 +15,19 @@ frappe.ui.form.on('Marketing Hub Settings', {
 			frm.add_custom_button(__('Sync Analytics Now'), function() {
 				sync_analytics_now(frm);
 			}, __('Actions'));
+
+			frm.add_custom_button(__('Sync Connections'), function() {
+				sync_connections(frm);
+			}, __('Actions'));
+		}
+
+		// Show accounting summary if enabled
+		if (frm.doc.enable_gl_entry && frm.doc.company) {
+			frm.add_custom_button(__('View Marketing Ledger'), function() {
+				frappe.set_route('query-report', 'Marketing Ledger', {
+					company: frm.doc.company
+				});
+			}, __('Reports'));
 		}
 
 		// Show/hide sections based on settings
@@ -23,6 +36,28 @@ frappe.ui.form.on('Marketing Hub Settings', {
 
 	agency_mode: function(frm) {
 		toggle_agency_fields(frm);
+	},
+
+	enable_gl_entry: function(frm) {
+		// Toggle accounting fields visibility
+		frm.toggle_reqd('default_expense_account', frm.doc.enable_gl_entry);
+	},
+
+	company: function(frm) {
+		// Set default accounts when company changes
+		if (frm.doc.company) {
+			frappe.call({
+				method: 'marketing_hub.marketing_hub.utils.accounting.get_marketing_expense_account',
+				args: {
+					company: frm.doc.company
+				},
+				callback: function(r) {
+					if (r.message) {
+						frm.set_value('default_expense_account', r.message);
+					}
+				}
+			});
+		}
 	},
 
 	enable_google_ads: function(frm) {
@@ -63,6 +98,20 @@ frappe.ui.form.on('Marketing Hub Settings', {
 		}
 	}
 });
+
+function sync_connections(frm) {
+	frappe.call({
+		method: 'marketing_hub.marketing_hub.doctype.marketing_hub_settings.marketing_hub_settings.sync_connections',
+		args: {
+			docname: frm.doc.name
+		},
+		callback: function(r) {
+			if (r.message) {
+				frm.reload_doc();
+			}
+		}
+	});
+}
 
 function toggle_agency_fields(frm) {
 	if (frm.doc.agency_mode) {

@@ -1,9 +1,10 @@
 <template>
-  <div>
-    <div class="mb-6 flex items-center justify-between">
+  <div class="flex h-full flex-col overflow-auto bg-white">
+    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
+      <div class="mb-5 flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Social Media Posts</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage your social media content</p>
+        <h1 class="text-2xl font-semibold text-gray-900">Social Media Posts</h1>
+        <p class="mt-1 text-sm text-gray-600">Manage your social media content</p>
       </div>
       <Button @click="$router.push('/marketing/social/new')">
         <template #prefix>
@@ -128,6 +129,7 @@
         </template>
         Create Post
       </Button>
+    </div>
     </div>
   </div>
 </template>

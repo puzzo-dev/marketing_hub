@@ -1,8 +1,9 @@
 <template>
-  <div>
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Analytics</h1>
-      <p class="mt-1 text-sm text-gray-500">
+  <div class="flex h-full flex-col overflow-auto bg-white">
+    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
+      <div class="mb-5">
+      <h1 class="text-2xl font-semibold text-gray-900">Analytics</h1>
+      <p class="mt-1 text-sm text-gray-600">
         Performance breakdown by channel (Last 30 Days)
       </p>
     </div>
@@ -101,6 +102,7 @@
       <div v-else class="p-12 text-center text-gray-500">
         No analytics data found for the last 30 days.
       </div>
+    </div>
     </div>
   </div>
 </template>

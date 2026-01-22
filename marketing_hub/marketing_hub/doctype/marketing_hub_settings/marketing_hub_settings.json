@@ -63,10 +63,20 @@
   "enable_brand_guidelines",
   "default_content_approval_workflow",
   "section_break_56",
+  "accounting_settings_section",
+  "enable_gl_entry",
+  "default_expense_account",
+  "column_break_59",
+  "default_cost_center",
+  "validate_budget",
+  "section_break_62",
+  "connections_section",
+  "connected_doctypes",
+  "section_break_65",
   "notification_settings_section",
   "notify_campaign_completion",
   "notify_blast_execution",
-  "column_break_60",
+  "column_break_69",
   "notify_analytics_sync",
   "notification_recipients"
  ],
@@ -401,6 +411,60 @@
    "fieldtype": "Section Break"
   },
   {
+   "fieldname": "accounting_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting & Ledger Settings"
+  },
+  {
+   "default": "1",
+   "description": "Create GL Entries for marketing expenses",
+   "fieldname": "enable_gl_entry",
+   "fieldtype": "Check",
+   "label": "Enable GL Entry"
+  },
+  {
+   "fieldname": "default_expense_account",
+   "fieldtype": "Link",
+   "label": "Default Marketing Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_59",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_cost_center",
+   "fieldtype": "Link",
+   "label": "Default Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "default": "1",
+   "description": "Validate expenses against budget",
+   "fieldname": "validate_budget",
+   "fieldtype": "Check",
+   "label": "Validate Budget"
+  },
+  {
+   "fieldname": "section_break_62",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "connections_section",
+   "fieldtype": "Section Break",
+   "label": "Connected DocTypes"
+  },
+  {
+   "fieldname": "connected_doctypes",
+   "fieldtype": "Table",
+   "label": "Connections",
+   "options": "Marketing Hub Connection"
+  },
+  {
+   "fieldname": "section_break_65",
+   "fieldtype": "Section Break"
+  },
+  {
    "fieldname": "notification_settings_section",
    "fieldtype": "Section Break",
    "label": "Notification Settings"
@@ -418,7 +482,7 @@
    "label": "Notify Blast Execution"
   },
   {
-   "fieldname": "column_break_60",
+   "fieldname": "column_break_69",
    "fieldtype": "Column Break"
   },
   {

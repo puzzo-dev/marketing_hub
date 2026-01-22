@@ -10,6 +10,9 @@ def get_context(context):
         frappe.local.flags.redirect_location = "/login"
         raise frappe.Redirect
 
+    # Pass installed apps to frontend
+    context.installed_apps = frappe.get_installed_apps()
+
     return context
 
 @frappe.whitelist()
