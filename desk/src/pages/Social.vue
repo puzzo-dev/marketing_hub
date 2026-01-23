@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-semibold text-ink-gray-9">Social Media Posts</h1>
         <p class="mt-1 text-sm text-ink-gray-6">Manage your social media content</p>
       </div>
-      <Button @click="$router.push('/marketing/social/new')">
+      <Button @click="createNewPost">
         <template #prefix>
           <FeatherIcon name="plus" class="h-4 w-4" />
         </template>
@@ -56,7 +56,14 @@
     </div>
 
     <!-- Posts -->
-    <div v-if="filteredPosts.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-if="postsResource.loading" class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-ink-gray-3 border-t-red-600"></div>
+        <p class="mt-2 text-sm text-ink-gray-5">Loading posts...</p>
+      </div>
+    </div>
+
+    <div v-else-if="filteredPosts.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div v-for="post in filteredPosts" :key="post.name" class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm transition-shadow hover:shadow-md">
         <div class="mb-2 flex items-start justify-between">
           <div class="flex space-x-2">
@@ -123,7 +130,7 @@
       <p class="mt-1 text-sm text-gray-500">
         Create your first post to start engaging with your audience
       </p>
-      <Button class="mt-4" @click="$router.push('/marketing/social/new')">
+      <Button class="mt-4" @click="createNewPost">
         <template #prefix>
           <FeatherIcon name="plus" class="h-4 w-4" />
         </template>
@@ -138,19 +145,44 @@
 import { createResource } from "frappe-ui";
 import { computed, ref } from "vue";
 
-const socialResource = createResource({
-  url: "marketing_hub.www.marketing.social.index.get_context",
+// Fetch social posts
+const postsResource = createResource({
+  url: "frappe.client.get_list",
+  params: {
+    doctype: "Social Post",
+    fields: [
+      "name", "post_title", "content", "platform", "status", 
+      "scheduled_time", "published_time", "campaign", "media_attachment",
+      "impressions", "reach", "likes", "comments_count", "shares", "engagement_rate"
+    ],
+    filters: [["docstatus", "<", 2]],
+    order_by: "modified desc",
+    limit_page_length: 100,
+  },
   auto: true,
 });
 
-const stats = computed(() => socialResource.data?.stats || {
-  total_posts: 0,
-  scheduled: 0,
-  published: 0,
-  engagement_rate: 0,
-});
+const posts = computed(() => postsResource.data || []);
 
-const posts = computed(() => socialResource.data?.posts || []);
+// Calculate stats from posts
+const stats = computed(() => {
+  const allPosts = posts.value;
+  const scheduled = allPosts.filter(p => p.status === "Scheduled").length;
+  const published = allPosts.filter(p => p.status === "Published").length;
+  const totalEngagement = allPosts
+    .filter(p => p.engagement_rate)
+    .reduce((sum, p) => sum + (parseFloat(p.engagement_rate) || 0), 0);
+  const avgEngagement = allPosts.filter(p => p.engagement_rate).length > 0
+    ? (totalEngagement / allPosts.filter(p => p.engagement_rate).length).toFixed(1)
+    : 0;
+
+  return {
+    total_posts: allPosts.length,
+    scheduled,
+    published,
+    engagement_rate: avgEngagement,
+  };
+});
 
 const activeFilter = ref("all");
 const filters = [
@@ -166,6 +198,7 @@ const filteredPosts = computed(() => {
 });
 
 function formatDateTime(datetime) {
+  if (!datetime) return "";
   return new Date(datetime).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -180,5 +213,9 @@ function formatNumber(num) {
 
 function editPost(name) {
   window.location.href = `/app/social-post/${name}`;
+}
+
+function createNewPost() {
+  window.location.href = `/app/social-post/new`;
 }
 </script>

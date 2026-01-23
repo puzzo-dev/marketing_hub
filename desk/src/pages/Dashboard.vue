@@ -23,7 +23,7 @@
       <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
         <div class="text-sm font-medium text-ink-gray-6">Leads Generated</div>
         <div class="mt-2 text-2xl font-semibold text-ink-gray-9">
-          {{ stats.total_leads }}
+          {{ stats.leads }}
         </div>
       </div>
       <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
@@ -122,12 +122,17 @@ const dashboard = createResource({
   auto: true,
 });
 
-const stats = computed(() => dashboard.data?.stats || {
-  spend: 0,
-  active_campaigns: 0,
-  total_leads: 0,
-  revenue: 0,
-  month_name: "Current Month",
+const stats = computed(() => {
+  const data = dashboard.data?.stats || {
+    spend: 0,
+    revenue: 0,
+    leads: 0,
+    month_name: "Current Month",
+  };
+  return {
+    ...data,
+    active_campaigns: campaigns.value.length
+  };
 });
 
 const campaigns = computed(() => dashboard.data?.active_campaigns || []);
