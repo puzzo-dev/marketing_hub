@@ -89,11 +89,11 @@
   },
   {
    "fieldname": "expense_category",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Expense Category",
-   "options": "Advertising\nContent Creation\nSocial Media\nEmail Marketing\nSEO/SEM\nEvents\nPrint Media\nInfluencer Marketing\nAgency Fees\nSoftware Tools\nOther",
+   "options": "Marketing Expense Category",
    "reqd": 1
   },
   {

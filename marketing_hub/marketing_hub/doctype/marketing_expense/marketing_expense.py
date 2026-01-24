@@ -6,95 +6,66 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
-from erpnext.accounts.general_ledger import make_gl_entries
+from marketing_hub.utils.accounting import (
+	make_gl_entries,
+	validate_accounting_entries,
+	get_expense_account_from_category,
+	check_budget_exceeded,
+	update_campaign_spent_amount
+)
 
 
 class MarketingExpense(Document):
 	def validate(self):
-		self.validate_accounts()
+		self.set_defaults()
 		self.set_currency()
-
-	def validate_accounts(self):
-		"""Validate expense and payment accounts"""
-		if not frappe.db.get_value("Account", self.expense_account, "is_group") == 0:
-			frappe.throw(_("Expense Account {0} cannot be a group account").format(self.expense_account))
-
-		if self.is_paid and self.payment_account:
-			if not frappe.db.get_value("Account", self.payment_account, "is_group") == 0:
-				frappe.throw(_("Payment Account {0} cannot be a group account").format(self.payment_account))
-
+		validate_accounting_entries(self)
+	
+	def set_defaults(self):
+		"""Set default accounts from category and company"""
+		# Set expense account from category if not set
+		if not self.expense_account and self.expense_category:
+			account = get_expense_account_from_category(self.expense_category, self.company)
+			if account:
+				self.expense_account = account
+		
+		# Set default cost center if not set
+		if not self.cost_center:
+			self.cost_center = frappe.get_cached_value("Company", self.company, "cost_center")
+	
 	def set_currency(self):
 		"""Set currency from company if not set"""
 		if not self.currency:
 			self.currency = frappe.get_cached_value("Company", self.company, "default_currency")
-
+	
+	def before_submit(self):
+		"""Validate before submit"""
+		# Check budget
+		check_budget_exceeded(self)
+	
 	def on_submit(self):
-		"""Make GL entries on submit"""
+		"""Make GL entries and update campaign on submit"""
 		self.make_gl_entries()
-
+		update_campaign_spent_amount(self)
+	
 	def on_cancel(self):
-		"""Cancel GL entries"""
+		"""Cancel GL entries and update campaign"""
 		self.make_gl_entries(cancel=True)
-
+		update_campaign_spent_amount(self)
+	
 	def make_gl_entries(self, cancel=False):
 		"""Create General Ledger entries for the expense"""
 		if not cancel and self.gl_entry_posted:
 			return
-
-		gl_entries = self.get_gl_entries()
-
-		if gl_entries:
-			make_gl_entries(gl_entries, cancel=cancel, adv_adj=False)
-
+		
+		# Use utility function to create GL entries
+		success = make_gl_entries(self, cancel=cancel)
+		
+		if success:
 			if not cancel:
 				self.db_set("gl_entry_posted", 1)
 			else:
 				self.db_set("gl_entry_posted", 0)
-
-	def get_gl_entries(self):
-		"""Build GL entry list"""
-		gl_entries = []
-
-		# Expense account entry (Debit)
-		gl_entries.append(
-			self.get_gl_dict({
-				"account": self.expense_account,
-				"debit": flt(self.amount),
-				"debit_in_account_currency": flt(self.amount),
-				"against": self.payment_account if self.is_paid else None,
-				"cost_center": self.cost_center,
-				"project": self.project,
-				"remarks": self.remarks or "Marketing Expense",
-			})
-		)
-
-		# Payment account entry (Credit) - if paid
-		if self.is_paid and self.payment_account:
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.payment_account,
-					"credit": flt(self.amount),
-					"credit_in_account_currency": flt(self.amount),
-					"against": self.expense_account,
-					"cost_center": self.cost_center,
-					"project": self.project,
-					"remarks": self.remarks or "Marketing Expense Payment",
-				})
-			)
-
-		return gl_entries
-
-	def get_gl_dict(self, args):
-		"""Build GL entry dict"""
-		gl_dict = frappe._dict({
-			"posting_date": getdate(self.posting_date),
-			"voucher_type": self.doctype,
-			"voucher_no": self.name,
-			"company": self.company,
-			"account_currency": self.currency,
-		})
-		gl_dict.update(args)
-		return gl_dict
 
 
 @frappe.whitelist()

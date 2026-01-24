@@ -85,7 +85,12 @@ import { createResource } from "frappe-ui";
 import { computed } from "vue";
 
 const campaignsResource = createResource({
-  url: "marketing_hub.www.marketing.campaigns.index.get_context",
+  url: "marketing_hub.www.marketing.index.get_campaign_list",
+  params: {
+    filters: {},
+    limit: 20,
+    offset: 0
+  },
   auto: true,
 });
 

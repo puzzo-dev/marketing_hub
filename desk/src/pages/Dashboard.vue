@@ -1,5 +1,8 @@
 <template>
   <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
+    <!-- Onboarding Component -->
+    <Onboarding :mode="userRole" />
+
     <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
       <div class="mb-5">
         <h1 class="text-2xl font-semibold text-ink-gray-9">Marketing Dashboard</h1>
@@ -83,7 +86,7 @@
     </div>
 
     <!-- Quick Links -->
-    <div class="grid gap-6 sm:grid-cols-3">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
       <router-link
         to="/marketing/campaigns"
         class="stat-card flex flex-col items-center text-center"
@@ -91,6 +94,22 @@
         <FeatherIcon name="target" class="mb-2 h-10 w-10 text-blue-600" />
         <h4 class="font-semibold text-gray-900">Campaigns</h4>
         <p class="mt-1 text-sm text-gray-500">Manage campaigns</p>
+      </router-link>
+      <router-link
+        to="/marketing/blast/new"
+        class="stat-card flex flex-col items-center text-center"
+      >
+        <FeatherIcon name="send" class="mb-2 h-10 w-10 text-purple-600" />
+        <h4 class="font-semibold text-gray-900">Omni Blast</h4>
+        <p class="mt-1 text-sm text-gray-500">Create blast</p>
+      </router-link>
+      <router-link
+        to="/marketing/segments"
+        class="stat-card flex flex-col items-center text-center"
+      >
+        <FeatherIcon name="users" class="mb-2 h-10 w-10 text-green-600" />
+        <h4 class="font-semibold text-gray-900">Segments</h4>
+        <p class="mt-1 text-sm text-gray-500">Manage audiences</p>
       </router-link>
       <router-link
         to="/marketing/social"
@@ -116,6 +135,13 @@
 <script setup>
 import { createResource } from "frappe-ui";
 import { computed } from "vue";
+import Onboarding from "@/components/Onboarding.vue";
+
+// Determine user role for onboarding
+const userRole = computed(() => {
+  const roles = window.frappe?.boot?.user?.roles || [];
+  return roles.includes('System Manager') || roles.includes('Marketing Manager') ? 'admin' : 'agent';
+});
 
 const dashboard = createResource({
   url: "marketing_hub.www.marketing.index.get_dashboard_data",
@@ -123,19 +149,27 @@ const dashboard = createResource({
 });
 
 const stats = computed(() => {
-  const data = dashboard.data?.stats || {
-    spend: 0,
-    revenue: 0,
-    leads: 0,
-    month_name: "Current Month",
+  if (!dashboard.data) return {
+    active_campaigns: 0,
+    total_spend: 0,
+    leads_generated: 0,
+    roi: 0,
+    avg_roas: 0
   };
+  
   return {
-    ...data,
-    active_campaigns: campaigns.value.length
+    active_campaigns: dashboard.data.active_campaigns || 0,
+    total_spend: dashboard.data.total_spend || 0,
+    spend_change: dashboard.data.spend_change || 0,
+    leads_generated: dashboard.data.leads_generated || 0,
+    leads_change: dashboard.data.leads_change || 0,
+    roi: dashboard.data.roi || 0,
+    avg_roas: dashboard.data.avg_roas || 0
   };
 });
 
-const campaigns = computed(() => dashboard.data?.active_campaigns || []);
+const campaigns = computed(() => dashboard.data?.top_campaigns || []);
+const activities = computed(() => dashboard.data?.recent_activities || []);
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-US", {

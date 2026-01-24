@@ -100,26 +100,30 @@ def adapt_content_for_channel(source_content, target_channel):
 def adapt_content_to_specs(content, channel):
     """
     Adapt content to fit channel specifications
+    Gets specs dynamically from Social Media Network doctype
 
     Args:
         content: Dict with content fields
-        channel: Target channel
+        channel: Target channel (Social Media Network name)
 
     Returns:
         Adapted content dict
     """
-    channel_specs = {
-        "SMS": {"max_chars": 160, "no_html": True},
-        "WhatsApp": {"max_chars": 1024, "no_html": False},
-        "Twitter/X Ads": {"max_chars": 280, "no_html": False},
-        "Meta Ads": {"max_chars": 125, "no_html": False},
-        "Google Ads": {"max_chars": 90, "no_html": True},
-        "LinkedIn Ads": {"max_chars": 150, "no_html": False},
-        "TikTok Ads": {"max_chars": 100, "no_html": True},
-        "Reddit Ads": {"max_chars": 300, "no_html": False}
-    }
+    # Get network specs from database
+    try:
+        network = frappe.get_cached_doc("Social Media Network", channel)
+        specs = {
+            "max_chars": network.max_text_length or 5000,
+            "no_html": not network.supports_html if hasattr(network, 'supports_html') else False,
+            "max_hashtags": network.max_hashtags or 30,
+            "max_mentions": network.max_mentions or 10,
+            "max_media": network.max_media_count or 10
+        }
+    except frappe.DoesNotExistError:
+        # Fallback to sensible defaults if network not found
+        specs = {"max_chars": 5000, "no_html": False, "max_hashtags": 30, "max_mentions": 10}
+        frappe.log_error(f"Network '{channel}' not found, using default specs")
 
-    specs = channel_specs.get(channel, {})
     adapted = content.copy()
 
     # Strip HTML if needed

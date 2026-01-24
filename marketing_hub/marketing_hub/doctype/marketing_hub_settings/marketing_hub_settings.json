@@ -69,6 +69,12 @@
   "column_break_59",
   "default_cost_center",
   "validate_budget",
+  "section_break_61",
+  "default_payable_account",
+  "enable_budget_alerts",
+  "column_break_64",
+  "auto_reconcile_expenses",
+  "expense_approval_required",
   "section_break_62",
   "connections_section",
   "connected_doctypes",
@@ -186,7 +192,7 @@
   },
   {
    "default": "0",
-   "description": "Requires SMS gateway integration",
+   "description": "Uses ERPNext SMS Settings (Setup > SMS Settings). Configure your SMS gateway there.",
    "fieldname": "enable_sms_blast",
    "fieldtype": "Check",
    "label": "Enable SMS Blast"
@@ -220,9 +226,9 @@
   },
   {
    "fieldname": "default_social_platforms",
-   "fieldtype": "MultiSelect",
+   "fieldtype": "Table MultiSelect",
    "label": "Default Social Platforms",
-   "options": "Meta\nTwitter\nLinkedIn\nInstagram\nTikTok\nYouTube"
+   "options": "Social Media Network"
   },
   {
    "default": "0",
@@ -275,12 +281,11 @@
    "label": "Enable Twitter/X Ads"
   },
   {
-   "default": "Daily",
-   "description": "How often to sync analytics data",
+   "default": "24",
+   "description": "How often to sync analytics data (in hours). Default is 24 hours (daily).",
    "fieldname": "sync_frequency",
-   "fieldtype": "Select",
-   "label": "Analytics Sync Frequency",
-   "options": "Hourly\nDaily\nWeekly"
+   "fieldtype": "Int",
+   "label": "Analytics Sync Frequency (Hours)"
   },
   {
    "fieldname": "section_break_35",
@@ -312,9 +317,9 @@
   {
    "default": "Last Touch",
    "fieldname": "default_attribution_model",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Default Attribution Model",
-   "options": "First Touch\nLast Touch\nLinear\nTime Decay\nPosition Based"
+   "options": "Attribution Model"
   },
   {
    "default": "1",
@@ -444,6 +449,42 @@
    "fieldname": "validate_budget",
    "fieldtype": "Check",
    "label": "Validate Budget"
+  },
+  {
+   "fieldname": "section_break_61",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Default account for unpaid marketing expenses",
+   "fieldname": "default_payable_account",
+   "fieldtype": "Link",
+   "label": "Default Payable Account",
+   "options": "Account"
+  },
+  {
+   "default": "1",
+   "description": "Send alerts when expenses exceed budget",
+   "fieldname": "enable_budget_alerts",
+   "fieldtype": "Check",
+   "label": "Enable Budget Alerts"
+  },
+  {
+   "fieldname": "column_break_64",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Automatically reconcile expenses with bank statements",
+   "fieldname": "auto_reconcile_expenses",
+   "fieldtype": "Check",
+   "label": "Auto Reconcile Expenses"
+  },
+  {
+   "default": "0",
+   "description": "Require approval before submitting expenses",
+   "fieldname": "expense_approval_required",
+   "fieldtype": "Check",
+   "label": "Expense Approval Required"
   },
   {
    "fieldname": "section_break_62",

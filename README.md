@@ -2,6 +2,21 @@
 
 Frappe Framework based Marketing App for managing marketing operations of an organization
 
+**Features**:
+- Campaign Management with budget tracking
+- Content Management System with templates
+- Lead Attribution (UTM tracking)
+- Marketing Expense tracking with GL integration
+- Omni-channel blasts (Email, WhatsApp, SMS)
+- Social Media posting (framework ready)
+- Analytics sync (framework ready)
+- Agency mode for multi-client operations
+
+**Integrations**:
+- **ERPNext**: Email Settings, SMS Settings, Accounting (GL entries)
+- **frappe_whatsapp**: WhatsApp Business API integration (optional)
+- **CRM**: Lead attribution and tracking (optional)
+
 ### Installation
 
 You can install this app using the [bench](https://github.com/frappe/bench) CLI:
@@ -9,8 +24,11 @@ You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 ```bash
 cd $PATH_TO_YOUR_BENCH
 bench get-app $URL_OF_THIS_REPO --branch develop
-bench install-app marketing_hub
+bench --site your-site.local install-app marketing_hub
+bench --site your-site.local migrate
 ```
+
+**Full Setup Guide**: See [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)
 
 ### Contributing
 

@@ -10,6 +10,7 @@
   "post_title",
   "campaign",
   "platform",
+  "omni_blast",
   "post_type",
   "status",
   "column_break_1",
@@ -56,18 +57,25 @@
   },
   {
    "fieldname": "platform",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Platform",
-   "options": "Facebook\nInstagram\nTwitter/X\nLinkedIn\nTikTok\nYouTube\nPinterest",
+   "label": "Social Media Network",
+   "options": "Social Media Network",
    "reqd": 1
   },
   {
+   "fieldname": "omni_blast",
+   "fieldtype": "Link",
+   "label": "Omni Blast",
+   "options": "Omni Blast",
+   "read_only": 1,
+   "description": "If created from Omni Blast, link to parent blast"
+  },
+  {
    "fieldname": "post_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Post Type",
-   "options": "Text\nImage\nVideo\nCarousel\nStory\nReel\nLive",
-   "default": "Text",
+   "options": "Post Type",
    "reqd": 1
   },
   {
@@ -125,9 +133,9 @@
   },
   {
    "fieldname": "media_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Media Type",
-   "options": "\nImage\nVideo\nGIF",
+   "options": "Media Type",
    "depends_on": "media_attachment"
   },
   {

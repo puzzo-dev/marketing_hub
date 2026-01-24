@@ -184,21 +184,66 @@ def _execute_whatsapp_blast(activity):
 
 
 def _execute_sms_blast(activity):
-    """Execute SMS blast (stub - requires gateway)"""
-    # TODO: Integrate with SMS gateway
-
+    """Execute SMS blast using Frappe SMS Settings"""
+    from frappe.core.doctype.sms_settings.sms_settings import send_sms
+    
     if not activity.segment:
         return {"status": "Error", "message": "No segment defined"}
+
+    # Check if SMS gateway is configured
+    if not frappe.db.get_single_value("SMS Settings", "sms_gateway_url"):
+        return {
+            "status": "Error",
+            "message": "SMS gateway not configured. Please configure SMS Settings.",
+            "count": 0
+        }
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
     recipients = _get_segment_recipients(segment)
 
-    # Stub implementation
-    return {
-        "status": "Stub",
-        "message": "SMS gateway integration required",
-        "potential_recipients": len(recipients)
-    }
+    if not recipients:
+        return {"status": "Error", "message": "No recipients found in segment", "count": 0}
+
+    # Get message content
+    message = activity.message or activity.content_html or ""
+    if not message:
+        return {"status": "Error", "message": "No message content provided", "count": 0}
+
+    # Strip HTML tags for SMS (plain text only)
+    from frappe.utils import strip_html_tags
+    message = strip_html_tags(message)
+
+    # Truncate to 160 characters for standard SMS
+    if len(message) > 160:
+        message = message[:157] + "..."
+
+    # Collect mobile numbers
+    mobile_numbers = []
+    for recipient in recipients:
+        mobile = recipient.get("mobile_no") or recipient.get("phone")
+        if mobile:
+            mobile_numbers.append(mobile)
+
+    if not mobile_numbers:
+        return {"status": "Error", "message": "No valid mobile numbers found", "count": 0}
+
+    # Send SMS via Frappe SMS gateway
+    try:
+        send_sms(mobile_numbers, message, success_msg=False)
+        
+        return {
+            "status": "Success",
+            "message": f"SMS sent to {len(mobile_numbers)} recipients",
+            "count": len(mobile_numbers),
+            "channel": "SMS"
+        }
+    except Exception as e:
+        frappe.log_error("SMS Blast Error", str(e))
+        return {
+            "status": "Error",
+            "message": f"SMS sending failed: {str(e)}",
+            "count": 0
+        }
 
 
 def _execute_push_blast(activity):

@@ -140,13 +140,16 @@ import { createResource, AxisChart } from "frappe-ui";
 import { computed } from "vue";
 
 const analyticsResource = createResource({
-  url: "marketing_hub.www.marketing.analytics.get_analytics_data",
+  url: "marketing_hub.www.marketing.index.get_analytics_data",
+  params: {
+    from_date: null,  // Will default to 30 days ago
+    to_date: null     // Will default to today
+  },
   auto: true,
 });
 
-const connectors = computed(() => analyticsResource.data?.connectors || []);
-const channelPerformance = computed(() => analyticsResource.data?.channel_performance || []);
 const dailyMetrics = computed(() => analyticsResource.data?.daily_metrics || []);
+const channelBreakdown = computed(() => analyticsResource.data?.channel_breakdown || []);
 
 // Prepare chart data for Frappe UI LineChart
 const chartData = computed(() => {

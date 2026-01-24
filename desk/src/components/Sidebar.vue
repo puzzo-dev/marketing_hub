@@ -33,6 +33,9 @@ import IconBookOpen from '~icons/lucide/book-open'
 import IconHelpCircle from '~icons/lucide/help-circle'
 import IconLogOut from '~icons/lucide/log-out'
 import IconChevronRight from '~icons/lucide/chevron-right'
+import IconSend from '~icons/lucide/send'
+import IconUsers from '~icons/lucide/users'
+import IconFileText from '~icons/lucide/file-text'
 
 const route = useRoute()
 const router = useRouter()
@@ -142,6 +145,20 @@ const sidebarSections = computed(() => [
         to: '/marketing/campaigns',
         isActive: isActiveRoute('/marketing/campaigns'),
         onClick: () => router.push('/marketing/campaigns'),
+      },
+      {
+        label: 'Omni Blast',
+        icon: IconSend,
+        to: '/marketing/blast/new',
+        isActive: isActiveRoute('/marketing/blast'),
+        onClick: () => router.push('/marketing/blast/new'),
+      },
+      {
+        label: 'Segments',
+        icon: IconUsers,
+        to: '/marketing/segments',
+        isActive: isActiveRoute('/marketing/segments'),
+        onClick: () => router.push('/marketing/segments'),
       },
       {
         label: 'Social Media',

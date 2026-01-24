@@ -147,22 +147,16 @@ import { computed, ref } from "vue";
 
 // Fetch social posts
 const postsResource = createResource({
-  url: "frappe.client.get_list",
+  url: "marketing_hub.www.marketing.index.get_social_posts",
   params: {
-    doctype: "Social Post",
-    fields: [
-      "name", "post_title", "content", "platform", "status", 
-      "scheduled_time", "published_time", "campaign", "media_attachment",
-      "impressions", "reach", "likes", "comments_count", "shares", "engagement_rate"
-    ],
-    filters: [["docstatus", "<", 2]],
-    order_by: "modified desc",
-    limit_page_length: 100,
+    filters: {},
+    limit: 20,
+    offset: 0
   },
   auto: true,
 });
 
-const posts = computed(() => postsResource.data || []);
+const posts = computed(() => postsResource.data?.posts || []);
 
 // Calculate stats from posts
 const stats = computed(() => {

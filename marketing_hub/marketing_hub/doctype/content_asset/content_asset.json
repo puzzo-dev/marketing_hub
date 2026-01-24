@@ -37,10 +37,10 @@
   },
   {
    "fieldname": "asset_type",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Asset Type",
-   "options": "Image\nVideo\nGIF\nDocument\nAudio\nHTML\nText",
+   "options": "Media Type",
    "reqd": 1
   },
   {

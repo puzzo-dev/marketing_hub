@@ -1,0 +1,135 @@
+# Copyright (c) 2026, Puzzo and contributors
+# For license information, please see license.txt
+
+import frappe
+from frappe.model.document import Document
+
+
+class OmniBlast(Document):
+	def validate(self):
+		"""Validate the Omni Blast document"""
+		if not self.networks:
+			frappe.throw("Please add at least one network to blast to")
+		
+		# Validate scheduled time for scheduled blasts
+		if self.blast_type == "Scheduled" and not self.scheduled_time:
+			frappe.throw("Scheduled time is required for scheduled blasts")
+
+	def on_submit(self):
+		"""Create draft Social Posts when blast is submitted"""
+		if self.status != "Draft":
+			return
+		
+		self.generate_posts()
+		self.status = "Scheduled" if self.blast_type == "Scheduled" else "Published"
+		self.save()
+
+	@frappe.whitelist()
+	def generate_posts(self):
+		"""Generate Social Post for each selected network"""
+		if not self.networks:
+			frappe.throw("No networks selected")
+		
+		# Parse networks (Table MultiSelect stores as comma-separated string)
+		network_list = [n.strip() for n in self.networks.split(',') if n.strip()] if isinstance(self.networks, str) else self.networks
+		
+		created_post_links = []
+		
+		for network_name in network_list:
+			# Get network details
+			network = frappe.get_doc("Social Media Network", network_name)
+			
+			# Adapt content based on network type
+			adapted_content = self.content
+			if network.network_type == "Out of Home (OOH)":
+				# For OOH, content is the billboard/poster design description
+				adapted_content = f"OOH Design: {self.content}"
+			elif network.network_type == "SMS":
+				# Truncate for SMS (160 chars)
+				adapted_content = self.content[:157] + "..." if len(self.content) > 160 else self.content
+			
+			# Create Social Post for this network
+			social_post = frappe.get_doc({
+				"doctype": "Social Post",
+				"post_title": f"{self.blast_title} - {network_name}",
+				"campaign": self.campaign,
+				"social_media_network": network_name,  # Link to Social Media Network
+				"post_type": "Image" if self.media_attachment else "Text",
+				"status": "Draft",
+				"scheduled_time": self.scheduled_time if self.blast_type == "Scheduled" else None,
+				"content": adapted_content,
+				"media_attachment": self.media_attachment,
+				"media_type": self.media_type,
+				"hashtags": self.hashtags,
+				"mentions": self.mentions,
+				"target_audience": self.target_audience,
+				"enable_comments": self.enable_comments if network.network_type not in ["SMS", "Email", "Out of Home (OOH)"] else 0,
+				"enable_sharing": self.enable_sharing if network.network_type not in ["SMS", "Email"] else 0,
+				"omni_blast": self.name  # Link back to Omni Blast
+			})
+			
+			try:
+				social_post.insert()
+				created_post_links.append(social_post.name)
+				
+			except Exception as e:
+				frappe.log_error(f"Failed to create social post for {network_name}: {str(e)}")
+				frappe.msgprint(f"Failed to create post for {network_name}: {str(e)}", indicator="orange")
+		
+		# Store created posts as JSON links
+		self.created_posts = "\n".join(created_post_links)
+		self.save()
+		frappe.msgprint(f"Created {len(created_post_links)} social posts", indicator="green")
+
+	@frappe.whitelist()
+	def execute_blast(self):
+		"""Execute the blast by publishing all created posts"""
+		if not self.created_posts:
+			frappe.throw("No posts to publish. Generate posts first.")
+		
+		self.status = "Publishing"
+		self.save()
+		
+		published_count = 0
+		failed_count = 0
+		
+		# Parse created posts (newline-separated list of post names)
+		post_list = [p.strip() for p in self.created_posts.split('\n') if p.strip()]
+		
+		for post_name in post_list:
+			try:
+				if not frappe.db.exists("Social Post", post_name):
+					continue
+					
+				social_post = frappe.get_doc("Social Post", post_name)
+				
+				# Update status to Scheduled or Published
+				if self.blast_type == "Scheduled":
+					social_post.status = "Scheduled"
+				else:
+					social_post.status = "Published"
+					social_post.published_time = frappe.utils.now_datetime()
+				
+				social_post.save()
+				published_count += 1
+				
+			except Exception as e:
+				frappe.log_error(f"Failed to publish post {post_name}: {str(e)}")
+				failed_count += 1
+		
+		# Update blast status
+		if failed_count > 0 and published_count == 0:
+			self.status = "Failed"
+		elif failed_count > 0:
+			self.status = "Published"  # Partial success
+		else:
+			self.status = "Published"
+		
+		self.save()
+		
+		frappe.msgprint(f"Published {published_count} posts. Failed: {failed_count}")
+		
+		return {
+			"published": published_count,
+			"failed": failed_count
+		}
