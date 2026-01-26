@@ -48,7 +48,7 @@
             "fieldtype": "Link",
             "in_list_view": 1,
             "label": "Campaign",
-            "options": "Campaign",
+            "options": "Marketing Campaign",
             "reqd": 1
         },
         {

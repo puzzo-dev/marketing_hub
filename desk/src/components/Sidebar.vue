@@ -22,6 +22,7 @@ import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarketingHubLogo from './Icons/MarketingHubLogo.vue'
 import { useSidebar } from '@/stores/sidebar'
+import { useUserStore } from '@/stores/user'
 
 import IconLayoutDashboard from '~icons/lucide/layout-dashboard'
 import IconMegaphone from '~icons/lucide/megaphone'
@@ -40,8 +41,10 @@ import IconFileText from '~icons/lucide/file-text'
 const route = useRoute()
 const router = useRouter()
 const { isExpanded: isCollapsed } = useSidebar()
+const userStore = useUserStore()
 
 // Get installed apps with their full metadata (logo, title, route)
+// We still rely on window.installed_apps injection from index.py for now as it's boot data
 const installedApps = computed(() => window.installed_apps || [])
 
 // Get Marketing Hub logo from the installed apps
@@ -49,11 +52,6 @@ const marketingHubLogo = computed(() => {
   const marketingHub = installedApps.value.find(app => app.name === 'marketing_hub')
   return marketingHub?.logo || null
 })
-
-// User data
-const userName = computed(() =>
-  (typeof frappe !== 'undefined' && frappe?.session?.user_fullname) || 'User'
-)
 
 // Create app icon component using h() render function
 const createAppIcon = (logoUrl) => {
@@ -75,7 +73,7 @@ const createAppIcon = (logoUrl) => {
 // Sidebar header with app switcher
 const sidebarHeader = computed(() => ({
   title: 'Marketing Hub',
-  subtitle: userName.value,
+  subtitle: userStore.name,
   logo: MarketingHubLogo,
   menuItems: [
     {
@@ -161,6 +159,20 @@ const sidebarSections = computed(() => [
         onClick: () => router.push('/marketing/segments'),
       },
       {
+        label: 'Content',
+        icon: IconFileText,
+        to: '/marketing/content',
+        isActive: isActiveRoute('/marketing/content'),
+        onClick: () => router.push('/marketing/content'),
+      },
+      {
+        label: 'Expenses',
+        icon: IconBarChart3, /* Reusing bar chart icon or maybe a wallet/credit card if available, sticking to BarChart for financial */
+        to: '/marketing/expenses',
+        isActive: isActiveRoute('/marketing/expenses'),
+        onClick: () => router.push('/marketing/expenses'),
+      },
+      {
         label: 'Social Media',
         icon: IconShare2,
         to: '/marketing/social',
@@ -173,6 +185,13 @@ const sidebarSections = computed(() => [
         to: '/marketing/analytics',
         isActive: isActiveRoute('/marketing/analytics'),
         onClick: () => router.push('/marketing/analytics'),
+      },
+      {
+        label: 'Settings',
+        icon: IconSettings,
+        to: '/marketing/settings',
+        isActive: isActiveRoute('/marketing/settings'),
+        onClick: () => router.push('/marketing/settings'),
       },
     ],
   },

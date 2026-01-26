@@ -172,3 +172,18 @@ def test_account_connection(ad_account_name):
 	"""Test connection for an ad account"""
 	doc = frappe.get_doc("Ad Account", ad_account_name)
 	return doc.test_connection()
+
+
+@frappe.whitelist()
+def get_authorization_url(platform, client_id, redirect_uri):
+	"""Generate OAuth authorization URL"""
+	if platform == "Google Ads":
+		return f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=https://www.googleapis.com/auth/adwords&access_type=offline&prompt=consent"
+	
+	elif platform == "Meta Ads":
+		return f"https://www.facebook.com/v18.0/dialog/oauth?client_id={client_id}&redirect_uri={redirect_uri}&state=meta_ads"
+	
+	elif platform == "LinkedIn Ads":
+		return f"https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=r_ads_reporting r_ads&state=linkedin_ads"
+	
+	return "#"

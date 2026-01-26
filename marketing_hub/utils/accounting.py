@@ -282,20 +282,20 @@ def check_budget_exceeded(doc):
 		return False
 	
 	# Get campaign budget
-	budget = frappe.db.get_value("Campaign", doc.campaign, ["budget_amount", "total_spent"], as_dict=True)
+	budget = frappe.db.get_value("Marketing Campaign", doc.campaign, ["budget", "total_spent"], as_dict=True)
 	
-	if not budget or not budget.budget_amount:
+	if not budget or not budget.budget:
 		return False
 	
 	# Calculate total spent including this expense
 	total_with_current = flt(budget.total_spent) + flt(doc.amount)
 	
-	if total_with_current > flt(budget.budget_amount):
-		budget_link = get_link_to_form("Campaign", doc.campaign)
+	if total_with_current > flt(budget.budget):
+		budget_link = get_link_to_form("Marketing Campaign", doc.campaign)
 		frappe.msgprint(
 			_("Warning: This expense will cause Campaign {0} to exceed its budget of {1}. Total spent will be {2}").format(
 				budget_link,
-				frappe.utils.fmt_money(budget.budget_amount, currency=doc.currency),
+				frappe.utils.fmt_money(budget.budget, currency=doc.currency),
 				frappe.utils.fmt_money(total_with_current, currency=doc.currency)
 			),
 			indicator="orange",
@@ -320,4 +320,4 @@ def update_campaign_spent_amount(doc, method=None):
 	""", doc.campaign)[0][0] or 0
 	
 	# Update campaign
-	frappe.db.set_value("Campaign", doc.campaign, "total_spent", flt(total_spent), update_modified=False)
+	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_spent", flt(total_spent), update_modified=False)

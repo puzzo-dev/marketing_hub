@@ -1,29 +1,29 @@
 // Marketing Hub Settings Client Script
 
 frappe.ui.form.on('Marketing Hub Settings', {
-	refresh: function(frm) {
+	refresh: function (frm) {
 		// Add custom buttons
 		if (!frm.is_new()) {
-			frm.add_custom_button(__('Test Email Configuration'), function() {
+			frm.add_custom_button(__('Test Email Configuration'), function () {
 				test_email_config(frm);
 			}, __('Actions'));
 
-			frm.add_custom_button(__('Test WhatsApp Integration'), function() {
+			frm.add_custom_button(__('Test WhatsApp Integration'), function () {
 				test_whatsapp_integration(frm);
 			}, __('Actions'));
 
-			frm.add_custom_button(__('Sync Analytics Now'), function() {
+			frm.add_custom_button(__('Sync Analytics Now'), function () {
 				sync_analytics_now(frm);
 			}, __('Actions'));
 
-			frm.add_custom_button(__('Sync Connections'), function() {
+			frm.add_custom_button(__('Sync Connections'), function () {
 				sync_connections(frm);
 			}, __('Actions'));
 		}
 
 		// Show accounting summary if enabled
 		if (frm.doc.enable_gl_entry && frm.doc.company) {
-			frm.add_custom_button(__('View Marketing Ledger'), function() {
+			frm.add_custom_button(__('View Marketing Ledger'), function () {
 				frappe.set_route('query-report', 'Marketing Ledger', {
 					company: frm.doc.company
 				});
@@ -34,16 +34,43 @@ frappe.ui.form.on('Marketing Hub Settings', {
 		toggle_agency_fields(frm);
 	},
 
-	agency_mode: function(frm) {
+	agency_mode: function (frm) {
 		toggle_agency_fields(frm);
 	},
 
-	enable_gl_entry: function(frm) {
+	enable_gl_entry: function (frm) {
 		// Toggle accounting fields visibility
 		frm.toggle_reqd('default_expense_account', frm.doc.enable_gl_entry);
 	},
 
-	company: function(frm) {
+	company: function (frm) {
+		// Filter accounts and cost centers by company
+		frm.set_query('default_cost_center', function () {
+			return {
+				filters: {
+					'company': frm.doc.company
+				}
+			};
+		});
+
+		frm.set_query('default_expense_account', function () {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
+
+		frm.set_query('default_payable_account', function () {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
+
 		// Set default accounts when company changes
 		if (frm.doc.company) {
 			frappe.call({
@@ -51,7 +78,7 @@ frappe.ui.form.on('Marketing Hub Settings', {
 				args: {
 					company: frm.doc.company
 				},
-				callback: function(r) {
+				callback: function (r) {
 					if (r.message) {
 						frm.set_value('default_expense_account', r.message);
 					}
@@ -60,25 +87,25 @@ frappe.ui.form.on('Marketing Hub Settings', {
 		}
 	},
 
-	enable_google_ads: function(frm) {
+	enable_google_ads: function (frm) {
 		if (frm.doc.enable_google_ads) {
 			show_oauth_setup_message(frm, 'Google Ads');
 		}
 	},
 
-	enable_meta_ads: function(frm) {
+	enable_meta_ads: function (frm) {
 		if (frm.doc.enable_meta_ads) {
 			show_oauth_setup_message(frm, 'Meta Ads');
 		}
 	},
 
-	enable_linkedin_ads: function(frm) {
+	enable_linkedin_ads: function (frm) {
 		if (frm.doc.enable_linkedin_ads) {
 			show_oauth_setup_message(frm, 'LinkedIn Ads');
 		}
 	},
 
-	enable_whatsapp_blast: function(frm) {
+	enable_whatsapp_blast: function (frm) {
 		if (frm.doc.enable_whatsapp_blast) {
 			frappe.msgprint({
 				title: __('WhatsApp Integration Required'),
@@ -88,7 +115,7 @@ frappe.ui.form.on('Marketing Hub Settings', {
 		}
 	},
 
-	enable_sms_blast: function(frm) {
+	enable_sms_blast: function (frm) {
 		if (frm.doc.enable_sms_blast) {
 			frappe.msgprint({
 				title: __('SMS Gateway Required'),
@@ -105,7 +132,7 @@ function sync_connections(frm) {
 		args: {
 			docname: frm.doc.name
 		},
-		callback: function(r) {
+		callback: function (r) {
 			if (r.message) {
 				frm.reload_doc();
 			}
@@ -135,7 +162,7 @@ function test_email_config(frm) {
 		args: {
 			email_account: frm.doc.default_email_sender
 		},
-		callback: function(r) {
+		callback: function (r) {
 			if (r.message) {
 				frappe.msgprint({
 					title: __('Email Test Successful'),
@@ -166,7 +193,7 @@ function test_whatsapp_integration(frm) {
 			fieldname: 'default_outgoing_account',
 			filters: {}
 		},
-		callback: function(r) {
+		callback: function (r) {
 			if (r.message && r.message.default_outgoing_account) {
 				frappe.msgprint({
 					title: __('WhatsApp Integration Active'),
@@ -192,7 +219,7 @@ function sync_analytics_now(frm) {
 
 	frappe.call({
 		method: 'marketing_hub.utils.analytics_sync.sync_all_connectors',
-		callback: function(r) {
+		callback: function (r) {
 			frappe.msgprint({
 				title: __('Analytics Sync Triggered'),
 				message: __('Analytics sync is running in the background. Check Analytics Daily Log for results.'),

@@ -14,10 +14,6 @@ class MarketingHubSettings(Document):
 		self.validate_agency_settings()
 		self.validate_accounting_settings()
 
-	def onload(self):
-		"""Load connected doctypes"""
-		self.load_connected_doctypes()
-
 	def validate_session_timeout(self):
 		"""Ensure session timeout is reasonable"""
 		if self.session_timeout_days and self.session_timeout_days < 1:
@@ -51,50 +47,6 @@ class MarketingHubSettings(Document):
 				if frappe.db.get_value("Cost Center", self.default_cost_center, "disabled"):
 					frappe.throw(_("Default Cost Center is disabled"))
 
-	def load_connected_doctypes(self):
-		"""Load all doctypes connected to Marketing Hub"""
-		if not self.connected_doctypes:
-			self.sync_connected_doctypes()
-
-	def sync_connected_doctypes(self):
-		"""Sync connected doctypes - discover and populate"""
-		# Define core Marketing Hub doctypes
-		core_doctypes = [
-			{"doctype_name": "Campaign", "integration_type": "Source", "status": "Active",
-			 "description": "Marketing campaigns and initiatives"},
-			{"doctype_name": "Social Post", "integration_type": "Source", "status": "Active",
-			 "description": "Social media posts and scheduling"},
-			{"doctype_name": "Marketing Expense", "integration_type": "Target", "status": "Active",
-			 "description": "Marketing expense tracking and ledger"},
-			{"doctype_name": "Lead", "integration_type": "Target", "status": "Active",
-			 "description": "Leads generated from marketing campaigns"},
-			{"doctype_name": "Contact", "integration_type": "Bidirectional", "status": "Active",
-			 "description": "Contact management and segmentation"},
-			{"doctype_name": "Email Queue", "integration_type": "Target", "status": "Active",
-			 "description": "Email blast and campaign emails"},
-			{"doctype_name": "Journal Entry", "integration_type": "Target", "status": "Active",
-			 "description": "Accounting entries for marketing expenses"},
-			{"doctype_name": "GL Entry", "integration_type": "Target", "status": "Active",
-			 "description": "General ledger entries for financial tracking"},
-		]
-
-		# Clear existing connections
-		self.connected_doctypes = []
-
-		# Add core doctypes
-		for doctype_info in core_doctypes:
-			self.append("connected_doctypes", doctype_info)
-
-
-@frappe.whitelist()
-def sync_connections(docname):
-	"""Sync connected doctypes for a settings document"""
-	doc = frappe.get_doc("Marketing Hub Settings", docname)
-	doc.sync_connected_doctypes()
-	doc.save()
-	frappe.msgprint(_("Connected DocTypes synced successfully"))
-	return doc
-
 
 @frappe.whitelist()
 def get_settings(company=None):
@@ -118,8 +70,8 @@ def get_settings(company=None):
 @frappe.whitelist()
 def create_default_settings(company):
 	"""Create default settings for a company"""
-	if frappe.db.exists("Marketing Hub Settings", {"company": company}):
-		return frappe.get_doc("Marketing Hub Settings", {"company": company})
+	if frappe.db.exists("Marketing Hub Settings", company):
+		return frappe.get_doc("Marketing Hub Settings", company)
 
 	settings = frappe.new_doc("Marketing Hub Settings")
 	settings.company = company

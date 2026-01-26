@@ -140,7 +140,7 @@ import { createResource, AxisChart } from "frappe-ui";
 import { computed } from "vue";
 
 const analyticsResource = createResource({
-  url: "marketing_hub.www.marketing.index.get_analytics_data",
+  url: "marketing_hub.www.marketing.api.get_analytics_data",
   params: {
     from_date: null,  // Will default to 30 days ago
     to_date: null     // Will default to today

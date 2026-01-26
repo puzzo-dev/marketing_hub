@@ -1,0 +1,32 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2026-01-25 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "social_media_network"
+    ],
+    "fields": [
+        {
+            "fieldname": "social_media_network",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Social Media Network",
+            "options": "Social Media Network",
+            "reqd": 1
+        }
+    ],
+    "istable": 1,
+    "links": [],
+    "modified": "2026-01-25 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Marketing Hub Social Platform",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

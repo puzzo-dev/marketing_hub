@@ -13,6 +13,72 @@ from erpnext.accounts.general_ledger import make_gl_entries as _make_gl_entries
 from erpnext.accounts.doctype.budget.budget import validate_expense_against_budget
 
 
+def make_gl_entries(doc, cancel=False):
+    """Wrapper for make_marketing_gl_entry compatible with Marketing Expense calls"""
+    return make_marketing_gl_entry(
+        voucher_type=doc.doctype,
+        voucher_no=doc.name,
+        company=doc.company,
+        posting_date=doc.posting_date,
+        expense_account=doc.expense_account,
+        amount=doc.amount,
+        cost_center=doc.cost_center,
+        campaign=doc.campaign,
+        cancel=cancel
+    )
+
+def validate_accounting_entries(doc):
+    """Validate basic accounting rules"""
+    if not doc.company:
+        frappe.throw(_("Company is required"))
+    if doc.amount <= 0:
+        frappe.throw(_("Amount must be greater than zero"))
+
+def get_expense_account_from_category(category, company):
+    """Get expense account linked to category"""
+    # Assuming Marketing Expense Category has a link to Account or default
+    if frappe.db.has_column("Marketing Expense Category", "default_account"):
+         return frappe.db.get_value("Marketing Expense Category", category, "default_account")
+    return None
+
+def check_budget_exceeded(doc):
+    """Check if expense exceeds campaign budget"""
+    if not doc.campaign:
+        return
+
+    settings = get_marketing_hub_settings(doc.company)
+    if not settings or not settings.validate_budget:
+        return
+
+    campaign = frappe.get_doc("Campaign", doc.campaign)
+    if not campaign.budget:
+        # No budget set, assume unlimited? or strict? usually unlimited.
+        return
+
+    # Calculate current total spent (excluding this doc if it's new, but including if submitting)
+    # Actually for 'before_submit', this doc is not in GL yet.
+    current_spent = flt(campaign.total_actual_cost) # Assuming field exists
+    
+    if (current_spent + flt(doc.amount)) > flt(campaign.budget):
+        frappe.throw(
+            _("Campaign Budget Exceeded. Budget: {0}, Spent: {1}, This Expense: {2}").format(
+                campaign.budget, current_spent, doc.amount
+            )
+        )
+
+def update_campaign_spent_amount(doc):
+    """Update total spend on Campaign"""
+    if not doc.campaign:
+        return
+        
+    # Recalculate from expenses to be safe
+    total = frappe.db.sql("""
+        SELECT SUM(amount) FROM `tabMarketing Expense`
+        WHERE campaign=%s AND docstatus=1
+    """, doc.campaign)[0][0] or 0
+    
+    frappe.db.set_value("Campaign", doc.campaign, "total_actual_cost", flt(total))
+
 def make_marketing_gl_entry(
 	voucher_type,
 	voucher_no,
@@ -108,6 +174,8 @@ def make_marketing_gl_entry(
 		})
 
 	# Validate against budget if enabled
+	# Note: validate_expense_against_budget checks ERPNext Cost Center Budgets.
+	# Our check_budget_exceeded checks CAMPAIGN budgets. Both are valid.
 	if settings.validate_budget and not cancel:
 		validate_expense_against_budget(
 			{

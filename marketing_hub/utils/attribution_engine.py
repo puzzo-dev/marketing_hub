@@ -33,40 +33,37 @@ def get_real_lead_source(doc, method):
         sources.append(utm_campaign)
 
     # 2. Check direct campaign link
-    if doc.campaign and not sources:
-        sources.append(doc.campaign)
+    if doc.campaign_name and not sources:
+        sources.append(doc.campaign_name)
 
-    # 3. Check e-commerce session (medusa or other)
-    if hasattr(doc, 'medusa_session') and doc.medusa_session and not sources:
-        try:
-            session_campaign = frappe.db.get_value(
-                "Medusa Session",
-                doc.medusa_session,
-                "campaign"
-            )
-            if session_campaign:
-                sources.append(session_campaign)
-        except Exception:
-            pass
+
 
     # 4. Apply attribution if sources found
     if sources:
         try:
             campaign_name = sources[0]
-            campaign = frappe.get_doc("Campaign", campaign_name)
+            # Try getting Marketing Campaign first
+            if frappe.db.exists("Marketing Campaign", campaign_name):
+                campaign = frappe.get_doc("Marketing Campaign", campaign_name)
+                
+                # Get primary channel
+                if campaign.channels:
+                    # Generic fallback since specific channel attribution is complex
+                    primary_channel = "Marketing"
+                else:
+                    primary_channel = "Direct"
 
-            # Get primary channel
-            if campaign.get("channels_used"):
-                channels = campaign.channels_used.split("\n")
-                primary_channel = channels[0] if channels else "Unknown"
-            else:
-                primary_channel = "Direct"
-
-            # Set lead source with channel prefix
-            doc.lead_source = f"{primary_channel}-{campaign.name}"
-
-            # Store campaign reference
-            doc.campaign = campaign_name
+                # Set lead source with channel prefix
+                doc.lead_source = f"{primary_channel}-{campaign.name}"
+                
+                # IMPORTANT: We store the marketing campaign reference in utm_campaign
+                # We do NOT overwrite doc.campaign_name as that links to standard Campaign
+                doc.utm_campaign = campaign.name
+                
+            elif frappe.db.exists("Campaign", campaign_name):
+                # Fallback for standard campaigns
+                campaign = frappe.get_doc("Campaign", campaign_name)
+                doc.lead_source = f"Standard-{campaign.name}"
 
             # Log attribution
             frappe.logger().info(f"Lead {doc.name} attributed to {doc.lead_source}")
@@ -95,15 +92,16 @@ def get_real_lead_source(doc, method):
 def calculate_campaign_attribution(campaign):
     """Calculate attribution metrics for a campaign"""
 
+    # Update to filter by UTM Campaign to support Marketing Campaign decoupling
     leads = frappe.get_all(
         "Lead",
-        filters={"campaign": campaign},
+        filters={"utm_campaign": campaign},
         fields=["name", "lead_source", "status", "utm_source", "utm_medium"]
     )
 
     conversions = frappe.get_all(
         "Lead",
-        filters={"campaign": campaign, "status": "Converted"},
+        filters={"utm_campaign": campaign, "status": "Converted"},
         fields=["name"]
     )
 

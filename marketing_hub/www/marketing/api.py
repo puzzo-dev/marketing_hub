@@ -13,7 +13,7 @@ from frappe.utils.data import flt
 def get_dashboard_data():
 	"""
 	Get dashboard overview data
-	Returns: active campaigns, spend metrics, leads, ROI stats
+	Returns: active campaigns, spend metrics, leads, ROI stats, and connectors status
 	"""
 	try:
 		company = frappe.defaults.get_user_default("Company")
@@ -27,6 +27,13 @@ def get_dashboard_data():
 		active_campaigns = frappe.db.count("Campaign", {
 			"status": "Running"
 		})
+		
+		# Connectors Status (Merged from analytics.py)
+		connectors = frappe.get_all("Analytics Connector",
+			fields=["name", "connector_name", "platform", "sync_status", "last_sync_date"],
+			filters={"enabled": 1},
+			order_by="platform"
+		)
 		
 		# Total spend (last 30 days)
 		total_spend = frappe.db.get_value(
@@ -490,3 +497,314 @@ def calculate_percentage_change(old_value, new_value):
 	
 	change = ((new_value - old_value) / old_value) * 100
 	return flt(change, 2)
+
+
+@frappe.whitelist()
+def get_content_list(filters=None, limit=20, offset=0):
+	"""
+	Get content assets with details
+	Args:
+		filters: Dict of filters to apply
+		limit: Number of records to return
+		offset: Pagination offset
+	Returns: List of content assets
+	"""
+	try:
+		if filters and isinstance(filters, str):
+			import json
+			filters = json.loads(filters)
+		
+		filters = filters or {}
+		
+		# Build base filters
+		base_filters = {}
+		if filters.get("status"):
+			base_filters["status"] = filters["status"]
+		if filters.get("content_type"):
+			base_filters["content_type"] = filters["content_type"]
+		if filters.get("campaign"):
+			base_filters["campaign"] = filters["campaign"]
+			
+		# Get content assets
+		content_list = frappe.get_all(
+			"Content Asset",
+			fields=[
+				"name",
+				"asset_name",
+				"content_type",
+				"status",
+				"campaign",
+				"creation",
+				"modified",
+				"owner"
+			],
+			filters=base_filters,
+			order_by="modified desc",
+			limit=limit,
+			start=offset
+		)
+		
+		# Enrich with campaign name
+		for content in content_list:
+			if content.campaign:
+				content["campaign_name"] = frappe.db.get_value("Campaign", content.campaign, "campaign_name")
+				
+		total_count = frappe.db.count("Content Asset", base_filters)
+		
+		return {
+			"content": content_list,
+			"total_count": total_count,
+			"has_more": (offset + limit) < total_count
+		}
+		
+	except Exception as e:
+		frappe.log_error(f"Error fetching content list: {str(e)}", "Content List API Error")
+		return {
+			"error": _("Failed to load content list"),
+			"content": [],
+			"total_count": 0,
+			"has_more": False
+		}
+
+
+@frappe.whitelist()
+def update_content_status(names, status):
+	"""
+	Bulk update status for content assets
+	Args:
+		names: List of content names
+		status: New status
+	"""
+	try:
+		if isinstance(names, str):
+			import json
+			names = json.loads(names)
+			
+		for name in names:
+			frappe.db.set_value("Content Asset", name, "status", status)
+			
+		frappe.db.commit()
+		return {"success": True, "message": _("Status updated successfully")}
+		
+	except Exception as e:
+		frappe.log_error(f"Error updating content status: {str(e)}", "Content Update API Error")
+		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
+def get_content_details(name):
+	"""
+	Get full details for a content asset
+	"""
+	try:
+		doc = frappe.get_doc("Content Asset", name)
+		return {"success": True, "doc": doc}
+	except Exception as e:
+		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
+def get_expense_list(filters=None, limit=20, offset=0):
+	"""
+	Get marketing expenses list
+	Args:
+		filters: Dict of filters
+		limit: Number of records
+		offset: Pagination offset
+	"""
+	try:
+		if filters and isinstance(filters, str):
+			import json
+			filters = json.loads(filters)
+		
+		filters = filters or {}
+		
+		# Base filters
+		base_filters = {}
+		if filters.get("campaign"):
+			base_filters["campaign"] = filters["campaign"]
+		if filters.get("expense_type"):
+			base_filters["expense_type"] = filters["expense_type"]
+			
+		# Get expenses
+		expenses = frappe.get_all(
+			"Marketing Expense",
+			fields=[
+				"name",
+				"expense_title",
+				"campaign",
+				"amount",
+				"expense_date",
+				"expense_type",
+				"vendor",
+				"status"
+			],
+			filters=base_filters,
+			order_by="expense_date desc",
+			limit=limit,
+			start=offset
+		)
+		
+		# Enrich
+		for expense in expenses:
+			if expense.campaign:
+				expense["campaign_name"] = frappe.db.get_value("Campaign", expense.campaign, "campaign_name")
+				
+		total_count = frappe.db.count("Marketing Expense", base_filters)
+		
+		return {
+			"expenses": expenses,
+			"total_count": total_count,
+			"has_more": (offset + limit) < total_count
+		}
+	except Exception as e:
+		frappe.log_error(f"Error fetching expenses: {str(e)}", "Expense API Error")
+		return {"error": str(e), "expenses": []}
+
+
+@frappe.whitelist()
+def get_budget_overview():
+	"""
+	Get budget vs actuals overview
+	"""
+	try:
+		# Total Budget (Sum of all campaign budgets)
+		total_budget = frappe.db.sql("""
+			SELECT SUM(budget) FROM `tabCampaign` WHERE status != 'Completed'
+		""")[0][0] or 0.0
+		
+		# Total Spend (from Analytics Daily Log + Manual Expenses)
+		ad_spend = frappe.db.sql("""
+			SELECT SUM(cost) FROM `tabAnalytics Daily Log`
+		""")[0][0] or 0.0
+		
+		manual_spend = frappe.db.sql("""
+			SELECT SUM(amount) FROM `tabMarketing Expense` WHERE status = 'Approved'
+		""")[0][0] or 0.0
+		
+		total_spend = ad_spend + manual_spend
+		
+		# Monthly trend (last 6 months)
+		idx = 0
+		trend_labels = []
+		trend_budget = []
+		trend_actual = []
+		
+		from frappe.utils import add_months, get_first_day, get_last_day
+		
+		for i in range(5, -1, -1):
+			month_start = add_months(today(), -i)
+			month_start = get_first_day(month_start)
+			month_end = get_last_day(month_start)
+			
+			label = get_datetime(month_start).strftime("%b %Y")
+			trend_labels.append(label)
+			
+			# Monthly Actual
+			m_ad_spend = frappe.db.sql("""
+				SELECT SUM(cost) FROM `tabAnalytics Daily Log` 
+				WHERE date BETWEEN %s AND %s
+			""", (month_start, month_end))[0][0] or 0.0
+			
+			m_manual_spend = frappe.db.sql("""
+				SELECT SUM(amount) FROM `tabMarketing Expense` 
+				WHERE expense_date BETWEEN %s AND %s AND status = 'Approved'
+			""", (month_start, month_end))[0][0] or 0.0
+			
+			trend_actual.append(flt(m_ad_spend + m_manual_spend, 2))
+			
+			# Estimated monthly budget (Total Active Budget / 12 for rough calc, or custom logic)
+			# For now, just using a flat line of avg budget
+			trend_budget.append(flt(total_budget / 12, 2)) # Placeholder logic
+			
+		return {
+			"total_budget": flt(total_budget, 2),
+			"total_spend": flt(total_spend, 2),
+			"remaining_budget": flt(total_budget - total_spend, 2),
+			"utilization": flt((total_spend / total_budget * 100) if total_budget > 0 else 0, 2),
+			"chart": {
+				"labels": trend_labels,
+				"budget": trend_budget,
+				"actual": trend_actual
+			}
+		}
+	except Exception as e:
+		frappe.log_error(f"Error fetching budget overview: {str(e)}", "Budget API Error")
+		return {"error": str(e)}
+
+
+@frappe.whitelist()
+def create_expense(data):
+	"""
+	Create a new marketing expense
+	"""
+	try:
+		if isinstance(data, str):
+			import json
+			data = json.loads(data)
+			
+		expense = frappe.get_doc({
+			"doctype": "Marketing Expense",
+			"expense_title": data.get("title"),
+			"campaign": data.get("campaign"),
+			"amount": data.get("amount"),
+			"expense_date": data.get("date") or today(),
+			"expense_type": data.get("type"),
+			"vendor": data.get("vendor"),
+			"description": data.get("description"),
+			"status": "Pending"
+		})
+		
+		expense.insert()
+		return {"success": True, "message": _("Expense logged successfully")}
+	except Exception as e:
+		frappe.log_error(f"Error creating expense: {str(e)}", "Expense Creation Error")
+		return {"success": False, "error": str(e)}
+
+
+# --- Content Management Methods (Merged from content.py) ---
+
+@frappe.whitelist()
+def get_asset_stats():
+	"""Get asset library statistics"""
+	try:
+		stats = {
+			"total_assets": frappe.db.count("Content Asset"),
+			"by_type": frappe.db.sql("""
+				SELECT content_type as asset_type, COUNT(*) as count
+				FROM `tabContent Asset`
+				GROUP BY content_type
+				ORDER BY count DESC
+			""", as_dict=True),
+			"by_status": frappe.db.sql("""
+				SELECT status, COUNT(*) as count
+				FROM `tabContent Asset`
+				GROUP BY status
+			""", as_dict=True)
+		}
+		return stats
+	except Exception as e:
+		return {"total_assets": 0, "by_type": [], "by_status": []}
+
+@frappe.whitelist()
+def upload_file(file, asset_name=None, asset_type=None, channel=None):
+	"""
+	Handle file upload and create asset
+	"""
+	try:
+		file_doc = frappe.get_doc("File", {"file_url": file})
+		
+		# Create Content Asset automatically
+		asset = frappe.get_doc({
+			"doctype": "Content Asset",
+			"asset_name": asset_name or file_doc.file_name,
+			"content_type": asset_type or "Image",
+			"file_url": file, # Map to fields in your doctype
+			"status": "Draft"
+		})
+		
+		asset.insert()
+		return {"success": True, "asset": asset.name}
+	except Exception as e:
+		return {"success": False, "error": str(e)}
+

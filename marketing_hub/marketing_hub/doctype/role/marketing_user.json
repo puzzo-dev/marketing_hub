@@ -1,0 +1,12 @@
+{
+    "creation": "2026-01-25 12:00:00.000000",
+    "desk_access": 1,
+    "disabled": 0,
+    "doctype": "Role",
+    "idx": 0,
+    "modified": "2026-01-25 12:00:00.000000",
+    "modified_by": "Administrator",
+    "name": "Marketing User",
+    "owner": "Administrator",
+    "role_name": "Marketing User"
+}

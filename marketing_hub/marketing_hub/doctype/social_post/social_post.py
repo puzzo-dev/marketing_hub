@@ -13,29 +13,38 @@ class SocialPost(Document):
 		self.validate_content_length()
 		self.validate_scheduled_time()
 		self.calculate_engagement_rate()
+		self.validate_approval_permissions()
+
+	def validate_approval_permissions(self):
+		"""Check if user is authorized to publish based on settings"""
+		if self.status in ["Scheduled", "Published"]:
+			settings = frappe.get_single("Marketing Hub Settings")
+			if settings.require_post_approval:
+				if "Marketing Manager" not in frappe.get_roles() and "System Manager" not in frappe.get_roles():
+					frappe.throw(_("Post Request Approval is enabled. Only Marketing Managers can Schedule or Publish posts."))
 
 	def validate_content_length(self):
-		"""Validate content length based on platform"""
-		platform_limits = {
-			"Twitter/X": 280,
-			"Instagram": 2200,
-			"Facebook": 63206,
-			"LinkedIn": 3000,
-			"TikTok": 2200,
-			"YouTube": 5000,
-			"Pinterest": 500
-		}
+		"""Validate content length based on platform settings"""
+		if not self.platform:
+			return
 
-		if self.platform in platform_limits:
-			# Strip HTML for character count
+		# Fetch network settings
+		try:
+			network = frappe.get_doc("Social Media Network", self.platform)
+		except frappe.DoesNotExistError:
+			return
+
+		if network.max_text_length:
+			# Strip HTML for character count if network doesn't support HTML
 			import re
-			clean_content = re.sub(r'<[^>]+>', '', self.content or '')
-			char_limit = platform_limits[self.platform]
-
-			if len(clean_content) > char_limit:
+			clean_content = self.content
+			if not network.supports_html:
+				clean_content = re.sub(r'<[^>]+>', '', self.content or '')
+			
+			if len(clean_content) > network.max_text_length:
 				frappe.msgprint(
 					_("Content exceeds {0} character limit for {1}. Current: {2} characters").format(
-						char_limit, self.platform, len(clean_content)
+						network.max_text_length, self.platform, len(clean_content)
 					),
 					indicator="orange",
 					alert=True
@@ -83,13 +92,23 @@ def publish_post(post_name):
 	if doc.status != "Draft":
 		frappe.throw(_("Only draft posts can be published"))
 
-	# TODO: Integrate with actual social media APIs
-	# For now, just mark as published
-	doc.status = "Published"
-	doc.published_time = now()
-	doc.save(ignore_permissions=True)
-
-	return {"success": True, "message": _("Post published successfully")}
+	# Integrate with Social Media Adapter
+	try:
+		from marketing_hub.utils.social_adapter import publish_to_platform
+		result = publish_to_platform(doc)
+		
+		if result.get("success"):
+			doc.status = "Published"
+			doc.published_time = now()
+			doc.post_id = result.get("id")
+			doc.save(ignore_permissions=True)
+			return {"success": True, "message": _("Post published successfully via Adapter")}
+		else:
+			frappe.throw(_("Publishing failed: {0}").format(result.get("error", "Unknown error")))
+			
+	except Exception as e:
+		frappe.log_error(f"Publishing Error: {str(e)}", "Social Post Publish")
+		frappe.throw(_("Failed during publishing process: {0}").format(str(e)))
 
 
 @frappe.whitelist()
@@ -159,6 +178,10 @@ def get_platform_best_time(platform):
 
 def publish_scheduled_posts():
 	"""Background job to publish scheduled posts"""
+	settings = frappe.get_single("Marketing Hub Settings")
+	if not settings.enable_auto_post:
+		return
+
 	scheduled_posts = frappe.get_all(
 		"Social Post",
 		filters={

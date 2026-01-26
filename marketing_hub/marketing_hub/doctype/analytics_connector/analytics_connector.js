@@ -59,11 +59,12 @@ frappe.ui.form.on('Analytics Connector', {
     },
 
     ad_account: function (frm) {
-        // Auto-populate company from ad_account
+        // Auto-populate company and platform from ad_account
         if (frm.doc.ad_account) {
-            frappe.db.get_value('Ad Account', frm.doc.ad_account, 'company', function (r) {
-                if (r && r.company) {
-                    frm.set_value('company', r.company);
+            frappe.db.get_value('Ad Account', frm.doc.ad_account, ['company', 'social_media_network'], function (r) {
+                if (r) {
+                    if (r.company) frm.set_value('company', r.company);
+                    if (r.social_media_network) frm.set_value('platform', r.social_media_network);
                 }
             });
         }

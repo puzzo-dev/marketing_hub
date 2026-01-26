@@ -1,0 +1,11 @@
+{
+    "chart_name": "Campaign Performance Overview",
+    "timespan": "Last Year",
+    "timeseries": 1,
+    "group_by_type": "Sum",
+    "aggregate_function_based_on": "total_budget",
+    "chart_type": "Sum",
+    "type": "Line",
+    "use_report_chart": 0,
+    "y_axis": []
+}

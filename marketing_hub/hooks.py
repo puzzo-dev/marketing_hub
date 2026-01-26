@@ -15,7 +15,19 @@ add_to_apps_screen = [
         "name": "marketing_hub",
         "logo": "/assets/marketing_hub/desk/logo.svg",
         "title": "Marketing Hub",
-        "route": "/marketing",
+        "route": "/app/marketing-hub",
+        "has_permission": "marketing_hub.api.permission.has_app_permission"
+    }
+]
+
+desk_pages = [
+    {
+        "module": "Marketing Hub",
+        "label": "Marketing Dashboard",
+        "route": "/marketing_hub",
+        "_route": "/marketing_hub",
+        "_static": True,
+        "icon": "broadcast",
     }
 ]
 
@@ -23,6 +35,10 @@ website_route_rules = [
     {
         "from_route": "/marketing/<path:app_path>",
         "to_route": "marketing",
+    },
+    {
+        "from_route": "/marketing_hub/<path:app_path>",
+        "to_route": "marketing_hub",
     },
 ]
 
@@ -36,11 +52,7 @@ fixtures = [
                 "name",
                 "in",
                 [
-                    "Campaign-channels_used",
-                    "Campaign-is_omni_campaign",
-                    "Campaign-client",
-                    "Campaign-project",
-                    "Campaign-roas",
+
                     "Lead-utm_campaign",
                     "Lead-utm_source",
                     "Lead-utm_medium"
@@ -95,9 +107,7 @@ web_include_css = "/assets/marketing_hub/css/portal.css"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {
-    "Campaign": "public/js/campaign.js"
-}
+
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -161,6 +171,8 @@ doctype_js = {
 # before_app_uninstall = "marketing_hub.utils.before_app_uninstall"
 # after_app_uninstall = "marketing_hub.utils.after_app_uninstall"
 
+after_migrate = "marketing_hub.setup.setup_notifications"
+
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
@@ -200,9 +212,6 @@ doc_events = {
     },
     "Campaign Activity": {
         "on_update": "marketing_hub.utils.omni_blast.execute_if_scheduled"
-    },
-    "Campaign": {
-        "validate": "marketing_hub.utils.permissions.validate_campaign_limits"
     }
 }
 
@@ -210,11 +219,10 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    "daily": [
-        "marketing_hub.utils.analytics_sync.sync_all_connectors"
-    ],
+    "daily": [],
     "all": [
-        "marketing_hub.utils.auto_post.publish_scheduled_posts"
+        "marketing_hub.utils.auto_post.publish_scheduled_posts",
+        "marketing_hub.utils.analytics_sync.sync_all_connectors"
     ]
 }
 

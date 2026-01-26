@@ -35,6 +35,8 @@ def sync_lead_with_crm(lead_name, marketing_data=None):
 			# Add marketing attribution data
 			if marketing_data:
 				crm_lead_doc.source = marketing_data.get("utm_source", lead.source)
+                # Ensure we don't break CRM Campaign link if it expects standard Campaign
+                # We put the string name, let CRM handle it (or fail gracefully)
 				crm_lead_doc.campaign = marketing_data.get("campaign")
 
 			crm_lead_doc.insert(ignore_permissions=True)
@@ -103,7 +105,7 @@ def create_crm_activity_from_campaign(campaign_name, lead_name, activity_type="E
 			activity = frappe.new_doc("CRM Activities")
 			activity.lead = crm_lead
 			activity.activity_type = activity_type
-			activity.reference_doctype = "Campaign"
+			activity.reference_doctype = "Marketing Campaign"
 			activity.reference_docname = campaign_name
 			activity.insert(ignore_permissions=True)
 			return activity.name
@@ -176,10 +178,11 @@ def get_crm_dashboard_data(campaign=None):
 		data = {}
 
 		# Get leads from campaign
+        # Use utm_campaign to find leads linked to Marketing Campaign
 		if campaign:
 			leads = frappe.get_all(
 				"Lead",
-				filters={"campaign_name": campaign},
+				filters={"utm_campaign": campaign},
 				fields=["name", "crm_lead", "status", "email_id"]
 			)
 
@@ -264,10 +267,10 @@ def get_campaign_performance_with_crm(campaign_name):
 			"win_rate": 0
 		}
 
-		# Get all leads from campaign
+		# Get all leads from campaign using UTM filter
 		leads = frappe.get_all(
 			"Lead",
-			filters={"campaign_name": campaign_name},
+			filters={"utm_campaign": campaign_name},
 			fields=["name", "crm_lead"]
 		)
 

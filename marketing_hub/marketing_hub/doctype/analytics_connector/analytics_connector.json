@@ -38,11 +38,11 @@
         },
         {
             "fieldname": "platform",
-            "fieldtype": "Select",
+            "fieldtype": "Link",
             "in_list_view": 1,
             "in_standard_filter": 1,
             "label": "Platform",
-            "options": "Meta Ads\nGoogle Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads",
+            "options": "Social Media Network",
             "reqd": 1
         },
         {

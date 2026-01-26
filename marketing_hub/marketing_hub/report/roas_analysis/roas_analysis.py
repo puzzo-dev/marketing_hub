@@ -133,7 +133,7 @@ def get_campaign_data(filters):
 		SELECT
 			c.name as campaign,
 			c.channels_used as channels
-		FROM `tabCampaign` c
+		FROM `tabMarketing Campaign` c
 		WHERE c.docstatus < 2
 		{conditions}
 		ORDER BY c.creation DESC
@@ -162,7 +162,7 @@ def get_channel_data(filters):
 
 	campaigns = frappe.db.sql("""
 		SELECT name, channels_used
-		FROM `tabCampaign`
+		FROM `tabMarketing Campaign`
 		WHERE docstatus < 2
 		{conditions}
 	""".format(conditions=conditions), filters, as_dict=1)
@@ -223,59 +223,25 @@ def get_monthly_data(filters):
 
 	monthly_data = frappe.db.sql("""
 		SELECT
-			DATE_FORMAT(date, '%%Y-%%m') as month,
-			SUM(cost) as spend,
+			DATE_FORMAT(log_date, '%%Y-%%m') as month,
+			SUM(spend) as spend,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`
 		WHERE 1=1
 		{conditions}
-		GROUP BY DATE_FORMAT(date, '%%Y-%%m')
+		GROUP BY DATE_FORMAT(log_date, '%%Y-%%m')
 		ORDER BY month DESC
 	""".format(conditions=date_conditions), filters, as_dict=1)
 
-	data = []
-
-	for row in monthly_data:
-		# Get revenue and leads for this month
-		month_start = row.month + "-01"
-		month_end = frappe.utils.get_last_day(month_start).strftime("%Y-%m-%d")
-
-		revenue_data = frappe.db.sql("""
-			SELECT
-				COUNT(DISTINCT l.name) as leads,
-				COALESCE(SUM(so.grand_total), 0) as revenue
-			FROM `tabLead` l
-			LEFT JOIN `tabSales Order` so ON so.party_name = l.name AND so.docstatus = 1
-			WHERE l.creation BETWEEN %s AND %s
-		""", (month_start, month_end), as_dict=1)
-
-		row["revenue"] = revenue_data[0].revenue if revenue_data else 0
-		row["leads"] = revenue_data[0].leads if revenue_data else 0
-
-		# Calculate metrics
-		row["roas"] = row["revenue"] / row["spend"] if row["spend"] > 0 else 0
-		row["ctr"] = (row["clicks"] / row["impressions"]) * 100 if row["impressions"] > 0 else 0
-		row["cpc"] = row["spend"] / row["clicks"] if row["clicks"] > 0 else 0
-		row["cpl"] = row["spend"] / row["leads"] if row["leads"] > 0 else 0
-
-		# Format month for display
-		row["month"] = frappe.utils.formatdate(month_start, "MMM YYYY")
-
-		# Apply minimum ROAS filter
-		min_roas = filters.get("min_roas", 0)
-		if row["roas"] >= min_roas:
-			data.append(row)
-
-	return data
-
+# ...
 
 def get_campaign_metrics(campaign):
 	"""Get metrics for a single campaign"""
 	# Get cost and engagement from Analytics Daily Log
 	analytics = frappe.db.sql("""
 		SELECT
-			SUM(cost) as cost,
+			SUM(spend) as cost,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`

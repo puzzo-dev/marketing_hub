@@ -49,14 +49,7 @@ class AnalyticsConnector(Document):
 			ad_account = frappe.get_doc("Ad Account", self.ad_account)
 			
 			# Fetch data based on platform
-			if self.platform == "Meta Ads":
-				data = self.sync_meta_ads(ad_account)
-			elif self.platform == "Google Ads":
-				data = self.sync_google_ads(ad_account)
-			elif self.platform == "LinkedIn Ads":
-				data = self.sync_linkedin_ads(ad_account)
-			else:
-				frappe.throw(f"Sync not implemented for {self.platform}")
+			data = self.sync_network_ads(ad_account)
 			
 			# Create Analytics Daily Log entries
 			self.create_analytics_logs(data)
@@ -78,8 +71,34 @@ class AnalyticsConnector(Document):
 			self.save()
 			frappe.log_error(f"Analytics sync failed: {str(e)}", "Analytics Connector Sync")
 			return {"status": "Error", "message": str(e)}
-	
-	def sync_meta_ads(self, ad_account):
+
+	def sync_network_ads(self, ad_account):
+		"""
+		Generic sync method that dispatches to platform-specific implementation.
+		The dispatching is based on the Linked Social Media Network's 'network_code' or name.
+		"""
+		# Normalize platform name to method name (e.g. "Google Ads" -> "google_ads")
+		method_name = f"_sync_{frappe.scrub(self.platform)}_ads"
+		
+		# Check if method exists in this class
+		if hasattr(self, method_name):
+			return getattr(self, method_name)(ad_account)
+		else:
+			# Fallback: Check if there's a custom controller or hook
+			# For now, throw error if not implemented
+			frappe.throw(f"Sync handler '{method_name}' not implemented for platform: {self.platform}")
+
+	def _sync_meta_ads_ads(self, ad_account): 
+		# Legacy naming fix or just route to _sync_meta_ads
+		return self._sync_meta_ads(ad_account)
+
+	def _sync_facebook_ads(self, ad_account):
+		return self._sync_meta_ads(ad_account)
+
+	def _sync_instagram_ads(self, ad_account):
+		return self._sync_meta_ads(ad_account)
+
+	def _sync_meta_ads(self, ad_account):
 		"""Sync data from Meta Ads API"""
 		url = f"https://graph.facebook.com/v18.0/{ad_account.ad_account_id}/insights"
 		
@@ -99,15 +118,123 @@ class AnalyticsConnector(Document):
 		
 		return self.parse_meta_ads_response(response.json())
 	
-	def sync_google_ads(self, ad_account):
+	def _sync_google_ads_ads(self, ad_account): # Handle redundancy from scrub("Google Ads") -> "google_ads" + "_ads"
+		return self._sync_google_ads(ad_account)
+
+	def _sync_google_ads(self, ad_account):
 		"""Sync data from Google Ads API"""
-		# Placeholder - implement Google Ads API integration
-		frappe.throw("Google Ads sync not yet implemented")
+		# Google Ads API v14
+		url = f"https://googleads.googleapis.com/v14/customers/{ad_account.customer_id}/googleAds:searchStream"
+		
+		# Get developer token from settings or ad account (assuming stored in settings for now)
+		developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
+		if not developer_token:
+			# Fallback or error if critical
+			pass 
+
+		headers = {
+			"Authorization": f"Bearer {ad_account.get_password('access_token')}",
+			"developer-token": developer_token or "INSERT_DEV_TOKEN",
+			"login-customer-id": ad_account.customer_id 
+		}
+
+		query = f"""
+			SELECT
+				campaign.id,
+				campaign.name,
+				metrics.impressions,
+				metrics.clicks,
+				metrics.cost_micros,
+				metrics.conversions,
+				metrics.conversions_value
+			FROM campaign
+			WHERE segments.date BETWEEN '{self.sync_start_date or getdate()}' AND '{getdate()}'
+		"""
+
+		response = requests.post(url, headers=headers, json={"query": query})
+		
+		try:
+			response.raise_for_status()
+		except Exception as e:
+			if response.status_code == 400:
+				frappe.log_error(f"Google Ads Query Error: {response.text}", "Google Ads Sync")
+			raise e
+
+		return self.parse_google_ads_response(response.json())
 	
-	def sync_linkedin_ads(self, ad_account):
+	def _sync_linkedin_ads_ads(self, ad_account):
+		return self._sync_linkedin_ads(ad_account)
+
+	def _sync_linkedin_ads(self, ad_account):
 		"""Sync data from LinkedIn Ads API"""
-		# Placeholder - implement LinkedIn Ads API integration
-		frappe.throw("LinkedIn Ads sync not yet implemented")
+		url = "https://api.linkedin.com/v2/adAnalyticsV2"
+		
+		params = {
+			"q": "analytics",
+			"dateRange.start.day": (self.sync_start_date or getdate()).day,
+			"dateRange.start.month": (self.sync_start_date or getdate()).month,
+			"dateRange.start.year": (self.sync_start_date or getdate()).year,
+			"dateRange.end.day": getdate().day,
+			"dateRange.end.month": getdate().month,
+			"dateRange.end.year": getdate().year,
+			"timeGranularity": "DAILY",
+			"pivot": "CAMPAIGN",
+			"accounts": f"urn:li:sponsoredAccount:{ad_account.account_urn}"
+		}
+
+		headers = {
+			"Authorization": f"Bearer {ad_account.get_password('access_token')}",
+			"X-Restli-Protocol-Version": "2.0.0"
+		}
+
+		response = requests.get(url, headers=headers, params=params)
+		response.raise_for_status()
+
+		return self.parse_linkedin_ads_response(response.json())
+
+	def parse_google_ads_response(self, response_data):
+		"""Parse Google Ads API response"""
+		parsed_data = []
+		
+		# searchStream returns a list of batches
+		for batch in response_data:
+			for row in batch.get("results", []):
+				campaign = row.get("campaign", {})
+				metrics = row.get("metrics", {})
+				
+				parsed_data.append({
+					"campaign_id_platform": str(campaign.get("id")),
+					"campaign_name": campaign.get("name"),
+					"impressions": int(metrics.get("impressions", 0)),
+					"clicks": int(metrics.get("clicks", 0)),
+					"spend": float(metrics.get("costMicros", 0)) / 1000000, # Convert micros to currency
+					"conversions": float(metrics.get("conversions", 0)),
+					"revenue": float(metrics.get("conversionsValue", 0))
+				})
+				
+		return parsed_data
+
+	def parse_linkedin_ads_response(self, response_data):
+		"""Parse LinkedIn Ads API response"""
+		parsed_data = []
+		
+		for element in response_data.get("elements", []):
+			# Pivot value contains the URN
+			campaign_urn = element.get("pivotValue", "")
+			# You might need another call to get Campaign Name if not cached/stored
+			campaign_id = campaign_urn.split(":")[-1] if ":" in campaign_urn else campaign_urn
+			
+			parsed_data.append({
+				"campaign_id_platform": campaign_id,
+				"campaign_name": f"LinkedIn Campaign {campaign_id}", # optimize: fetch name
+				"impressions": element.get("impressions", 0),
+				"clicks": element.get("clicks", 0),
+				"spend": float(element.get("costInLocalCurrency", 0)),
+				"conversions": element.get("externalWebsiteConversions", 0),
+				"revenue": float(element.get("conversionValueInLocalCurrency", 0))
+			})
+			
+		return parsed_data
 	
 	def parse_meta_ads_response(self, response_data):
 		"""Parse Meta Ads API response into standard format"""

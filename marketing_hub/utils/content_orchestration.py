@@ -158,7 +158,7 @@ def get_content_recommendations(campaign, channel):
     Returns:
         Dict with recommendations
     """
-    campaign_doc = frappe.get_doc("Campaign", campaign)
+    campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
 
     recommendations = {
         "suggested_templates": [],
@@ -167,14 +167,15 @@ def get_content_recommendations(campaign, channel):
     }
 
     # Find similar successful campaigns
+    # Filter by child table channels
     similar_campaigns = frappe.get_all(
-        "Campaign",
+        "Marketing Campaign",
         filters={
             "name": ["!=", campaign],
-            "channels_used": ["like", f"%{channel}%"]
+            "channels": ["like", f"%{channel}%"] # Frappe child table search shortcut
         },
-        fields=["name", "roas"],
-        order_by="roas desc",
+        fields=["name", "total_actual_cost"], # Marketing Campaign uses total_actual_cost instead of ROAS currently
+        order_by="total_actual_cost desc", # Heuristic since ROAS is not on Marketing Campaign yet
         limit=3
     )
 

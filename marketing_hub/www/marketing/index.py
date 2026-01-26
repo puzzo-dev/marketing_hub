@@ -49,6 +49,7 @@ def get_apps_for_user():
 def get_context_for_dev():
     return {
         "session": frappe.session,
+        "installed_apps": get_apps_for_user(),
     }
 
 # API Methods - Import from api.py module

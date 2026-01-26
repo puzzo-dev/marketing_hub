@@ -88,7 +88,7 @@
             </Alert>
 
             <div class="space-y-3">
-              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300">
+              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300">
                 <div class="flex items-center gap-3">
                   <div class="text-2xl">📧</div>
                   <div>
@@ -99,7 +99,7 @@
                 <Switch v-model="settings.enable_email_blast" />
               </label>
 
-              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300">
+              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300">
                 <div class="flex items-center gap-3">
                   <div class="text-2xl">💬</div>
                   <div>
@@ -110,7 +110,7 @@
                 <Switch v-model="settings.enable_sms_blast" />
               </label>
 
-              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300">
+              <label class="flex items-center justify-between rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300">
                 <div class="flex items-center gap-3">
                   <div class="text-2xl">📱</div>
                   <div>
@@ -211,7 +211,7 @@
             <div class="space-y-2 text-left">
               <router-link
                 to="/marketing/campaigns/new"
-                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300"
+                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300"
               >
                 <FeatherIcon name="target" class="h-5 w-5 text-primary-600" />
                 <div>
@@ -223,7 +223,7 @@
 
               <router-link
                 to="/marketing/blast/new"
-                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300"
+                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300"
               >
                 <FeatherIcon name="send" class="h-5 w-5 text-purple-600" />
                 <div>
@@ -235,7 +235,7 @@
 
               <router-link
                 to="/marketing/segments"
-                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-primary-300"
+                class="flex items-center gap-3 rounded-lg border border-outline-gray-2 bg-surface-cards p-4 transition-colors hover:border-blue-300"
               >
                 <FeatherIcon name="users" class="h-5 w-5 text-green-600" />
                 <div>
@@ -556,6 +556,6 @@ function skipOnboarding() {
 
 <style scoped>
 .stat-card {
-  @apply rounded-lg border border-outline-gray-2 bg-surface-cards p-6 transition-all hover:border-primary-300 hover:shadow-md;
+  @apply rounded-lg border border-outline-gray-2 bg-surface-cards p-6 transition-all hover:border-blue-300 hover:shadow-md;
 }
 </style>

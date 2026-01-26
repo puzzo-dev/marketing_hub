@@ -1,7 +1,7 @@
 {
-    "action": "View Settings",
+    "action": "Create Entry",
     "creation": "2026-01-18 12:00:00.000000",
-    "description": "Connect your Meta, Google, and LinkedIn ad accounts to enable data syncing. This will allow you to import campaign performance data and calculate ROAS automatically.",
+    "description": "Configure your Social Media Networks (Facebook, Twitter, etc.) to enable posting and analytics.",
     "docstatus": 0,
     "doctype": "Onboarding Step",
     "idx": 1,
@@ -12,7 +12,7 @@
     "modified_by": "Administrator",
     "name": "Configure Ad Platforms",
     "owner": "Administrator",
-    "reference_document": "Ad Account",
+    "reference_document": "Social Media Network",
     "show_form_tour": 0,
     "show_full_form": 0,
     "title": "Configure Ad Platforms",

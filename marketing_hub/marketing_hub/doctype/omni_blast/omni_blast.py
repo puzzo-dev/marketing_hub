@@ -39,6 +39,18 @@ class OmniBlast(Document):
 			# Get network details
 			network = frappe.get_doc("Social Media Network", network_name)
 			
+			# Check settings for channel permissions
+			settings = frappe.get_single("Marketing Hub Settings")
+			
+			if network.network_type == "SMS" and not settings.enable_sms_blast:
+				frappe.throw(f"SMS Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+				
+			if network.network_type == "Messaging" and "WhatsApp" in network_name and not settings.enable_whatsapp_blast:
+				frappe.throw(f"WhatsApp Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+				
+			if network.network_type == "Email" and not settings.enable_email_blast:
+				frappe.throw(f"Email Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+			
 			# Adapt content based on network type
 			adapted_content = self.content
 			if network.network_type == "Out of Home (OOH)":

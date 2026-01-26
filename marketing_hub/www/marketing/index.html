@@ -3,17 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="{{ frappe.session.csrf_token }}" />
+    <title>Marketing Hub</title>
     <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/desk/favicon.svg" />
-    <script type="module" crossorigin src="/assets/marketing_hub/desk/assets/index-fNmfWtBZ.js"></script>
+    <script type="module" crossorigin src="/assets/marketing_hub/desk/assets/index-h6L_A3W0.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/vendor-PgoknEpb.js">
     <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-Bw7llfBW.js">
     <link rel="stylesheet" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-LYft-JyX.css">
     <link rel="stylesheet" crossorigin href="/assets/marketing_hub/desk/assets/index-CaKxBpHq.css">
-    <script>
-      // Inject installed apps from Python context
-      window.installed_apps = {{ installed_apps | tojson }};
-    </script>
   </head>
   <body>
     <div id="app"></div>

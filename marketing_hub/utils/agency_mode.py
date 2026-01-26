@@ -15,7 +15,8 @@ def get_settings(company=None):
         return None
 
     try:
-        settings = frappe.get_doc("Marketing Hub Settings", {"company": company})
+        # Marketing Hub Settings is autonamed by company field
+        settings = frappe.get_doc("Marketing Hub Settings", company)
         return settings
     except frappe.DoesNotExistError:
         # Create default settings if not found
