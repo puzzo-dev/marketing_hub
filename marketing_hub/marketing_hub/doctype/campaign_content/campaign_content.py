@@ -16,13 +16,28 @@ class CampaignContent(Document):
             self.utm_medium = self.get_utm_medium()
 
     def get_utm_medium(self):
-        """Determine UTM medium based on channel"""
-        ad_channels = ["Google Ads", "Meta Ads", "LinkedIn Ads", "TikTok Ads", "Twitter/X Ads", "Reddit Ads"]
-        if self.channel in ad_channels:
-            return "paid_social" if "Ads" in self.channel and self.channel != "Google Ads" else "paid_search"
-        elif self.channel == "Email":
-            return "email"
-        elif self.channel in ["WhatsApp", "SMS"]:
+        """Determine UTM medium based on channel from Social Media Network doctype"""
+        try:
+            network = frappe.get_cached_doc("Social Media Network", self.channel)
+            network_type = network.network_type or "Social Media"
+            
+            # Map network type to UTM medium
+            utm_mapping = {
+                "Advertising Platform": "paid_search" if "Google" in self.channel else "paid_social",
+                "Social Media": "social",
+                "Messaging": "messaging",
+                "Email": "email",
+                "Search Engine": "organic",
+                "Out of Home (OOH)": "offline"
+            }
+            return utm_mapping.get(network_type, "referral")
+        except:
+            # Fallback logic
+            if "Ads" in self.channel:
+                return "paid_search" if "Google" in self.channel else "paid_social"
+            elif self.channel == "Email":
+                return "email"
+            elif self.channel in ["WhatsApp", "SMS"]:
             return "messaging"
         else:
             return "organic"

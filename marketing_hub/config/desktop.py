@@ -14,7 +14,7 @@ def get_data():
                 {"type": "doctype", "name": "Marketing Segment", "label": _("Segments")},
                 {"type": "doctype", "name": "Marketing Template", "label": _("Templates")},
                 {"type": "doctype", "name": "Ad Account", "label": _("Ad Accounts")},
-                {"type": "doctype", "name": "Analytics Connector", "label": _("Analytics")},
+                {"type": "doctype", "name": "Analytics Daily Log", "label": _("Analytics")},
                 {"type": "doctype", "name": "Marketing Hub Setup", "label": _("Setup")},
                 {"type": "doctype", "name": "Agency Package", "label": _("Packages")},
                 {"type": "doctype", "name": "Client Subscription", "label": _("Subscriptions")},

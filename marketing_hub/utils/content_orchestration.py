@@ -191,41 +191,22 @@ def get_content_recommendations(campaign, channel):
                 if t.template:
                     recommendations["suggested_templates"].append(t.template)
 
-    # Channel-specific tips
-    tips = {
-        "Meta Ads": [
-            "Use eye-catching images (1200x628 or 1080x1080)",
-            "Lead with value proposition in first 125 characters",
-            "Include clear CTA button text",
-            "Test multiple ad variants (A/B testing)"
-        ],
-        "Google Ads": [
-            "Include keywords in headline",
-            "Highlight unique selling proposition",
-            "Use ad extensions (sitelinks, callouts)",
-            "Match landing page to ad message"
-        ],
-        "LinkedIn Ads": [
-            "Professional tone and B2B focus",
-            "Use company/role targeting effectively",
-            "Include social proof or credentials",
-            "Optimize for lead generation"
-        ],
-        "TikTok Ads": [
-            "Vertical video format (9:16)",
-            "Hook viewers in first 3 seconds",
-            "Native, authentic content style",
-            "Use trending sounds and effects"
-        ],
-        "Email": [
-            "Personalize subject line",
-            "Mobile-responsive design",
-            "Single clear CTA",
-            "Test send times"
-        ]
-    }
+    # Channel-specific tips from Social Media Network doctype
+    try:
+        network = frappe.get_cached_doc("Social Media Network", channel)
+        if network.best_practices:
+            # Parse best practices (stored as text, one per line)
+            practices_text = network.best_practices
+            if isinstance(practices_text, str):
+                tips_list = [tip.strip() for tip in practices_text.split("\n") if tip.strip()]
+            else:
+                tips_list = []
+        else:
+            tips_list = []
+    except:
+        tips_list = []
 
-    recommendations["content_tips"] = tips.get(channel, [])
+    recommendations["content_tips"] = tips_list
 
     return recommendations
 
@@ -265,96 +246,44 @@ def bulk_schedule_content(campaign, schedule_plan):
 
 
 def get_channel_best_practices():
-    """Return best practices and specifications for all channels"""
-    return {
-        "Meta Ads": {
-            "image_sizes": {
-                "Feed": "1200x628",
-                "Square": "1080x1080",
-                "Stories": "1080x1920"
-            },
-            "video_specs": {
-                "format": ["MP4", "MOV"],
-                "duration": "1-241 seconds",
-                "aspect_ratios": ["16:9", "1:1", "9:16", "4:5"]
-            },
-            "text_limits": {
-                "primary_text": 125,
-                "headline": 40,
-                "description": 30
-            },
-            "best_practices": [
-                "Use high-quality visuals",
-                "Test multiple ad formats",
-                "Include clear CTA",
-                "Target specific audiences"
-            ]
-        },
-        "Google Ads": {
-            "image_sizes": {
-                "Landscape": "1200x628",
-                "Square": "1200x1200",
-                "Portrait": "960x1200"
-            },
-            "text_limits": {
-                "headline": 30,
-                "description": 90,
-                "display_path": 15
-            },
-            "best_practices": [
-                "Use keywords in headlines",
-                "Highlight unique value",
-                "Include pricing if competitive",
-                "Use ad extensions"
-            ]
-        },
-        "LinkedIn Ads": {
-            "image_sizes": {
-                "Single Image": "1200x627",
-                "Carousel": "1080x1080"
-            },
-            "text_limits": {
-                "intro_text": 150,
-                "headline": 70,
-                "description": 100
-            },
-            "best_practices": [
-                "Professional B2B messaging",
-                "Use social proof",
-                "Target by job title/industry",
-                "Focus on business outcomes"
-            ]
-        },
-        "TikTok Ads": {
-            "video_specs": {
-                "aspect_ratio": "9:16 (recommended)",
-                "duration": "5-60 seconds",
-                "format": ["MP4", "MOV", "MPEG", "3GP", "AVI"]
-            },
-            "text_limits": {
-                "ad_text": 100
-            },
-            "best_practices": [
-                "Native, authentic content",
-                "Hook in first 3 seconds",
-                "Use trending sounds",
-                "Show product in action"
-            ]
-        },
-        "Email": {
-            "design_specs": {
-                "max_width": "600px",
-                "mobile_responsive": True
-            },
-            "text_limits": {
-                "subject_line": 50,
-                "preheader": 100
-            },
-            "best_practices": [
-                "Personalize content",
-                "Clear hierarchy",
-                "Single primary CTA",
-                "Test across email clients"
-            ]
-        }
-    }
+	"""Return best practices and specifications for all channels from Social Media Network doctype"""
+	import json
+	
+	# Get all active social media networks
+	networks = frappe.get_all(
+		"Social Media Network",
+		filters={"is_active": 1},
+		fields=["network_name", "image_specifications", "video_specifications", "text_limits", "best_practices"]
+	)
+	
+	result = {}
+	for network in networks:
+		channel_data = {}
+		
+		# Parse JSON fields
+		if network.image_specifications:
+			try:
+				channel_data["image_sizes"] = json.loads(network.image_specifications) if isinstance(network.image_specifications, str) else network.image_specifications
+			except:
+				pass
+		
+		if network.video_specifications:
+			try:
+				channel_data["video_specs"] = json.loads(network.video_specifications) if isinstance(network.video_specifications, str) else network.video_specifications
+			except:
+				pass
+		
+		if network.text_limits:
+			try:
+				channel_data["text_limits"] = json.loads(network.text_limits) if isinstance(network.text_limits, str) else network.text_limits
+			except:
+				pass
+		
+		# Parse best practices (line-separated text)
+		if network.best_practices:
+			channel_data["best_practices"] = network.best_practices.split("\n") if isinstance(network.best_practices, str) else network.best_practices
+		
+		if channel_data:
+			result[network.network_name] = channel_data
+	
+	return result

@@ -13,13 +13,9 @@
         "column_break_3",
         "company",
         "is_active",
-        "oauth_credentials_section",
-        "client_id",
-        "client_secret",
-        "column_break_8",
-        "access_token",
-        "refresh_token",
-        "token_expiry",
+        "oauth_section",
+        "social_login_key",
+        "oauth_user",
         "platform_specific_section",
         "ad_account_id",
         "pixel_id",
@@ -82,38 +78,24 @@
         },
         {
             "collapsible": 1,
-            "fieldname": "oauth_credentials_section",
+            "fieldname": "oauth_section",
             "fieldtype": "Section Break",
-            "label": "OAuth Credentials"
+            "label": "OAuth Configuration",
+            "description": "Link to Frappe's OAuth system for authentication"
         },
         {
-            "fieldname": "client_id",
-            "fieldtype": "Data",
-            "label": "Client ID"
+            "fieldname": "social_login_key",
+            "fieldtype": "Link",
+            "label": "Social Login Key",
+            "options": "Social Login Key",
+            "description": "OAuth client configuration (client_id, client_secret, endpoints)"
         },
         {
-            "fieldname": "client_secret",
-            "fieldtype": "Password",
-            "label": "Client Secret"
-        },
-        {
-            "fieldname": "column_break_8",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "access_token",
-            "fieldtype": "Password",
-            "label": "Access Token"
-        },
-        {
-            "fieldname": "refresh_token",
-            "fieldtype": "Password",
-            "label": "Refresh Token"
-        },
-        {
-            "fieldname": "token_expiry",
-            "fieldtype": "Datetime",
-            "label": "Token Expiry"
+            "fieldname": "oauth_user",
+            "fieldtype": "Link",
+            "label": "OAuth User",
+            "options": "User",
+            "description": "User whose OAuth Bearer Token to use for API calls"
         },
         {
             "collapsible": 1,

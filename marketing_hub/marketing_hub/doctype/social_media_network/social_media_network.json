@@ -16,12 +16,31 @@
   "api_base_url",
   "supports_scheduling",
   "supports_media",
+  "api_configuration_section",
+  "auth_type",
+  "api_version",
+  "column_break_api",
+  "publish_endpoint",
+  "delete_endpoint",
+  "analytics_endpoint",
+  "section_break_request",
+  "publish_method",
+  "request_content_field",
+  "request_media_field",
+  "column_break_response",
+  "response_id_field",
+  "response_url_template",
+  "custom_adapter_class",
   "section_break_2",
   "post_types",
   "max_text_length",
   "max_media_count",
   "column_break_3",
   "supported_formats",
+  "image_specifications",
+  "video_specifications",
+  "text_limits",
+  "best_practices",
   "description"
  ],
  "fields": [
@@ -80,6 +99,97 @@
    "fieldname": "supports_media",
    "fieldtype": "Check",
    "label": "Supports Media"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "api_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "API Configuration"
+  },
+  {
+   "fieldname": "auth_type",
+   "fieldtype": "Select",
+   "label": "Authentication Type",
+   "options": "OAuth 2.0\nAPI Key\nBearer Token\nBasic Auth\nCustom",
+   "default": "OAuth 2.0",
+   "description": "How to authenticate with the API"
+  },
+  {
+   "fieldname": "api_version",
+   "fieldtype": "Data",
+   "label": "API Version",
+   "description": "e.g., v2, v18.0, 202401"
+  },
+  {
+   "fieldname": "column_break_api",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "publish_endpoint",
+   "fieldtype": "Data",
+   "label": "Publish Endpoint",
+   "description": "API endpoint for publishing. Use {account_id} for placeholders"
+  },
+  {
+   "fieldname": "delete_endpoint",
+   "fieldtype": "Data",
+   "label": "Delete Endpoint",
+   "description": "API endpoint for deletion. Use {post_id} for placeholders"
+  },
+  {
+   "fieldname": "analytics_endpoint",
+   "fieldtype": "Data",
+   "label": "Analytics Endpoint",
+   "description": "API endpoint for fetching analytics. Use {post_id} for placeholders"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_request",
+   "fieldtype": "Section Break",
+   "label": "Request/Response Mapping"
+  },
+  {
+   "fieldname": "publish_method",
+   "fieldtype": "Select",
+   "label": "Publish HTTP Method",
+   "options": "POST\nPUT",
+   "default": "POST"
+  },
+  {
+   "fieldname": "request_content_field",
+   "fieldtype": "Data",
+   "label": "Content Field Name",
+   "description": "JSON field name for post content (e.g., 'text', 'message', 'caption')",
+   "default": "content"
+  },
+  {
+   "fieldname": "request_media_field",
+   "fieldtype": "Data",
+   "label": "Media Field Name",
+   "description": "JSON field name for media URL (e.g., 'image_url', 'media', 'file_url')"
+  },
+  {
+   "fieldname": "column_break_response",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "response_id_field",
+   "fieldtype": "Data",
+   "label": "Response ID Field",
+   "description": "JSON path to post ID in response (e.g., 'id', 'data.id')",
+   "default": "id"
+  },
+  {
+   "fieldname": "response_url_template",
+   "fieldtype": "Data",
+   "label": "Post URL Template",
+   "description": "Template for post URL. Use {post_id} placeholder"
+  },
+  {
+   "fieldname": "custom_adapter_class",
+   "fieldtype": "Data",
+   "label": "Custom Adapter Class",
+   "description": "Python class path for custom adapter (e.g., 'marketing_hub.utils.social_adapters.meta.MetaAdapter'). Leave blank to use generic adapter."
   },
   {
    "fieldname": "section_break_2",
@@ -142,6 +252,30 @@
    "fieldtype": "Small Text",
    "label": "Supported File Formats",
    "description": "Supported media formats (e.g., jpg, png, mp4)"
+  },
+  {
+   "fieldname": "image_specifications",
+   "fieldtype": "JSON",
+   "label": "Image Specifications",
+   "description": "JSON object with image size specs (e.g., {\"Feed\": \"1200x628\", \"Square\": \"1080x1080\"})"
+  },
+  {
+   "fieldname": "video_specifications",
+   "fieldtype": "JSON",
+   "label": "Video Specifications",
+   "description": "JSON object with video specs (e.g., {\"format\": [\"MP4\", \"MOV\"], \"duration\": \"1-241 seconds\"})"
+  },
+  {
+   "fieldname": "text_limits",
+   "fieldtype": "JSON",
+   "label": "Text Limits",
+   "description": "JSON object with character limits (e.g., {\"primary_text\": 125, \"headline\": 40})"
+  },
+  {
+   "fieldname": "best_practices",
+   "fieldtype": "Small Text",
+   "label": "Best Practices",
+   "description": "Best practices for this platform (one per line)"
   },
   {
    "fieldname": "description",

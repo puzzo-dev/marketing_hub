@@ -99,11 +99,20 @@ class AnalyticsConnector(Document):
 		return self._sync_meta_ads(ad_account)
 
 	def _sync_meta_ads(self, ad_account):
-		"""Sync data from Meta Ads API"""
-		url = f"https://graph.facebook.com/v18.0/{ad_account.ad_account_id}/insights"
+		"""Sync data from Meta Ads API using Social Media Network configuration"""
+		oauth_token = ad_account.get_oauth_token()
+		
+		# Get API endpoint from Social Media Network doctype
+		network = frappe.get_cached_doc("Social Media Network", self.platform)
+		base_url = network.api_base_url or "https://graph.facebook.com/v18.0"
+		analytics_endpoint = network.analytics_endpoint or "{account_id}/insights"
+		
+		# Replace placeholders
+		endpoint = analytics_endpoint.replace("{account_id}", ad_account.ad_account_id)
+		url = f"{base_url}/{endpoint}"
 		
 		params = {
-			"access_token": ad_account.get_password("access_token"),
+			"access_token": oauth_token.access_token,
 			"fields": "campaign_id,campaign_name,impressions,clicks,spend,actions,action_values",
 			"time_range": json.dumps({
 				"since": str(self.sync_start_date or getdate()),
@@ -123,6 +132,7 @@ class AnalyticsConnector(Document):
 
 	def _sync_google_ads(self, ad_account):
 		"""Sync data from Google Ads API"""
+		oauth_token = ad_account.get_oauth_token()
 		# Google Ads API v14
 		url = f"https://googleads.googleapis.com/v14/customers/{ad_account.customer_id}/googleAds:searchStream"
 		
@@ -133,7 +143,7 @@ class AnalyticsConnector(Document):
 			pass 
 
 		headers = {
-			"Authorization": f"Bearer {ad_account.get_password('access_token')}",
+			"Authorization": f"Bearer {oauth_token.access_token}",
 			"developer-token": developer_token or "INSERT_DEV_TOKEN",
 			"login-customer-id": ad_account.customer_id 
 		}
@@ -166,8 +176,14 @@ class AnalyticsConnector(Document):
 		return self._sync_linkedin_ads(ad_account)
 
 	def _sync_linkedin_ads(self, ad_account):
-		"""Sync data from LinkedIn Ads API"""
-		url = "https://api.linkedin.com/v2/adAnalyticsV2"
+		"""Sync data from LinkedIn Ads API using Social Media Network configuration"""
+		oauth_token = ad_account.get_oauth_token()
+		
+		# Get API endpoint from Social Media Network doctype
+		network = frappe.get_cached_doc("Social Media Network", self.platform)
+		base_url = network.api_base_url or "https://api.linkedin.com/v2"
+		analytics_endpoint = network.analytics_endpoint or "adAnalyticsV2"
+		url = f"{base_url}/{analytics_endpoint}"
 		
 		params = {
 			"q": "analytics",
@@ -183,7 +199,7 @@ class AnalyticsConnector(Document):
 		}
 
 		headers = {
-			"Authorization": f"Bearer {ad_account.get_password('access_token')}",
+			"Authorization": f"Bearer {oauth_token.access_token}",
 			"X-Restli-Protocol-Version": "2.0.0"
 		}
 
@@ -322,14 +338,23 @@ class AnalyticsConnector(Document):
 	
 	@frappe.whitelist()
 	def get_platform_campaigns(self):
-		"""Fetch campaigns from platform for mapping"""
+		"""Fetch campaigns from platform using Social Media Network configuration"""
 		try:
 			ad_account = frappe.get_doc("Ad Account", self.ad_account)
+			oauth_token = ad_account.get_oauth_token()
+			
+			# Get API configuration from Social Media Network doctype
+			network = frappe.get_cached_doc("Social Media Network", self.platform)
+			base_url = network.api_base_url
+			
+			if not base_url:
+				return {"status": "Error", "message": f"No API configuration found for {self.platform}"}
 			
 			if self.platform == "Meta Ads":
-				url = f"https://graph.facebook.com/v18.0/{ad_account.ad_account_id}/campaigns"
+				# Use {account_id}/campaigns pattern
+				url = f"{base_url}/{ad_account.ad_account_id}/campaigns"
 				params = {
-					"access_token": ad_account.get_password("access_token"),
+					"access_token": oauth_token.access_token,
 					"fields": "id,name,status,objective",
 					"limit": 100
 				}
@@ -341,7 +366,7 @@ class AnalyticsConnector(Document):
 				return {"status": "Success", "campaigns": campaigns}
 			
 			else:
-				return {"status": "Error", "message": f"Not implemented for {self.platform}"}
+				return {"status": "Error", "message": f"Campaign listing not implemented for {self.platform}"}
 				
 		except Exception as e:
 			return {"status": "Error", "message": str(e)}

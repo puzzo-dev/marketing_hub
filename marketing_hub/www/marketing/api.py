@@ -28,13 +28,6 @@ def get_dashboard_data():
 			"status": "Running"
 		})
 		
-		# Connectors Status (Merged from analytics.py)
-		connectors = frappe.get_all("Analytics Connector",
-			fields=["name", "connector_name", "platform", "sync_status", "last_sync_date"],
-			filters={"enabled": 1},
-			order_by="platform"
-		)
-		
 		# Total spend (last 30 days)
 		total_spend = frappe.db.get_value(
 			"Analytics Daily Log",

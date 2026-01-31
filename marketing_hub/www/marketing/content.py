@@ -230,12 +230,14 @@ def get_asset_types():
 
 @frappe.whitelist()
 def get_channels():
-	"""Get list of available channels"""
-	return [
-		"Email", "WhatsApp", "SMS", "Push Notification",
-		"Google Ads", "Meta Ads", "LinkedIn Ads", "TikTok Ads",
-		"Twitter/X Ads", "Reddit Ads", "Social Media", "Website", "Print"
-	]
+	"""Get list of available channels from Social Media Network doctype"""
+	networks = frappe.get_all(
+		"Social Media Network",
+		filters={"is_active": 1},
+		fields=["network_name"],
+		order_by="network_name"
+	)
+	return [n.network_name for n in networks]
 
 
 @frappe.whitelist()

@@ -16,28 +16,15 @@ def get_analytics_data():
     """Get analytics overview data"""
     try:
         return {
-            "connectors": get_connectors(),
             "channel_performance": get_channel_performance(),
             "daily_metrics": get_daily_metrics(),
         }
     except Exception as e:
         frappe.log_error(f"Analytics data error: {str(e)}")
         return {
-            "connectors": [],
             "channel_performance": [],
             "daily_metrics": [],
         }
-
-def get_connectors():
-    """Fetch analytics connectors status"""
-    try:
-        return frappe.get_all("Analytics Connector",
-            fields=["name", "connector_name", "platform", "sync_status", "last_sync_date"],
-            filters={"enabled": 1},
-            order_by="platform"
-        )
-    except:
-        return []
 
 def get_channel_performance():
     """Get aggregated performance by channel"""

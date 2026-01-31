@@ -161,19 +161,23 @@ def update_metrics(post_name, metrics):
 
 @frappe.whitelist()
 def get_platform_best_time(platform):
-	"""Get best posting time recommendations for platform"""
-	# Placeholder data - in production, this would use analytics
-	best_times = {
-		"Facebook": "1-3 PM on weekdays",
-		"Instagram": "11 AM - 1 PM, Wednesday through Friday",
-		"Twitter/X": "8-10 AM and 6-9 PM on weekdays",
-		"LinkedIn": "10-11 AM on Tuesday, Wednesday, Thursday",
-		"TikTok": "6-10 PM, Tuesday through Thursday",
-		"YouTube": "2-4 PM on weekdays",
-		"Pinterest": "8-11 PM on weekdays"
-	}
-
-	return best_times.get(platform, "Best times vary by audience")
+	"""Get best posting time recommendations for platform from Social Media Network doctype"""
+	try:
+		network = frappe.get_cached_doc("Social Media Network", platform)
+		if network.best_practices:
+			# Extract best times from best practices if mentioned
+			practices = network.best_practices.split("\n") if isinstance(network.best_practices, str) else []
+			for practice in practices:
+				if "time" in practice.lower() or "post" in practice.lower():
+					return practice
+					
+		# Check if there's a best_posting_times field in description
+		if network.description and "best time" in network.description.lower():
+			return network.description
+	except:
+		pass
+	
+	return "Best times vary by audience - analyze your specific audience engagement data"
 
 
 def publish_scheduled_posts():

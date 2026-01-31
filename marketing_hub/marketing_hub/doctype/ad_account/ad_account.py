@@ -11,129 +11,71 @@ import json
 
 class AdAccount(Document):
 	def validate(self):
-		"""Validate platform-specific fields"""
-		if self.platform == "Meta Ads":
-			if not self.ad_account_id:
-				frappe.msgprint("Ad Account ID is required for Meta Ads", indicator="orange")
+		"""Validate OAuth configuration and platform-specific fields"""
+		# Validate OAuth configuration
+		if not self.social_login_key:
+			frappe.msgprint("Social Login Key is required for OAuth authentication", indicator="orange")
 		
-		elif self.platform == "Google Ads":
-			if not self.customer_id:
-				frappe.msgprint("Customer ID is required for Google Ads", indicator="orange")
+		if not self.oauth_user:
+			frappe.msgprint("OAuth User is required to link to OAuth Bearer Token", indicator="orange")
 		
-		elif self.platform == "LinkedIn Ads":
-			if not self.account_urn:
-				frappe.msgprint("Account URN is required for LinkedIn Ads", indicator="orange")
+		# Validate that at least one platform-specific identifier is provided
+		platform_ids = [self.ad_account_id, self.pixel_id, self.customer_id, self.account_urn, self.business_id]
+		if not any(platform_ids):
+			frappe.msgprint(
+				"Please provide at least one platform-specific identifier (Ad Account ID, Customer ID, Account URN, etc.)",
+				indicator="orange"
+			)
 	
-	def before_save(self):
-		"""Check if token needs refresh"""
-		if self.token_expiry and self.refresh_token:
-			if now_datetime() >= self.token_expiry:
-				try:
-					self.refresh_access_token()
-				except Exception as e:
-					frappe.log_error(f"Token refresh failed: {str(e)}", "Ad Account Token Refresh")
-	
-	def refresh_access_token(self):
-		"""Refresh OAuth access token using refresh token"""
-		if not self.refresh_token:
-			frappe.throw("Refresh token not available")
+	def get_oauth_token(self):
+		"""Get OAuth Bearer Token for the configured user."""
+		if not self.oauth_user or not self.social_login_key:
+			frappe.throw("OAuth User and Social Login Key must be configured")
 		
-		platform_configs = {
-			"Meta Ads": {
-				"url": "https://graph.facebook.com/v18.0/oauth/access_token",
-				"params": {
-					"grant_type": "fb_exchange_token",
-					"client_id": self.client_id,
-					"client_secret": self.get_password("client_secret"),
-					"fb_exchange_token": self.get_password("access_token")
-				}
+		oauth_token = frappe.get_all(
+			"OAuth Bearer Token",
+			filters={
+				"user": self.oauth_user,
+				"client": self.social_login_key,
+				"status": "Active"
 			},
-			"Google Ads": {
-				"url": "https://oauth2.googleapis.com/token",
-				"data": {
-					"client_id": self.client_id,
-					"client_secret": self.get_password("client_secret"),
-					"refresh_token": self.get_password("refresh_token"),
-					"grant_type": "refresh_token"
-				}
-			},
-			"LinkedIn Ads": {
-				"url": "https://www.linkedin.com/oauth/v2/accessToken",
-				"data": {
-					"grant_type": "refresh_token",
-					"refresh_token": self.get_password("refresh_token"),
-					"client_id": self.client_id,
-					"client_secret": self.get_password("client_secret")
-				}
-			}
-		}
+			fields=["name", "access_token", "refresh_token", "expiration_time"],
+			limit=1
+		)
 		
-		config = platform_configs.get(self.platform)
-		if not config:
-			frappe.throw(f"Token refresh not implemented for {self.platform}")
+		if not oauth_token:
+			frappe.throw(f"No active OAuth Bearer Token found for user {self.oauth_user}")
 		
-		try:
-			if "params" in config:
-				response = requests.get(config["url"], params=config["params"])
-			else:
-				response = requests.post(config["url"], data=config["data"])
-			
-			response.raise_for_status()
-			data = response.json()
-			
-			# Update access token
-			self.access_token = data.get("access_token")
-			
-			# Update expiry
-			expires_in = data.get("expires_in", 3600)  # Default 1 hour
-			self.token_expiry = add_to_date(now_datetime(), seconds=expires_in)
-			
-			# Update refresh token if provided
-			if data.get("refresh_token"):
-				self.refresh_token = data.get("refresh_token")
-			
-			self.sync_status = "Success"
-			self.last_sync = now_datetime()
-			
-			frappe.msgprint(f"Access token refreshed successfully for {self.account_name}", indicator="green")
-			
-		except Exception as e:
-			self.sync_status = "Failed"
-			self.error_log = str(e)
-			frappe.log_error(f"Token refresh failed: {str(e)}", "Ad Account Token Refresh")
-			frappe.throw(f"Failed to refresh token: {str(e)}")
+		return frappe.get_doc("OAuth Bearer Token", oauth_token[0].name)
 	
 	@frappe.whitelist()
 	def test_connection(self):
-		"""Test API connection with current credentials"""
-		if not self.access_token:
-			return {"status": "Error", "message": "Access token not configured"}
+		"""Test API connection using OAuth Bearer Token"""
+		try:
+			oauth_token = self.get_oauth_token()
+			access_token = oauth_token.access_token
+		except Exception as e:
+			return {"status": "Error", "message": str(e)}
 		
-		platform_tests = {
-			"Meta Ads": {
-				"url": f"https://graph.facebook.com/v18.0/{self.ad_account_id or 'me'}",
-				"params": {"access_token": self.get_password("access_token")}
-			},
-			"Google Ads": {
-				"url": f"https://googleads.googleapis.com/v14/customers/{self.customer_id}",
-				"headers": {"Authorization": f"Bearer {self.get_password('access_token')}"}
-			},
-			"LinkedIn Ads": {
-				"url": "https://api.linkedin.com/v2/me",
-				"headers": {"Authorization": f"Bearer {self.get_password('access_token')}"}
-			}
-		}
+		# Get Social Media Network configuration
+		network = frappe.get_doc("Social Media Network", self.platform)
 		
-		test_config = platform_tests.get(self.platform)
-		if not test_config:
-			return {"status": "Error", "message": f"Connection test not implemented for {self.platform}"}
+		if not network.api_base_url:
+			return {"status": "Error", "message": f"No API configuration found for {self.platform}"}
+		
+		# Build test URL based on platform
+		if self.ad_account_id:
+			test_url = f"{network.api_base_url}/{self.ad_account_id}"
+		elif self.customer_id:
+			test_url = f"{network.api_base_url}/{self.customer_id}"
+		else:
+			test_url = f"{network.api_base_url}/me"
+		
+		# Use Bearer token auth for OAuth platforms
+		headers = {"Authorization": f"Bearer {access_token}"}
 		
 		try:
-			if "params" in test_config:
-				response = requests.get(test_config["url"], params=test_config["params"])
-			else:
-				response = requests.get(test_config["url"], headers=test_config["headers"])
-			
+			response = requests.get(test_url, headers=headers)
 			response.raise_for_status()
 			
 			self.sync_status = "Success"
@@ -159,15 +101,6 @@ class AdAccount(Document):
 
 
 @frappe.whitelist()
-def refresh_token(ad_account_name):
-	"""Refresh access token for an ad account"""
-	doc = frappe.get_doc("Ad Account", ad_account_name)
-	doc.refresh_access_token()
-	doc.save()
-	return {"status": "Success", "message": "Token refreshed successfully"}
-
-
-@frappe.whitelist()
 def test_account_connection(ad_account_name):
 	"""Test connection for an ad account"""
 	doc = frappe.get_doc("Ad Account", ad_account_name)
@@ -175,15 +108,29 @@ def test_account_connection(ad_account_name):
 
 
 @frappe.whitelist()
-def get_authorization_url(platform, client_id, redirect_uri):
-	"""Generate OAuth authorization URL"""
+def get_authorization_url(platform, social_login_key, redirect_uri):
+	"""Generate OAuth authorization URL from Social Login Key configuration"""
+	# Get Social Login Key document (contains client_id and OAuth URLs)
+	try:
+		login_key = frappe.get_doc("Social Login Key", social_login_key)
+	except Exception as e:
+		return f"#error-social-login-key-not-found"
+	
+	if not login_key.client_id or not login_key.authorize_url:
+		return f"#error-incomplete-social-login-key-config"
+	
+	# Get Social Media Network for additional config like scopes
+	network = frappe.get_doc("Social Media Network", platform)
+	
+	# Build authorization URL
+	auth_url = f"{login_key.authorize_url}?client_id={login_key.client_id}&redirect_uri={redirect_uri}&response_type=code"
+	
+	# Add platform-specific parameters
 	if platform == "Google Ads":
-		return f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=https://www.googleapis.com/auth/adwords&access_type=offline&prompt=consent"
-	
-	elif platform == "Meta Ads":
-		return f"https://www.facebook.com/v18.0/dialog/oauth?client_id={client_id}&redirect_uri={redirect_uri}&state=meta_ads"
-	
+		auth_url += "&scope=https://www.googleapis.com/auth/adwords&access_type=offline&prompt=consent"
 	elif platform == "LinkedIn Ads":
-		return f"https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=r_ads_reporting r_ads&state=linkedin_ads"
+		auth_url += "&scope=r_ads_reporting r_ads&state=linkedin_ads"
+	elif platform == "Meta Ads":
+		auth_url += "&state=meta_ads"
 	
-	return "#"
+	return auth_url

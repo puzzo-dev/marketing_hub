@@ -125,82 +125,84 @@ def refresh_access_token(ad_account_name):
 
 
 def get_oauth_config(platform):
-	"""Get OAuth configuration for platform"""
-	configs = {
-		"Google Ads": {
-			"token_url": "https://oauth2.googleapis.com/token",
-			"auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
-			"api_base": "https://googleads.googleapis.com/v14/customers",
-			"scopes": ["https://www.googleapis.com/auth/adwords"]
-		},
-		"Meta Ads": {
-			"token_url": "https://graph.facebook.com/v18.0/oauth/access_token",
-			"auth_url": "https://www.facebook.com/v18.0/dialog/oauth",
-			"api_base": "https://graph.facebook.com/v18.0",
-			"scopes": ["ads_management", "ads_read", "business_management"]
-		},
-		"LinkedIn Ads": {
-			"token_url": "https://www.linkedin.com/oauth/v2/accessToken",
-			"auth_url": "https://www.linkedin.com/oauth/v2/authorization",
-			"api_base": "https://api.linkedin.com/v2",
-			"scopes": ["r_ads", "r_ads_reporting", "w_organization_social"]
-		},
-		"TikTok Ads": {
-			"token_url": "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/",
-			"auth_url": "https://business-api.tiktok.com/portal/auth",
-			"api_base": "https://business-api.tiktok.com/open_api/v1.3",
-			"scopes": ["ad_management", "reporting"]
-		},
-		"Twitter Ads": {
-			"token_url": "https://api.twitter.com/2/oauth2/token",
-			"auth_url": "https://twitter.com/i/oauth2/authorize",
-			"api_base": "https://ads-api.twitter.com/11",
-			"scopes": ["tweet.read", "users.read", "offline.access"]
+	"""Get OAuth configuration from Social Login Key and Social Media Network doctypes"""
+	try:
+		# Get Social Login Key (contains OAuth URLs and client credentials)
+		social_key = frappe.get_all(
+			"Social Login Key",
+			filters={"provider_name": platform, "enable_social_login": 1},
+			fields=["name", "client_id", "client_secret", "authorize_url", "access_token_url", "api_endpoint"],
+			limit=1
+		)
+		
+		if not social_key:
+			frappe.log_error(f"No Social Login Key found for {platform}", "OAuth Config")
+			return {}
+		
+		social_key = social_key[0]
+		
+		# Get Social Media Network (contains API endpoints and specifications)
+		network = frappe.get_all(
+			"Social Media Network",
+			filters={"network_name": platform, "is_active": 1},
+			fields=["name", "api_base_url", "publish_endpoint", "analytics_endpoint", "auth_type"],
+			limit=1
+		)
+		
+		if not network:
+			frappe.log_error(f"No Social Media Network found for {platform}", "OAuth Config")
+			return {}
+		
+		network = network[0]
+		
+		# Combine configuration
+		config = {
+			"client_id": social_key.get("client_id"),
+			"client_secret": social_key.get("client_secret"),
+			"auth_url": social_key.get("authorize_url"),
+			"token_url": social_key.get("access_token_url"),
+			"api_base": network.get("api_base_url"),
+			"social_login_key": social_key.get("name")
 		}
-	}
-
-	config = configs.get(platform, {})
-
-	# Try to get client credentials from Social Login Key
-	social_key = frappe.db.get_value(
-		"Social Login Key",
-		{"provider_name": platform},
-		["client_id", "client_secret"],
-		as_dict=1
-	)
-
-	if social_key:
-		config.update(social_key)
-
-	return config
+		
+		return config
+	except Exception as e:
+		frappe.log_error(f"Error getting OAuth config for {platform}: {str(e)}", "OAuth Config")
+		return {}
 
 
 @frappe.whitelist()
 def initiate_oauth_flow(platform, company=None, redirect_uri=None):
-	"""Initiate OAuth flow for platform authentication"""
+	"""Initiate OAuth flow for platform authentication using Frappe's OAuth system"""
 	try:
 		config = get_oauth_config(platform)
-		if not config:
-			return {"error": "Platform not supported"}
+		if not config or not config.get("social_login_key"):
+			return {"error": "Platform OAuth not configured. Please set up Social Login Key."}
 
 		if not redirect_uri:
 			redirect_uri = frappe.utils.get_url(
 				"/api/method/marketing_hub.utils.oauth_integration.oauth_callback"
 			)
 
+		# Get scopes from Social Login Key
+		social_login_key = frappe.get_doc("Social Login Key", config["social_login_key"])
+		
 		# Build authorization URL
 		auth_params = {
 			"client_id": config.get("client_id"),
 			"redirect_uri": redirect_uri,
 			"response_type": "code",
-			"scope": " ".join(config.get("scopes", [])),
 			"state": frappe.generate_hash(length=20)
 		}
+		
+		# Add scopes if configured
+		if social_login_key.get("scopes"):
+			auth_params["scope"] = social_login_key.scopes
 
 		# Store state for verification
 		frappe.cache().set_value(
 			f"oauth_state_{auth_params['state']}",
-			{"platform": platform, "company": company},
+			{"platform": platform, "company": company, "social_login_key": config["social_login_key"]},
 			expires_in_sec=600
 		)
 

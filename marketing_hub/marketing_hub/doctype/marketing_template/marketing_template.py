@@ -16,62 +16,48 @@ class MarketingTemplate(Document):
         self.validate_content()
 
     def set_channel_specifications(self):
-        """Set default specifications based on channel"""
-        specs = {
-            "Meta Ads": {
-                "character_limit": 125,
-                "image_specs": "Primary: 1200x628\nSquare: 1080x1080\nStories: 1080x1920",
-                "video_specs": "Format: MP4, MOV\nDuration: 1-241 seconds\nAspect: 16:9, 1:1, 9:16"
-            },
-            "Google Ads": {
-                "character_limit": 90,
-                "image_specs": "Landscape: 1200x628\nSquare: 1200x1200\nPortrait: 960x1200",
-                "video_specs": "Format: MP4, AVI, WebM\nMax size: 1GB\nDuration: Up to 3 minutes"
-            },
-            "LinkedIn Ads": {
-                "character_limit": 150,
-                "image_specs": "Single: 1200x627\nCarousel: 1080x1080",
-                "video_specs": "Format: MP4\nDuration: 3 seconds - 30 minutes\nAspect: 16:9, 1:1, 9:16"
-            },
-            "TikTok Ads": {
-                "character_limit": 100,
-                "image_specs": "1080x1920",
-                "video_specs": "Format: MP4, MOV, MPEG, 3GP, AVI\nDuration: 5-60 seconds\nAspect: 9:16, 1:1, 16:9"
-            },
-            "Twitter/X Ads": {
-                "character_limit": 280,
-                "image_specs": "Single: 1200x675\nCarousel: 800x800",
-                "video_specs": "Format: MP4, MOV\nDuration: Up to 2:20\nAspect: 16:9, 1:1"
-            },
-            "Reddit Ads": {
-                "character_limit": 300,
-                "image_specs": "1200x628",
-                "video_specs": "Format: MP4, MOV\nDuration: Up to 15 minutes"
-            },
-            "WhatsApp": {
-                "character_limit": 1024,
-                "image_specs": "Any size, max 5MB",
-                "video_specs": "Format: MP4, 3GP\nMax size: 16MB"
-            },
-            "SMS": {
-                "character_limit": 160,
-                "image_specs": "N/A",
-                "video_specs": "N/A"
-            },
-            "Email": {
-                "character_limit": None,
-                "image_specs": "Max width: 600px",
-                "video_specs": "Embedded or linked only"
-            }
-        }
-
-        if self.channel in specs and not self.character_limit:
-            spec = specs[self.channel]
-            self.character_limit = spec["character_limit"]
-            if not self.image_specs:
-                self.image_specs = spec["image_specs"]
-            if not self.video_specs:
-                self.video_specs = spec["video_specs"]
+        """Set default specifications based on channel from Social Media Network doctype"""
+        if not self.channel:
+            return
+        
+        try:
+            # Get channel configuration from Social Media Network doctype
+            network = frappe.get_doc("Social Media Network", self.channel)
+            
+            # Set character limit
+            if network.max_text_length:
+                self.character_limit = network.max_text_length
+            
+            # Set image specs from JSON field
+            if network.image_specifications:
+                import json
+                if isinstance(network.image_specifications, str):
+                    image_specs = json.loads(network.image_specifications)
+                else:
+                    image_specs = network.image_specifications
+                
+                # Convert dict to formatted string
+                self.image_specs = "\n".join([f"{k}: {v}" for k, v in image_specs.items()])
+            
+            # Set video specs from JSON field
+            if network.video_specifications:
+                import json
+                if isinstance(network.video_specifications, str):
+                    video_specs = json.loads(network.video_specifications)
+                else:
+                    video_specs = network.video_specifications
+                
+                # Convert dict to formatted string
+                video_lines = []
+                for k, v in video_specs.items():
+                    if isinstance(v, list):
+                        video_lines.append(f"{k.title()}: {', '.join(v)}")
+                    else:
+                        video_lines.append(f"{k.title()}: {v}")
+                self.video_specs = "\n".join(video_lines)
+        
+        except Exception as e:
+            frappe.log_error(f"Error setting channel specifications: {str(e)}", "Marketing Template")
 
     def validate_content(self):
         """Validate content against channel specifications"""
