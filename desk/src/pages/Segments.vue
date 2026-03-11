@@ -1,55 +1,52 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
-    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <!-- Header -->
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-ink-gray-9">Marketing Segments</h1>
-          <p class="mt-1 text-sm text-ink-gray-6">
-            Create and manage audience segments for targeted campaigns
-          </p>
-        </div>
-        <Button @click="createNewSegment">
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Segments' }]" />
+      </template>
+      <template #right-header>
+        <Button @click="createNewSegment" variant="solid" label="New Segment">
           <template #prefix>
-            <FeatherIcon name="plus" class="h-4 w-4" />
+            <IconPlus class="h-4 w-4" />
           </template>
-          New Segment
         </Button>
-      </div>
+      </template>
+    </LayoutHeader>
 
-      <!-- Segments List -->
+    <!-- Content Area -->
+    <div class="flex-1 overflow-auto p-5">
+      <!-- Loading -->
       <div v-if="segmentsResource.loading" class="flex items-center justify-center py-12">
-        <LoadingIndicator class="h-8 w-8" />
+        <LoadingIndicator class="h-6 w-6" />
       </div>
 
-      <div v-else-if="segments.length === 0" class="py-12 text-center">
-        <div class="mx-auto max-w-md">
-          <div class="mb-4 text-4xl">👥</div>
-          <h2 class="mb-2 text-lg font-semibold text-ink-gray-9">No segments yet</h2>
-          <p class="mb-6 text-sm text-ink-gray-6">
-            Create your first segment to target specific audiences for your campaigns
-          </p>
-          <Button @click="createNewSegment">
+      <!-- Empty State -->
+      <div v-else-if="segments.length === 0" class="relative flex h-full w-full justify-center">
+        <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
+          <IconUsers class="h-7 w-7 text-ink-gray-5" />
+          <span class="text-lg font-medium text-ink-gray-8">No segments yet</span>
+          <span class="text-center text-sm text-ink-gray-6">Create your first segment to target specific audiences</span>
+          <Button @click="createNewSegment" variant="solid" label="Create First Segment">
             <template #prefix>
-              <FeatherIcon name="plus" class="h-4 w-4" />
+              <IconPlus class="h-4 w-4" />
             </template>
-            Create First Segment
           </Button>
         </div>
       </div>
 
-      <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Segments Grid -->
+      <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="segment in segments"
           :key="segment.name"
-          class="group relative rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm transition-shadow hover:shadow-md"
+          class="group relative rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm transition-shadow hover:shadow"
         >
           <!-- Segment Header -->
           <div class="mb-3 flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-base font-semibold text-ink-gray-9">
+              <h4 class="text-base font-medium text-ink-gray-9">
                 {{ segment.segment_name }}
-              </h3>
+              </h4>
               <p v-if="segment.description" class="mt-1 text-sm text-ink-gray-6">
                 {{ segment.description }}
               </p>
@@ -292,8 +289,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { createResource, Button, FormControl, FeatherIcon, LoadingIndicator, Dialog, Dropdown, Badge } from 'frappe-ui'
-import { toast } from 'frappe-ui'
+import { Breadcrumbs, createResource, Button, FormControl, LoadingIndicator, Dialog, Dropdown, Badge, toast } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
+
+import IconPlus from '~icons/lucide/plus'
+import IconUsers from '~icons/lucide/users'
 
 // Resources
 const segmentsResource = createResource({

@@ -1,38 +1,32 @@
 <template>
-  <div class="flex h-full flex-col overflow-hidden bg-surface-gray-1">
-    <!-- Header -->
-    <div class="border-b border-outline-gray-1 bg-surface-cards px-6 py-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-ink-gray-9">Content Library</h1>
-          <p class="mt-1 text-sm text-ink-gray-6">Manage your marketing assets and templates</p>
-        </div>
-        <div class="flex gap-2">
-          <Button @click="showUploadDialog = true" variant="solid">
-            <template #prefix>
-              <FeatherIcon name="upload-cloud" class="h-4 w-4" />
-            </template>
-            Upload Asset
-          </Button>
-          <Button @click="showTemplateDialog = true">
-            <template #prefix>
-              <FeatherIcon name="file-text" class="h-4 w-4" />
-            </template>
-            New Template
-          </Button>
-        </div>
-      </div>
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Content Library' }]" />
+      </template>
+      <template #right-header>
+        <Button @click="showUploadDialog = true" variant="solid" label="Upload Asset">
+          <template #prefix>
+            <IconUpload class="h-4 w-4" />
+          </template>
+        </Button>
+        <Button @click="showTemplateDialog = true" variant="outline" label="New Template">
+          <template #prefix>
+            <IconFileText class="h-4 w-4" />
+          </template>
+        </Button>
+      </template>
+    </LayoutHeader>
 
-      <!-- Tabs -->
-      <div class="mt-4">
-        <Tabs v-model="activeTab" :tabs="tabs" />
-      </div>
+    <!-- Tabs bar -->
+    <div class="border-b px-5">
+      <Tabs v-model="activeTab" :tabs="tabs" />
     </div>
 
     <!-- Content -->
     <div class="flex flex-1 overflow-hidden">
       <!-- Sidebar Filters -->
-      <div class="w-64 overflow-y-auto border-r border-outline-gray-1 bg-surface-gray-1 p-4">
+      <div class="w-64 overflow-y-auto border-r border-outline-gray-1 p-4">
         <div class="space-y-6">
           <!-- Search -->
           <div>
@@ -503,17 +497,21 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import {
+  Breadcrumbs,
   createResource,
   Badge,
   Button,
   FormControl,
   Dialog,
-  FeatherIcon,
   LoadingIndicator,
   Tabs,
   toast,
 } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 import { debounce } from 'lodash'
+
+import IconUpload from '~icons/lucide/upload-cloud'
+import IconFileText from '~icons/lucide/file-text'
 
 const activeTab = ref('assets')
 const viewMode = ref('grid')

@@ -1,147 +1,118 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
-    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <div class="mb-5 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-ink-gray-9">Social Media Posts</h1>
-        <p class="mt-1 text-sm text-ink-gray-6">Manage your social media content</p>
-      </div>
-      <Button @click="createNewPost">
-        <template #prefix>
-          <FeatherIcon name="plus" class="h-4 w-4" />
-        </template>
-        Create Post
-      </Button>
-    </div>
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Social Media' }]" />
+      </template>
+      <template #right-header>
+        <Button @click="createNewPost" variant="solid" label="Create Post">
+          <template #prefix>
+            <IconPlus class="h-4 w-4" />
+          </template>
+        </Button>
+      </template>
+    </LayoutHeader>
 
-    <!-- Stats -->
-    <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
-        <div class="text-sm font-medium text-ink-gray-5">Total Posts</div>
-        <div class="mt-2 text-3xl font-bold text-ink-gray-9">
-          {{ stats.total_posts }}
-        </div>
+    <!-- Stats + Filter Bar -->
+    <div class="flex items-center justify-between border-b px-5 py-3">
+      <div class="flex items-center gap-5 text-sm">
+        <div><span class="text-ink-gray-5">Total</span> <span class="ml-1 font-medium text-ink-gray-9">{{ stats.total_posts }}</span></div>
+        <div><span class="text-ink-gray-5">Scheduled</span> <span class="ml-1 font-medium text-ink-orange-3">{{ stats.scheduled }}</span></div>
+        <div><span class="text-ink-gray-5">Published</span> <span class="ml-1 font-medium text-ink-green-3">{{ stats.published }}</span></div>
+        <div><span class="text-ink-gray-5">Engagement</span> <span class="ml-1 font-medium text-ink-gray-9">{{ stats.engagement_rate }}%</span></div>
       </div>
-      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
-        <div class="text-sm font-medium text-ink-gray-5">Scheduled</div>
-        <div class="mt-2 text-3xl font-bold text-ink-amber-2">
-          {{ stats.scheduled }}
-        </div>
-      </div>
-      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
-        <div class="text-sm font-medium text-ink-gray-5">Published</div>
-        <div class="mt-2 text-3xl font-bold text-ink-green-2">
-          {{ stats.published }}
-        </div>
-      </div>
-      <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm">
-        <div class="text-sm font-medium text-ink-gray-5">Engagement Rate</div>
-        <div class="mt-2 text-3xl font-bold text-ink-gray-9">
-          {{ stats.engagement_rate }}%
-        </div>
+      <div class="flex gap-1.5">
+        <Button
+          v-for="filter in filters"
+          :key="filter.value"
+          :variant="activeFilter === filter.value ? 'subtle' : 'ghost'"
+          size="sm"
+          :label="filter.label"
+          @click="activeFilter = filter.value"
+        />
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="mb-4 flex space-x-2">
-      <Button
-        v-for="filter in filters"
-        :key="filter.value"
-        :variant="activeFilter === filter.value ? 'solid' : 'ghost'"
-        size="sm"
-        @click="activeFilter = filter.value"
-      >
-        {{ filter.label }}
-      </Button>
-    </div>
+    <!-- Content Area -->
+    <div class="flex-1 overflow-auto p-5">
+      <!-- Loading -->
+      <div v-if="postsResource.loading" class="flex items-center justify-center py-12">
+        <LoadingIndicator class="h-6 w-6" />
+      </div>
 
-    <!-- Posts -->
-    <div v-if="postsResource.loading" class="flex items-center justify-center py-12">
-      <LoadingIndicator class="h-8 w-8" />
-    </div>
-
-    <div v-else-if="filteredPosts.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <div v-for="post in filteredPosts" :key="post.name" class="rounded-lg border border-outline-gray-1 bg-surface-cards p-5 shadow-sm transition-shadow hover:shadow-md">
-        <div class="mb-2 flex items-start justify-between">
-          <div class="flex space-x-2">
-            <Badge :label="post.platform" variant="subtle" theme="blue" />
-            <Badge
-              :label="post.status"
-              :variant="
-                post.status === 'Published'
-                  ? 'success'
-                  : post.status === 'Scheduled'
-                  ? 'warning'
-                  : 'subtle'
-              "
-            />
+      <!-- Posts Grid -->
+      <div v-else-if="filteredPosts.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-for="post in filteredPosts" :key="post.name"
+          class="cursor-pointer rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm transition-shadow hover:shadow"
+          @click="editPost(post.name)"
+        >
+          <div class="mb-2 flex items-start justify-between">
+            <div class="flex gap-1.5">
+              <Badge :label="post.platform" variant="subtle" theme="blue" />
+              <Badge :label="post.status" variant="subtle"
+                :theme="post.status === 'Published' ? 'green' : post.status === 'Scheduled' ? 'orange' : 'gray'"
+              />
+            </div>
           </div>
-          <Button variant="ghost" size="sm" @click="editPost(post.name)">
-            <FeatherIcon name="edit-2" class="h-4 w-4" />
+
+          <h4 class="mb-1 text-base font-medium text-ink-gray-9">{{ post.post_title }}</h4>
+          <p class="mb-3 text-sm text-ink-gray-6 line-clamp-2">{{ post.content }}</p>
+
+          <img v-if="post.media_attachment" :src="post.media_attachment" alt="" class="mb-3 rounded" />
+
+          <div class="space-y-1 text-sm text-ink-gray-5">
+            <div v-if="post.scheduled_time" class="flex items-center gap-1">
+              <IconClock class="h-3.5 w-3.5" />
+              {{ formatDateTime(post.scheduled_time) }}
+            </div>
+            <div v-if="post.campaign" class="flex items-center gap-1">
+              <IconTarget class="h-3.5 w-3.5" />
+              {{ post.campaign }}
+            </div>
+          </div>
+
+          <div v-if="post.status === 'Published' && post.impressions"
+            class="mt-3 grid grid-cols-2 gap-2 border-t border-outline-gray-1 pt-3 text-sm"
+          >
+            <div>
+              <div class="text-xs text-ink-gray-5">Impressions</div>
+              <div class="font-medium text-ink-gray-9">{{ formatNumber(post.impressions) }}</div>
+            </div>
+            <div>
+              <div class="text-xs text-ink-gray-5">Engagement</div>
+              <div class="font-medium text-ink-gray-9">{{ post.engagement_rate }}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="relative flex h-full w-full justify-center">
+        <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
+          <IconShare2 class="h-7 w-7 text-ink-gray-5" />
+          <span class="text-lg font-medium text-ink-gray-8">No social posts yet</span>
+          <span class="text-center text-sm text-ink-gray-6">Create your first post to start engaging with your audience</span>
+          <Button @click="createNewPost" variant="solid" label="Create Post">
+            <template #prefix>
+              <IconPlus class="h-4 w-4" />
+            </template>
           </Button>
         </div>
-
-        <h3 class="mb-1 font-semibold text-ink-gray-9">{{ post.post_title }}</h3>
-        <p class="mb-3 text-sm text-ink-gray-6">
-          {{ post.content.slice(0, 120) }}
-          {{ post.content.length > 120 ? "..." : "" }}
-        </p>
-
-        <img
-          v-if="post.media_attachment"
-          :src="post.media_attachment"
-          alt="Post media"
-          class="mb-3 rounded"
-        />
-
-        <div class="space-y-1 text-sm text-ink-gray-5">
-          <div v-if="post.scheduled_time" class="flex items-center">
-            <FeatherIcon name="clock" class="mr-1 h-4 w-4" />
-            {{ formatDateTime(post.scheduled_time) }}
-          </div>
-          <div v-if="post.campaign" class="flex items-center">
-            <FeatherIcon name="target" class="mr-1 h-4 w-4" />
-            {{ post.campaign }}
-          </div>
-        </div>
-
-        <div
-          v-if="post.status === 'Published' && post.impressions"
-          class="mt-3 grid grid-cols-2 gap-2 border-t border-outline-gray-1 pt-3 text-sm"
-        >
-          <div>
-            <div class="text-ink-gray-5">Impressions</div>
-            <div class="font-semibold text-ink-gray-9">{{ formatNumber(post.impressions) }}</div>
-          </div>
-          <div>
-            <div class="text-ink-gray-5">Engagement</div>
-            <div class="font-semibold text-ink-gray-9">{{ post.engagement_rate }}%</div>
-          </div>
-        </div>
       </div>
-    </div>
-
-    <div v-else class="rounded-lg border-2 border-dashed border-outline-gray-2 bg-surface-cards p-12 text-center">
-      <FeatherIcon name="share-2" class="mx-auto h-12 w-12 text-ink-gray-4" />
-      <h3 class="mt-2 text-sm font-medium text-ink-gray-9">No social posts yet</h3>
-      <p class="mt-1 text-sm text-ink-gray-5">
-        Create your first post to start engaging with your audience
-      </p>
-      <Button class="mt-4" @click="createNewPost">
-        <template #prefix>
-          <FeatherIcon name="plus" class="h-4 w-4" />
-        </template>
-        Create Post
-      </Button>
-    </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { createResource, LoadingIndicator } from "frappe-ui";
+import { Breadcrumbs, createResource, LoadingIndicator } from "frappe-ui";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import LayoutHeader from "@/components/LayoutHeader.vue";
+
+import IconPlus from '~icons/lucide/plus'
+import IconClock from '~icons/lucide/clock'
+import IconTarget from '~icons/lucide/target'
+import IconShare2 from '~icons/lucide/share-2'
 
 const router = useRouter();
 

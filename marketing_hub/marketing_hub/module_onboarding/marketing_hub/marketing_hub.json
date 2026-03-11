@@ -5,6 +5,12 @@
         },
         {
             "role": "Sales Manager"
+        },
+        {
+            "role": "Marketing Manager"
+        },
+        {
+            "role": "Marketing User"
         }
     ],
     "creation": "2026-01-18 12:00:00.000000",
@@ -32,6 +38,7 @@
             "step": "Launch First Campaign"
         }
     ],
+    "is_complete": 0,
     "subtitle": "Connect ads, analytics, and launch campaigns.",
     "success_message": "You're ready to market! Go to the Dashboard.",
     "title": "Get Started with Marketing Hub"

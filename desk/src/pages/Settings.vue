@@ -1,35 +1,38 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
-    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-4xl">
-        <div class="mb-6 flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-ink-gray-9">Settings</h1>
-            <p class="mt-1 text-sm text-ink-gray-6">Configure Marketing Hub preferences and integrations</p>
-          </div>
-          <Button variant="subtle" size="sm" @click="openFullSettings">
-            <template #prefix>
-              <FeatherIcon name="settings" class="h-4 w-4" />
-            </template>
-            Advanced Settings (Desk)
-          </Button>
-        </div>
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Settings' }]" />
+      </template>
+      <template #right-header>
+        <Button variant="ghost" label="Open in Desk" @click="openFullSettings">
+          <template #prefix>
+            <IconExternalLink class="h-4 w-4" />
+          </template>
+        </Button>
+        <Button variant="solid" label="Save" :loading="saving" @click="saveSettings" />
+      </template>
+    </LayoutHeader>
 
-        <!-- Tabs -->
-        <div class="mb-6 flex gap-1 border-b border-outline-gray-1">
-          <button
-            v-for="tab in tabs" :key="tab.key"
-            @click="activeTab = tab.key"
-            class="px-4 py-2.5 text-sm font-medium transition-colors"
-            :class="activeTab === tab.key
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-ink-gray-5 hover:text-ink-gray-9'"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
+    <!-- Tabs -->
+    <div class="border-b px-5">
+      <div class="flex gap-1">
+        <button
+          v-for="tab in tabs" :key="tab.key"
+          @click="activeTab = tab.key"
+          class="px-4 py-2.5 text-sm font-medium transition-colors"
+          :class="activeTab === tab.key
+            ? 'border-b-2 border-ink-gray-9 text-ink-gray-9'
+            : 'text-ink-gray-5 hover:text-ink-gray-9'"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
 
-        <div class="space-y-6">
+    <!-- Content Area -->
+    <div class="flex-1 overflow-auto p-5">
+      <div class="mx-auto max-w-4xl space-y-6">
           <!-- General Tab -->
           <template v-if="activeTab === 'general'">
             <div class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
@@ -256,12 +259,7 @@
             </div>
           </template>
 
-          <!-- Actions -->
-          <div class="flex justify-end gap-3">
-            <Button variant="solid" :loading="saving" @click="saveSettings">
-              Save Changes
-            </Button>
-          </div>
+          <!-- Actions already in header -->
         </div>
       </div>
     </div>
@@ -270,7 +268,10 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { Button, FormControl, Switch, FeatherIcon, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, toast } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
+
+import IconExternalLink from '~icons/lucide/external-link'
 
 const saving = ref(false)
 const activeTab = ref('general')

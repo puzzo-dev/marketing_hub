@@ -1,115 +1,78 @@
 <template>
-  <Dropdown :options="appOptions" placement="bottom-start" class="app-switcher-dropdown">
-    <template #default="{ open }">
+  <Popover
+    placement="right-start"
+    trigger="hover"
+    :hoverDelay="0.1"
+    :leaveDelay="0.1"
+  >
+    <template #target="{ togglePopover }">
       <button
-        class="flex h-12 w-full items-center gap-2 rounded px-2 duration-200 ease-in-out"
-        :class="open ? 'bg-surface-cards shadow-sm' : 'hover:bg-surface-gray-1'"
-        title="Switch Apps"
+        :class="[
+          active ? 'bg-surface-gray-3' : 'text-ink-gray-6',
+          'group w-full flex h-7 items-center justify-between rounded px-2 text-base hover:bg-surface-gray-2',
+        ]"
+        @click.prevent="togglePopover()"
       >
-        <BrandLogo />
-        <div v-if="isExpanded" class="flex flex-1 flex-col text-left">
-          <span class="text-sm font-medium text-ink-gray-9">Marketing Hub</span>
+        <div class="flex items-center gap-2">
+          <IconGrid class="h-4 w-4" />
+          <span class="whitespace-nowrap">Apps</span>
         </div>
-        <component
-          v-if="isExpanded"
-          :is="IconChevronDown"
-          class="h-4 w-4 text-ink-gray-5 flex-shrink-0"
-        />
+        <IconChevronRight class="h-4 w-4 text-ink-gray-5" />
       </button>
     </template>
-  </Dropdown>
+    <template #body>
+      <div
+        class="flex w-fit mx-2 min-w-32 max-w-48 flex-col rounded-lg border border-outline-gray-2 bg-surface-white p-1.5 text-sm text-ink-gray-8 shadow-xl"
+      >
+        <a
+          :href="app.route"
+          v-for="app in appsList"
+          :key="app.name"
+          class="flex items-center gap-2 rounded p-1.5 hover:bg-surface-gray-2"
+        >
+          <img class="h-6 w-6" :src="app.logo" />
+          <span class="max-w-18 w-full truncate">{{ app.title }}</span>
+        </a>
+      </div>
+    </template>
+  </Popover>
 </template>
 
 <script setup>
-import { Dropdown } from "frappe-ui";
-import BrandLogo from "./BrandLogo.vue";
-import { computed } from "vue";
-import IconChevronDown from "~icons/lucide/chevron-down";
+import { Popover, createResource } from 'frappe-ui'
+import { computed } from 'vue'
+import IconGrid from '~icons/lucide/grid'
+import IconChevronRight from '~icons/lucide/chevron-right'
 
-const props = defineProps({
-  isExpanded: {
-    type: Boolean,
-    default: true,
-  },
-});
+defineProps({
+  active: Boolean,
+})
 
-const installedApps = computed(() => window.installed_apps || []);
-
-const appConfig = {
-  frappe: { label: "Frappe Desk", icon: "grid", url: "/app" },
-  erpnext: { label: "ERPNext", icon: "package", url: "/app" },
-  crm: { label: "CRM", icon: "users", url: "/crm" },
-  helpdesk: { label: "Helpdesk", icon: "life-buoy", url: "/helpdesk" },
-  marketing_hub: { label: "Marketing Hub", icon: "megaphone", url: "/marketing" },
-  hrms: { label: "HR", icon: "user-check", url: "/app" },
-  insights: { label: "Insights", icon: "bar-chart", url: "/insights" },
-};
-
-const appOptions = computed(() => {
-  const apps = installedApps.value
-    .map(app => {
-      const config = appConfig[app] || { 
-        label: app.charAt(0).toUpperCase() + app.slice(1), 
-        icon: "box",
-        url: "/app"
-      };
-      return {
-        label: config.label,
-        icon: config.icon,
-        onClick: () => window.location.href = config.url,
-      };
+const apps = createResource({
+  url: 'frappe.apps.get_apps',
+  cache: 'apps',
+  auto: true,
+  transform: (data) => {
+    let _apps = [
+      {
+        name: 'frappe',
+        logo: '/assets/frappe/images/framework.png',
+        title: 'Desk',
+        route: '/app',
+      },
+    ]
+    data.map((app) => {
+      if (app.name === 'marketing_hub') return
+      _apps.push({
+        name: app.name,
+        logo: app.logo,
+        title: app.title,
+        route: app.route,
+      })
     })
-    .filter(Boolean);
+    return _apps
+  },
+})
 
-  return [
-    {
-      group: "Installed Apps",
-      hideLabel: false,
-      items: apps,
-    },
-    {
-      group: "Account",
-      hideLabel: false,
-      items: [
-        {
-          label: "My Settings",
-          icon: "settings",
-          onClick: () => window.location.href = "/app/user/" + frappe.session.user,
-        },
-        {
-          label: "Switch to Desk",
-          icon: "grid",
-          onClick: () => window.location.href = "/app",
-        },
-      ],
-    },
-    {
-      group: "Help",
-      hideLabel: false,
-      items: [
-        {
-          label: "Documentation",
-          icon: "book-open",
-          onClick: () => window.open("https://docs.erpnext.com", "_blank"),
-        },
-        {
-          label: "Support",
-          icon: "help-circle",
-          onClick: () => window.open("https://discuss.erpnext.com", "_blank"),
-        },
-      ],
-    },
-    {
-      group: "",
-      hideLabel: true,
-      items: [
-        {
-          label: "Logout",
-          icon: "log-out",
-          onClick: () => window.location.href = "/api/method/logout",
-        },
-      ],
-    },
-  ];
-});
+const appsList = computed(() => apps.data || [])
 </script>

@@ -1,20 +1,31 @@
 <template>
-  <Dropdown :options="userOptions" placement="bottom-start" class="user-menu-dropdown">
+  <Dropdown :options="dropdownItems" v-bind="$attrs">
     <template #default="{ open }">
       <button
-        class="flex h-9 w-full items-center gap-2 rounded px-2 text-sm duration-200 ease-in-out"
-        :class="open ? 'bg-surface-cards shadow-sm' : 'hover:bg-surface-gray-2'"
+        class="flex h-12 items-center rounded-md py-2 duration-300 ease-in-out"
+        :class="[
+          isCollapsed
+            ? 'w-auto px-0'
+            : open
+              ? 'w-full px-2 bg-surface-white shadow-sm'
+              : 'w-full px-2 hover:bg-surface-gray-3',
+        ]"
       >
-        <div class="flex h-6 w-6 items-center justify-center rounded bg-ink-gray-5 text-surface-white text-xs font-medium flex-shrink-0">
-          {{ userInitials }}
+        <BrandLogo class="h-8 w-8 flex-shrink-0 rounded" />
+        <div
+          v-if="!isCollapsed"
+          class="ml-2 flex flex-1 flex-col text-left duration-300 ease-in-out truncate"
+        >
+          <div class="text-base font-medium leading-none text-ink-gray-9 truncate">
+            Marketing Hub
+          </div>
+          <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
+            {{ userName }}
+          </div>
         </div>
-        <span v-show="isExpanded" class="flex-1 text-left text-ink-gray-7 truncate">
-          {{ userName }}
-        </span>
-        <component
-          v-show="isExpanded"
-          :is="IconChevronDown"
-          class="h-3 w-3 text-ink-gray-5 flex-shrink-0"
+        <IconChevronDown
+          v-if="!isCollapsed"
+          class="ml-1 h-4 w-4 text-ink-gray-5 flex-shrink-0"
         />
       </button>
     </template>
@@ -22,73 +33,43 @@
 </template>
 
 <script setup>
-import { Dropdown } from "frappe-ui";
-import { computed } from "vue";
-import IconChevronDown from "~icons/lucide/chevron-down";
+import { Dropdown } from 'frappe-ui'
+import { computed, markRaw } from 'vue'
+import IconChevronDown from '~icons/lucide/chevron-down'
+import BrandLogo from './BrandLogo.vue'
+import AppSwitcher from './AppSwitcher.vue'
 
-defineProps({
-  isExpanded: {
+const props = defineProps({
+  isCollapsed: {
     type: Boolean,
-    default: true,
+    default: false,
   },
-});
+})
 
-const userName = computed(() =>
-  (typeof frappe !== 'undefined' && frappe?.session?.user_fullname) || 'User'
-);
+const emit = defineEmits(['open-settings'])
 
-const userInitials = computed(() => {
-  const name = userName.value;
-  const parts = name.split(' ');
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-});
+const userName = computed(
+  () => (typeof frappe !== 'undefined' && frappe?.session?.user_fullname) || 'User'
+)
 
-const userOptions = computed(() => [
+const dropdownItems = computed(() => [
   {
-    group: "Account",
-    hideLabel: false,
-    items: [
-      {
-        label: "My Settings",
-        icon: "settings",
-        onClick: () => window.location.href = "/app/user/" + frappe.session.user,
-      },
-      {
-        label: "Switch to Desk",
-        icon: "grid",
-        onClick: () => window.location.href = "/app",
-      },
-    ],
+    component: markRaw(AppSwitcher),
   },
   {
-    group: "Help",
-    hideLabel: false,
-    items: [
-      {
-        label: "Documentation",
-        icon: "book-open",
-        onClick: () => window.open("https://docs.erpnext.com", "_blank"),
-      },
-      {
-        label: "Support",
-        icon: "help-circle",
-        onClick: () => window.open("https://discuss.erpnext.com", "_blank"),
-      },
-    ],
+    icon: 'settings',
+    label: 'Settings',
+    onClick: () => emit('open-settings'),
   },
   {
-    group: "",
-    hideLabel: true,
-    items: [
-      {
-        label: "Log Out",
-        icon: "log-out",
-        onClick: () => window.location.href = "/api/method/logout",
-      },
-    ],
+    icon: 'grid',
+    label: 'Switch to Desk',
+    onClick: () => (window.location.href = '/app'),
   },
-]);
+  {
+    icon: 'log-out',
+    label: 'Log out',
+    onClick: () => (window.location.href = '/api/method/logout'),
+  },
+])
 </script>
