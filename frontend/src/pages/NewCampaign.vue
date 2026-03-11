@@ -18,7 +18,7 @@
 
         <div class="space-y-6">
           <!-- Basic Info -->
-          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
             <h2 class="mb-4 text-base font-medium text-ink-gray-9">Campaign Details</h2>
             <div class="space-y-4">
               <FormControl
@@ -52,7 +52,7 @@
                 <textarea
                   v-model="form.description"
                   rows="4"
-                  class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-outline-gray-4 focus:outline-none focus:ring-1 focus:ring-outline-gray-4"
                   placeholder="Describe your campaign objectives..."
                 ></textarea>
               </div>
@@ -60,7 +60,7 @@
           </div>
 
           <!-- Schedule & Budget -->
-          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
             <h2 class="mb-4 text-base font-medium text-ink-gray-9">Schedule & Budget</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <FormControl
@@ -83,7 +83,7 @@
           </div>
 
           <!-- Channel Settings -->
-          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
             <h2 class="mb-4 text-base font-medium text-ink-gray-9">Channels</h2>
             <div class="mb-4 flex items-center justify-between">
               <div>
@@ -114,7 +114,7 @@
           </div>
 
           <!-- CRM Link -->
-          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
             <h2 class="mb-4 text-base font-medium text-ink-gray-9">CRM Integration</h2>
             <FormControl
               v-model="form.email_campaign"

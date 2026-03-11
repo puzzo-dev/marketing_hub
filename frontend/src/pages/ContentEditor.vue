@@ -31,7 +31,7 @@
             <textarea
               v-model="formData.content_text"
               rows="15"
-              class="w-full rounded-md border border-outline-gray-2 p-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              class="w-full rounded-md border border-outline-gray-2 p-4 text-sm focus:border-outline-gray-4 focus:outline-none focus:ring-1 focus:ring-outline-gray-4"
               placeholder="Write your content here..."
             ></textarea>
             <p class="mt-1 text-sm text-ink-gray-5 flex justify-between">

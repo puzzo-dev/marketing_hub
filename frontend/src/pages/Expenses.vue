@@ -30,7 +30,7 @@
       </div>
 
       <!-- Budget Trend Chart -->
-      <div v-if="budgetOverview.data?.chart" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5 shadow-sm">
+      <div v-if="budgetOverview.data?.chart" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5">
         <h4 class="mb-4 text-base font-medium text-ink-gray-9">Budget Trend (Last 6 Months)</h4>
         <AxisChart
           :data="budgetChartData"
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Recent Expenses Table -->
-      <div class="rounded-lg border border-outline-gray-1 bg-surface-white shadow-sm">
+      <div class="rounded-lg border border-outline-gray-1 bg-surface-white">
         <div class="border-b border-outline-gray-1 px-5 py-3">
           <h4 class="text-base font-medium text-ink-gray-9">Recent Expenses</h4>
         </div>

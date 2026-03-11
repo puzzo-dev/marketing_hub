@@ -22,7 +22,7 @@
           <!-- Content Column (2 cols) -->
           <div class="lg:col-span-2 space-y-6">
             <!-- Basic Info -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h2 class="mb-4 text-base font-medium text-ink-gray-9">Post Details</h2>
               <div class="space-y-4">
                 <FormControl
@@ -37,7 +37,7 @@
                   <textarea
                     v-model="form.content"
                     rows="6"
-                    class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-outline-gray-4 focus:outline-none focus:ring-1 focus:ring-outline-gray-4"
                     placeholder="Write your post content..."
                     @input="updateCharCount"
                   ></textarea>
@@ -51,7 +51,7 @@
             </div>
 
             <!-- Media -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h2 class="mb-4 text-base font-medium text-ink-gray-9">Media</h2>
               <div class="rounded-lg border-2 border-dashed border-outline-gray-3 p-8 text-center">
                 <FeatherIcon name="image" class="mx-auto h-10 w-10 text-ink-gray-4" />
@@ -65,7 +65,7 @@
             </div>
 
             <!-- Targeting -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h2 class="mb-4 text-base font-medium text-ink-gray-9">Targeting & Tags</h2>
               <div class="space-y-4">
                 <FormControl
@@ -93,7 +93,7 @@
           <!-- Settings Column (1 col) -->
           <div class="space-y-6">
             <!-- Platform & Campaign -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Publishing</h3>
               <div class="space-y-4">
                 <FormControl
@@ -131,7 +131,7 @@
             </div>
 
             <!-- Schedule -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Schedule</h3>
               <FormControl
                 v-model="form.scheduled_time"
@@ -141,7 +141,7 @@
             </div>
 
             <!-- Options -->
-            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6">
               <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Options</h3>
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
