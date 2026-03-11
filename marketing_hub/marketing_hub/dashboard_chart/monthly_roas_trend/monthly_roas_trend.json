@@ -19,7 +19,7 @@
  "report_name": "ROAS Analysis",
  "source": "",
  "time_interval": "Monthly",
- "timespan": "Last 6 Months",
+ "timespan": "Last Year",
  "timeseries": 1,
  "type": "Line",
  "use_report_chart": 1,
