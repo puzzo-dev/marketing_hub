@@ -15,7 +15,8 @@
         "max_mentions": 50,
         "max_images": 10,
         "max_videos": 1,
-        "best_practices": "Best engagement: 1-2 posts/day. Optimal post length: 40-80 chars. Use images/video for 2.3x more engagement."
+        "best_practices": "Best engagement: 1-2 posts/day. Optimal post length: 40-80 chars. Use images/video for 2.3x more engagement.",
+        "name": "Facebook"
     },
     {
         "doctype": "Social Media Network",
@@ -33,7 +34,8 @@
         "max_mentions": 20,
         "max_images": 10,
         "max_videos": 1,
-        "best_practices": "Use 3-5 relevant hashtags. Carousel posts get highest engagement. Optimal image: 1080x1080 or 1080x1350."
+        "best_practices": "Use 3-5 relevant hashtags. Carousel posts get highest engagement. Optimal image: 1080x1080 or 1080x1350.",
+        "name": "Instagram"
     },
     {
         "doctype": "Social Media Network",
@@ -51,7 +53,8 @@
         "max_mentions": 10,
         "max_images": 9,
         "max_videos": 1,
-        "best_practices": "B2B focus. Post during business hours. Use 3-5 hashtags. Professional tone. Articles get 8x views."
+        "best_practices": "B2B focus. Post during business hours. Use 3-5 hashtags. Professional tone. Articles get 8x views.",
+        "name": "LinkedIn"
     },
     {
         "doctype": "Social Media Network",
@@ -69,7 +72,8 @@
         "max_mentions": 10,
         "max_images": 4,
         "max_videos": 1,
-        "best_practices": "Keep it concise. Use 1-2 hashtags. Threads boost engagement. Images increase retweets by 150%."
+        "best_practices": "Keep it concise. Use 1-2 hashtags. Threads boost engagement. Images increase retweets by 150%.",
+        "name": "Twitter/X"
     },
     {
         "doctype": "Social Media Network",
@@ -87,7 +91,8 @@
         "max_mentions": 5,
         "max_images": 0,
         "max_videos": 1,
-        "best_practices": "Video-first platform. 15-60 sec optimal. Use trending sounds. Post 1-3 times daily."
+        "best_practices": "Video-first platform. 15-60 sec optimal. Use trending sounds. Post 1-3 times daily.",
+        "name": "TikTok"
     },
     {
         "doctype": "Social Media Network",
@@ -105,7 +110,8 @@
         "max_mentions": 0,
         "max_images": 0,
         "max_videos": 1,
-        "best_practices": "SEO-optimized titles. Custom thumbnails. 10-20 min optimal for long form. Shorts < 60 sec."
+        "best_practices": "SEO-optimized titles. Custom thumbnails. 10-20 min optimal for long form. Shorts < 60 sec.",
+        "name": "YouTube"
     },
     {
         "doctype": "Social Media Network",
@@ -123,7 +129,8 @@
         "max_mentions": 0,
         "max_images": 1,
         "max_videos": 1,
-        "best_practices": "Ephemeral content. Story format. AR filters for engagement. Young demographic focus."
+        "best_practices": "Ephemeral content. Story format. AR filters for engagement. Young demographic focus.",
+        "name": "Snapchat"
     },
     {
         "doctype": "Social Media Network",
@@ -139,7 +146,8 @@
         "supports_html": 0,
         "max_images": 10,
         "max_videos": 1,
-        "best_practices": "A/B test creatives. Use Lookalike audiences. Primary text: 125 chars. Headline: 40 chars."
+        "best_practices": "A/B test creatives. Use Lookalike audiences. Primary text: 125 chars. Headline: 40 chars.",
+        "name": "Meta Ads"
     },
     {
         "doctype": "Social Media Network",
@@ -155,7 +163,8 @@
         "supports_html": 0,
         "max_images": 15,
         "max_videos": 5,
-        "best_practices": "Headline: 30 chars. Description: 90 chars. Use responsive ads. Negative keywords important."
+        "best_practices": "Headline: 30 chars. Description: 90 chars. Use responsive ads. Negative keywords important.",
+        "name": "Google Ads"
     },
     {
         "doctype": "Social Media Network",
@@ -171,7 +180,8 @@
         "supports_html": 0,
         "max_images": 5,
         "max_videos": 1,
-        "best_practices": "B2B targeting. Job title targeting effective. In-mail for direct outreach. Minimum $10/day."
+        "best_practices": "B2B targeting. Job title targeting effective. In-mail for direct outreach. Minimum $10/day.",
+        "name": "LinkedIn Ads"
     },
     {
         "doctype": "Social Media Network",
@@ -187,7 +197,8 @@
         "supports_html": 0,
         "max_images": 0,
         "max_videos": 1,
-        "best_practices": "Video ads only. 9-15 sec optimal. UGC-style performs better. Spark Ads leverage organic content."
+        "best_practices": "Video ads only. 9-15 sec optimal. UGC-style performs better. Spark Ads leverage organic content.",
+        "name": "TikTok Ads"
     },
     {
         "doctype": "Social Media Network",
@@ -203,7 +214,8 @@
         "supports_html": 0,
         "max_images": 4,
         "max_videos": 1,
-        "best_practices": "Promoted tweets for awareness. Website cards for clicks. Keyword targeting for intent."
+        "best_practices": "Promoted tweets for awareness. Website cards for clicks. Keyword targeting for intent.",
+        "name": "Twitter/X Ads"
     },
     {
         "doctype": "Social Media Network",
@@ -219,7 +231,8 @@
         "supports_html": 0,
         "max_images": 1,
         "max_videos": 1,
-        "best_practices": "Template messages for notifications. Interactive buttons. Catalog for products. Business API required."
+        "best_practices": "Template messages for notifications. Interactive buttons. Catalog for products. Business API required.",
+        "name": "WhatsApp"
     },
     {
         "doctype": "Social Media Network",
@@ -235,7 +248,8 @@
         "supports_html": 0,
         "max_images": 0,
         "max_videos": 0,
-        "best_practices": "160 char limit per segment. Include opt-out. Personalize with name. Send during business hours."
+        "best_practices": "160 char limit per segment. Include opt-out. Personalize with name. Send during business hours.",
+        "name": "SMS"
     },
     {
         "doctype": "Social Media Network",
@@ -251,7 +265,8 @@
         "supports_html": 1,
         "max_images": 50,
         "max_videos": 0,
-        "best_practices": "Personalized subject lines. Mobile-responsive design. Clear CTA. A/B test subject lines."
+        "best_practices": "Personalized subject lines. Mobile-responsive design. Clear CTA. A/B test subject lines.",
+        "name": "Email"
     },
     {
         "doctype": "Social Media Network",
@@ -267,6 +282,7 @@
         "supports_html": 0,
         "max_images": 1,
         "max_videos": 0,
-        "best_practices": "Bold visuals. Minimal text (7 words or less). High contrast colors. Location-specific messaging."
+        "best_practices": "Bold visuals. Minimal text (7 words or less). High contrast colors. Location-specific messaging.",
+        "name": "Out of Home (OOH)"
     }
 ]
