@@ -21,6 +21,7 @@
     "time_interval": "Monthly",
     "timespan": "Last Year",
     "timeseries": 1,
+    "value_based_on": "total_budget",
     "group_by_type": "Sum",
     "aggregate_function_based_on": "total_budget",
     "type": "Line",

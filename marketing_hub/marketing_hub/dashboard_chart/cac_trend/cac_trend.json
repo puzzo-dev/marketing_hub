@@ -12,7 +12,7 @@
     "name": "CAC Trend",
     "source": "CAC Trend",
     "time_interval": "Weekly",
-    "timespan": "Last 3 Months",
+    "timespan": "Last Quarter",
     "timeseries": 0,
     "type": "Line",
     "color": "#48BB78",
