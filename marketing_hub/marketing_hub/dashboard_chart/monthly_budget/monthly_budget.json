@@ -17,6 +17,7 @@
     "number_of_groups": 0,
     "owner": "Administrator",
     "source": "Marketing Campaign",
+    "based_on": "start_date",
     "time_interval": "Monthly",
     "timespan": "Last Year",
     "timeseries": 1,

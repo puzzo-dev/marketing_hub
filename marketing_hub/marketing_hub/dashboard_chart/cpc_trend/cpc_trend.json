@@ -1,6 +1,6 @@
 {
     "chart_name": "CPC Trend",
-    "chart_type": "Sum",
+    "chart_type": "Average",
     "creation": "2026-03-11 10:00:00.000000",
     "docstatus": 0,
     "doctype": "Dashboard Chart",
@@ -15,7 +15,7 @@
     "time_interval": "Weekly",
     "timespan": "Last 3 Months",
     "timeseries": 1,
-    "group_by_type": "Average",
+    "group_by_type": "Sum",
     "aggregate_function_based_on": "cpc",
     "type": "Line",
     "color": "#4299E1",
