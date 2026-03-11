@@ -3,8 +3,7 @@ from frappe import _
 def get_data():
     return {
         "Marketing Hub": {
-            "color": "#DC2626",
-            "icon": "fa fa-bullhorn",
+            "icon": "sell",
             "label": _("Marketing Hub"),
             "type": "module",
             "items": [
