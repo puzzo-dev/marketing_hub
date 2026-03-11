@@ -25,13 +25,13 @@
             "label": "CAC Trend"
         }
     ],
-    "content": "[{\"id\":\"kpi_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Performance Overview</b></span>\",\"col\":12}},{\"id\":\"chart_channels\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Channel Distribution\",\"col\":6}},{\"id\":\"chart_budget\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Monthly Budget\",\"col\":6}},{\"id\":\"revenue_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Marketing Revenue\",\"col\":6}},{\"id\":\"spend_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Marketing Spend\",\"col\":6}},{\"id\":\"cost_metrics_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Cost Metrics</b></span>\",\"col\":12}},{\"id\":\"cpc_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CPC\",\"col\":4}},{\"id\":\"cpm_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CPM\",\"col\":4}},{\"id\":\"cac_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CAC\",\"col\":4}},{\"id\":\"chart_cpc\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CPC Trend\",\"col\":4}},{\"id\":\"chart_cpm\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CPM Trend\",\"col\":4}},{\"id\":\"chart_cac\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CAC Trend\",\"col\":4}},{\"id\":\"dashboard_section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Marketing Shortcuts</b></span>\",\"col\":12}},{\"id\":\"quick_actions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Campaign\",\"col\":3}},{\"id\":\"analytics_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sync Analytics\",\"col\":3}},{\"id\":\"blast_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Omni Blast\",\"col\":3}},{\"id\":\"reports_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ROAS Report\",\"col\":3}},{\"id\":\"portal_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Portal\",\"col\":3}},{\"id\":\"dashboard_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Overview\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"reports_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports & Masters</b></span>\",\"col\":12}},{\"id\":\"advertising_header\",\"type\":\"card\",\"data\":{\"card_name\":\"Advertising Accounts\",\"col\":4}},{\"id\":\"analytics_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Analytics Data\",\"col\":4}},{\"id\":\"reports_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Performance Reports\",\"col\":4}},{\"id\":\"campaigns_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"activity_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Activities\",\"col\":4}},{\"id\":\"segments_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Targeting\",\"col\":4}},{\"id\":\"assets_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Assets\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}},{\"id\":\"social_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Social Media\",\"col\":4}},{\"id\":\"accounting_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
+    "content": "[{\"id\":\"kpi_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Performance Overview</b></span>\",\"col\":12}},{\"id\":\"chart_channels\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Channel Distribution\",\"col\":6}},{\"id\":\"chart_budget\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Monthly Budget\",\"col\":6}},{\"id\":\"revenue_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Marketing Revenue\",\"col\":6}},{\"id\":\"spend_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Marketing Spend\",\"col\":6}},{\"id\":\"cost_metrics_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Cost Metrics</b></span>\",\"col\":12}},{\"id\":\"cpc_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CPC\",\"col\":4}},{\"id\":\"cpm_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CPM\",\"col\":4}},{\"id\":\"cac_card\",\"type\":\"number_card\",\"data\":{\"card_name\":\"Average CAC\",\"col\":4}},{\"id\":\"chart_cpc\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CPC Trend\",\"col\":4}},{\"id\":\"chart_cpm\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CPM Trend\",\"col\":4}},{\"id\":\"chart_cac\",\"type\":\"chart\",\"data\":{\"chart_name\":\"CAC Trend\",\"col\":4}},{\"id\":\"dashboard_section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Marketing Shortcuts</b></span>\",\"col\":12}},{\"id\":\"quick_actions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Campaign\",\"col\":3}},{\"id\":\"analytics_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sync Analytics\",\"col\":3}},{\"id\":\"blast_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Omni Blast\",\"col\":3}},{\"id\":\"reports_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ROAS Report\",\"col\":3}},{\"id\":\"social_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Social Media\",\"col\":3}},{\"id\":\"assets_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Content Assets\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"reports_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports & Masters</b></span>\",\"col\":12}},{\"id\":\"advertising_header\",\"type\":\"card\",\"data\":{\"card_name\":\"Advertising Accounts\",\"col\":4}},{\"id\":\"analytics_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Analytics Data\",\"col\":4}},{\"id\":\"reports_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Performance Reports\",\"col\":4}},{\"id\":\"campaigns_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"activity_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Activities\",\"col\":4}},{\"id\":\"segments_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Targeting\",\"col\":4}},{\"id\":\"assets_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Assets\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}},{\"id\":\"social_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Social Media\",\"col\":4}},{\"id\":\"accounting_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
     "creation": "2026-01-17 16:00:00.000000",
     "docstatus": 0,
     "doctype": "Workspace",
     "for_user": "",
     "hide_custom": 0,
-    "icon": "broadcast",
+    "icon": "sell",
     "idx": 0,
     "is_hidden": 0,
     "label": "Marketing Hub",
@@ -64,7 +64,7 @@
             "label": "Advertising Accounts",
             "link_count": 0,
             "onboard": 0,
-            "only_for": "System Manager",
+            "only_for": "",
             "type": "Card Break"
         },
         {
@@ -296,26 +296,6 @@
         {
             "hidden": 0,
             "is_query_report": 0,
-            "label": "Portal",
-            "link_count": 0,
-            "onboard": 0,
-            "only_for": "",
-            "type": "Card Break"
-        },
-        {
-            "hidden": 0,
-            "is_query_report": 0,
-            "label": "Marketing Portal",
-            "link_count": 0,
-            "link_to": "/marketing",
-            "link_type": "Page",
-            "onboard": 1,
-            "only_for": "",
-            "type": "Link"
-        },
-        {
-            "hidden": 0,
-            "is_query_report": 0,
             "label": "Accounting",
             "link_count": 0,
             "onboard": 0,
@@ -427,16 +407,16 @@
         {
             "color": "Purple",
             "icon": "arrow-right",
-            "label": "Marketing Portal",
-            "link_to": "/marketing",
-            "type": "URL"
+            "label": "Social Media",
+            "link_to": "Social Post",
+            "type": "DocType"
         },
         {
             "color": "Cyan",
             "icon": "arrow-right",
-            "label": "Marketing Overview",
-            "link_to": "Marketing Central",
-            "type": "Dashboard"
+            "label": "Content Assets",
+            "link_to": "Content Asset",
+            "type": "DocType"
         }
     ],
     "title": "Marketing Hub"

@@ -6,7 +6,7 @@
     "doctype": "Workspace",
     "for_user": "",
     "hide_custom": 0,
-    "icon": "settings",
+    "icon": "setting",
     "idx": 3,
     "is_hidden": 0,
     "label": "Marketing Settings",
@@ -72,7 +72,7 @@
             "label": "Social Login Key",
             "link_to": "Social Login Key",
             "link_type": "DocType",
-            "only_for": "System Manager",
+            "only_for": "",
             "type": "Link"
         },
         {
