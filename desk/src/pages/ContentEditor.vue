@@ -88,7 +88,7 @@
             type="link"
             label="Campaign"
             v-model="formData.campaign"
-            doctype="Campaign"
+            doctype="Marketing Campaign"
           />
 
           <FormControl

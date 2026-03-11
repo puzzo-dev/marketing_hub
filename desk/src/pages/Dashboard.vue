@@ -257,7 +257,7 @@ function formatCurrency(value) {
 }
 
 function openCampaign(name) {
-  window.location.href = `/app/campaign/${name}`;
+  window.location.href = `/marketing/campaigns/${name}`;
 }
 
 function openActivity(name) {

@@ -187,13 +187,13 @@ after_migrate = "marketing_hub.setup.setup_notifications"
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"Campaign": "marketing_hub.utils.permissions.get_campaign_permission_query_conditions",
+	"Marketing Campaign": "marketing_hub.utils.permissions.get_campaign_permission_query_conditions",
 	"Campaign Activity": "marketing_hub.utils.permissions.get_campaign_activity_permission_query_conditions",
 	"Marketing Segment": "marketing_hub.utils.permissions.get_marketing_segment_permission_query_conditions",
 }
 
 has_permission = {
-	"Campaign": "marketing_hub.utils.permissions.has_campaign_permission",
+	"Marketing Campaign": "marketing_hub.utils.permissions.has_campaign_permission",
 	"Campaign Activity": "marketing_hub.utils.permissions.has_campaign_activity_permission",
 }
 
@@ -223,9 +223,11 @@ doc_events = {
 
 scheduler_events = {
     "daily": [],
-    "all": [
-        "marketing_hub.utils.auto_post.publish_scheduled_posts",
+    "hourly": [
         "marketing_hub.utils.analytics_sync.sync_all_connectors"
+    ],
+    "all": [
+        "marketing_hub.utils.auto_post.publish_scheduled_posts"
     ]
 }
 

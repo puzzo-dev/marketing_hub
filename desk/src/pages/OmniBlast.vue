@@ -385,9 +385,9 @@ const networksResource = createListResource({
 const campaignsResource = createResource({
   url: 'frappe.client.get_list',
   params: {
-    doctype: 'Campaign',
+    doctype: 'Marketing Campaign',
     fields: ['name', 'campaign_name', 'status'],
-    filters: { status: ['in', ['Planning', 'Running']] },
+    filters: { status: ['in', ['Draft', 'Active']] },
     limit_page_length: 100,
   },
   auto: true,

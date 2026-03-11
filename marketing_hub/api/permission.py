@@ -6,9 +6,8 @@ def has_app_permission():
 	if frappe.session.user == "Administrator":
 		return True
 
-	# Check if user has Marketing Manager or System Manager role
 	roles = frappe.get_roles()
-	if "Marketing Manager" in roles or "System Manager" in roles:
+	if "Marketing Manager" in roles or "System Manager" in roles or "Marketing User" in roles:
 		return True
 
 	return False

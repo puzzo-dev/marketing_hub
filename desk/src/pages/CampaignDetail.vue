@@ -15,7 +15,7 @@
           </div>
           <div class="flex items-center gap-3">
             <Badge :label="campaign.doc.status || 'Draft'" variant="subtle" 
-              :theme="campaign.doc.status === 'Running' ? 'green' : campaign.doc.status === 'Completed' ? 'blue' : 'gray'" 
+              :theme="campaign.doc.status === 'Active' ? 'green' : campaign.doc.status === 'Completed' ? 'blue' : 'gray'" 
             />
             <Button @click="openInDesk" variant="subtle" size="sm">
               <template #prefix>
@@ -125,15 +125,15 @@
 </template>
 
 <script setup>
-import { createDocumentResource, createListResource } from "frappe-ui";
-import { computed } from "vue";
+import { createDocumentResource, createListResource, createResource } from "frappe-ui";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const campaignName = computed(() => route.params.name);
 
 const campaign = createDocumentResource({
-  doctype: "Campaign",
+  doctype: "Marketing Campaign",
   name: campaignName.value,
 });
 
@@ -157,15 +157,21 @@ const leads = createListResource({
   auto: true,
 });
 
-// Calculate metrics from Analytics Daily Log
-const metrics = computed(() => {
-  // For now use basic campaign data; can be enhanced with API call
-  return {
-    spend: 0,
-    revenue: 0,
-    roas: 0,
-  };
+// Fetch real metrics from API
+const campaignMetrics = ref({ spend: 0, revenue: 0, roas: 0 });
+
+const metricsResource = createResource({
+  url: "marketing_hub.www.marketing.api.get_campaign_metrics",
+  params: { campaign: campaignName.value },
+  auto: true,
+  onSuccess(data) {
+    if (data) {
+      campaignMetrics.value = data;
+    }
+  }
 });
+
+const metrics = computed(() => campaignMetrics.value);
 
 const budgetPercent = computed(() => {
   if (!campaign.doc?.budget) return 0;
@@ -180,6 +186,6 @@ function formatCurrency(value) {
 }
 
 function openInDesk() {
-  window.location.href = `/app/campaign/${campaignName.value}`;
+  window.location.href = `/app/marketing-campaign/${campaignName.value}`;
 }
 </script>

@@ -25,21 +25,21 @@ def get_dashboard_data():
 		
 		# Active campaigns count
 		active_campaigns = frappe.db.count("Marketing Campaign", {
-			"status": "Running"
+			"status": "Active"
 		})
 		
 		# Total spend (last 30 days)
 		total_spend = frappe.db.get_value(
 			"Analytics Daily Log",
-			{"date": [">=", last_30_days]},
-			"sum(cost)"
+			{"log_date": [">=", last_30_days]},
+			"sum(spend)"
 		) or 0.0
 		
 		# Previous period spend (for comparison)
 		prev_period_start = add_days(last_30_days, -30)
 		prev_period_spend = frappe.db.sql("""
-			SELECT SUM(cost) FROM `tabAnalytics Daily Log`
-			WHERE date >= %s AND date < %s
+			SELECT SUM(spend) FROM `tabAnalytics Daily Log`
+			WHERE log_date >= %s AND log_date < %s
 		""", (prev_period_start, last_30_days))[0][0] or 0.0
 		
 		# Leads generated (last 30 days)
@@ -55,11 +55,11 @@ def get_dashboard_data():
 			AND source IS NOT NULL AND source != ''
 		""", (prev_period_start, last_30_days))[0][0] or 0
 		
-		# Revenue (last 30 days) - from Analytics Daily Log conversions
+		# Revenue (last 30 days) - from Analytics Daily Log
 		total_revenue = frappe.db.get_value(
 			"Analytics Daily Log",
-			{"date": [">=", last_30_days]},
-			"sum(conversion_value)"
+			{"log_date": [">=", last_30_days]},
+			"sum(revenue)"
 		) or 0.0
 		
 		# Calculate ROI
@@ -68,7 +68,7 @@ def get_dashboard_data():
 		# Calculate average ROAS
 		avg_roas = frappe.db.get_value(
 			"Analytics Daily Log",
-			{"date": [">=", last_30_days], "roas": [">", 0]},
+			{"log_date": [">=", last_30_days], "roas": [">", 0]},
 			"avg(roas)"
 		) or 0.0
 		
@@ -86,12 +86,12 @@ def get_dashboard_data():
 			SELECT 
 				c.name as campaign_name,
 				c.campaign_name as title,
-				SUM(a.cost) as spend,
-				SUM(a.conversion_value) as revenue,
+				SUM(a.spend) as spend,
+				SUM(a.revenue) as revenue,
 				AVG(a.roas) as roas
 			FROM `tabMarketing Campaign` c
 			LEFT JOIN `tabAnalytics Daily Log` a ON a.campaign = c.name
-			WHERE a.date >= %(from_date)s
+			WHERE a.log_date >= %(from_date)s
 			GROUP BY c.name
 			HAVING spend > 0
 			ORDER BY roas DESC
@@ -147,17 +147,17 @@ def get_analytics_data(from_date=None, to_date=None):
 		# Get daily metrics
 		daily_metrics = frappe.db.sql("""
 			SELECT 
-				date,
+				log_date as date,
 				SUM(impressions) as impressions,
 				SUM(clicks) as clicks,
-				SUM(cost) as spend,
+				SUM(spend) as spend,
 				SUM(conversions) as conversions,
-				SUM(conversion_value) as revenue,
+				SUM(revenue) as revenue,
 				AVG(roas) as roas
 			FROM `tabAnalytics Daily Log`
-			WHERE date >= %(from_date)s AND date <= %(to_date)s
-			GROUP BY date
-			ORDER BY date ASC
+			WHERE log_date >= %(from_date)s AND log_date <= %(to_date)s
+			GROUP BY log_date
+			ORDER BY log_date ASC
 		""", {"from_date": from_date, "to_date": to_date}, as_dict=True)
 		
 		# Calculate CTR for each day
@@ -170,13 +170,13 @@ def get_analytics_data(from_date=None, to_date=None):
 		# Get channel breakdown
 		channel_breakdown = frappe.db.sql("""
 			SELECT 
-				platform,
-				SUM(cost) as spend,
-				SUM(conversion_value) as revenue,
+				channel,
+				SUM(spend) as spend,
+				SUM(revenue) as revenue,
 				COUNT(DISTINCT campaign) as campaigns
 			FROM `tabAnalytics Daily Log`
-			WHERE date >= %(from_date)s AND date <= %(to_date)s
-			GROUP BY platform
+			WHERE log_date >= %(from_date)s AND log_date <= %(to_date)s
+			GROUP BY channel
 			ORDER BY spend DESC
 		""", {"from_date": from_date, "to_date": to_date}, as_dict=True)
 		
@@ -240,8 +240,8 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 		for campaign in campaigns:
 			metrics = frappe.db.sql("""
 				SELECT 
-					SUM(cost) as spend,
-					SUM(conversion_value) as revenue,
+					SUM(spend) as spend,
+					SUM(revenue) as revenue,
 					SUM(impressions) as impressions,
 					SUM(clicks) as clicks,
 					SUM(conversions) as conversions,
@@ -295,6 +295,63 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			"total_count": 0,
 			"has_more": False
 		}
+
+
+@frappe.whitelist()
+def get_campaign_metrics(campaign):
+	"""
+	Get aggregated metrics for a specific campaign from Analytics Daily Log
+	"""
+	try:
+		metrics = frappe.db.sql("""
+			SELECT 
+				COALESCE(SUM(spend), 0) as spend,
+				COALESCE(SUM(revenue), 0) as revenue,
+				CASE WHEN COALESCE(SUM(spend), 0) > 0 
+					THEN SUM(revenue) / SUM(spend) 
+					ELSE 0 
+				END as roas,
+				COALESCE(SUM(impressions), 0) as impressions,
+				COALESCE(SUM(clicks), 0) as clicks,
+				COALESCE(SUM(conversions), 0) as conversions
+			FROM `tabAnalytics Daily Log`
+			WHERE campaign = %s
+		""", (campaign,), as_dict=True)
+
+		if metrics and metrics[0]:
+			return {
+				"spend": flt(metrics[0].spend, 2),
+				"revenue": flt(metrics[0].revenue, 2),
+				"roas": flt(metrics[0].roas, 2),
+				"impressions": metrics[0].impressions or 0,
+				"clicks": metrics[0].clicks or 0,
+				"conversions": metrics[0].conversions or 0,
+			}
+		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
+	except Exception as e:
+		frappe.log_error(f"Error fetching campaign metrics: {str(e)}", "Campaign Metrics API Error")
+		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
+
+
+@frappe.whitelist()
+def update_campaign(name, data):
+	"""
+	Update an existing marketing campaign
+	"""
+	try:
+		if isinstance(data, str):
+			import json
+			data = json.loads(data)
+
+		doc = frappe.get_doc("Marketing Campaign", name)
+		for field in ["campaign_name", "status", "description", "budget", "start_date", "end_date", "company", "is_omni_campaign"]:
+			if field in data:
+				doc.set(field, data[field])
+		doc.save()
+		return {"success": True, "name": doc.name}
+	except Exception as e:
+		frappe.log_error(f"Error updating campaign: {str(e)}", "Campaign Update Error")
+		return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
@@ -798,5 +855,151 @@ def upload_file(file, asset_name=None, asset_type=None, channel=None):
 		asset.insert()
 		return {"success": True, "asset": asset.name}
 	except Exception as e:
+		return {"success": False, "error": str(e)}
+
+
+# --- Social Post Operations ---
+
+@frappe.whitelist()
+def update_social_post(name, data):
+	"""Update an existing social post"""
+	try:
+		if isinstance(data, str):
+			import json
+			data = json.loads(data)
+
+		doc = frappe.get_doc("Social Post", name)
+		for field in ["post_title", "content", "platform", "post_type", "status",
+					   "scheduled_time", "hashtags", "mentions", "target_audience",
+					   "enable_comments", "enable_sharing", "media_attachment", "media_type"]:
+			if field in data:
+				doc.set(field, data[field])
+		doc.save()
+		return {"success": True, "name": doc.name}
+	except Exception as e:
+		frappe.log_error(f"Error updating social post: {str(e)}", "Social Post Update Error")
+		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
+def publish_social_post(name):
+	"""Trigger immediate publishing of a social post"""
+	try:
+		doc = frappe.get_doc("Social Post", name)
+		if doc.status not in ("Draft", "Scheduled"):
+			return {"success": False, "error": _("Only Draft or Scheduled posts can be published")}
+
+		from marketing_hub.utils.auto_post import publish_post
+		result = publish_post(doc)
+		return {"success": True, "result": result}
+	except Exception as e:
+		frappe.log_error(f"Error publishing social post: {str(e)}", "Social Post Publish Error")
+		return {"success": False, "error": str(e)}
+
+
+# --- Segment Operations ---
+
+@frappe.whitelist()
+def get_segment_list(filters=None, limit=20, offset=0):
+	"""Get marketing segments list"""
+	try:
+		if filters and isinstance(filters, str):
+			import json
+			filters = json.loads(filters)
+
+		filters = filters or {}
+		base_filters = {}
+		if filters.get("search"):
+			base_filters["segment_name"] = ["like", f"%{filters['search']}%"]
+
+		segments = frappe.get_all(
+			"Marketing Segment",
+			fields=["name", "segment_name", "base_doctype", "description", "creation", "modified"],
+			filters=base_filters,
+			order_by="modified desc",
+			limit=limit,
+			start=offset
+		)
+
+		for seg in segments:
+			try:
+				doc = frappe.get_doc("Marketing Segment", seg.name)
+				seg["filter_count"] = len(doc.get("filters") or [])
+				# Get contact count using segment filters
+				if doc.base_doctype and doc.get("filters"):
+					seg["contact_count"] = frappe.db.count(doc.base_doctype, doc.get_segment_filters())
+				else:
+					seg["contact_count"] = 0
+			except Exception:
+				seg["filter_count"] = 0
+				seg["contact_count"] = 0
+
+		total_count = frappe.db.count("Marketing Segment", base_filters)
+		return {
+			"segments": segments,
+			"total_count": total_count,
+			"has_more": (offset + limit) < total_count
+		}
+	except Exception as e:
+		frappe.log_error(f"Error fetching segments: {str(e)}", "Segment API Error")
+		return {"segments": [], "total_count": 0, "has_more": False}
+
+
+@frappe.whitelist()
+def create_segment(data):
+	"""Create a new marketing segment"""
+	try:
+		if isinstance(data, str):
+			import json
+			data = json.loads(data)
+
+		doc = frappe.get_doc({
+			"doctype": "Marketing Segment",
+			"segment_name": data.get("segment_name"),
+			"base_doctype": data.get("base_doctype", "Lead"),
+			"description": data.get("description"),
+		})
+
+		if data.get("filters"):
+			for f in data["filters"]:
+				doc.append("filters", {
+					"field": f.get("field"),
+					"condition": f.get("condition"),
+					"value": f.get("value")
+				})
+
+		doc.insert()
+		return {"success": True, "name": doc.name}
+	except Exception as e:
+		frappe.log_error(f"Error creating segment: {str(e)}", "Segment Creation Error")
+		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
+def update_segment(name, data):
+	"""Update an existing marketing segment"""
+	try:
+		if isinstance(data, str):
+			import json
+			data = json.loads(data)
+
+		doc = frappe.get_doc("Marketing Segment", name)
+		for field in ["segment_name", "base_doctype", "description"]:
+			if field in data:
+				doc.set(field, data[field])
+
+		if "filters" in data:
+			doc.set("filters", [])
+			for f in data["filters"]:
+				doc.append("filters", {
+					"field": f.get("field"),
+					"condition": f.get("condition"),
+					"value": f.get("value")
+				})
+
+		doc.save()
+		return {"success": True, "name": doc.name}
+	except Exception as e:
+		frappe.log_error(f"Error updating segment: {str(e)}", "Segment Update Error")
 		return {"success": False, "error": str(e)}
 

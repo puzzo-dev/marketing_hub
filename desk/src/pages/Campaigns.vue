@@ -51,7 +51,7 @@
           <div class="mb-3 flex items-start justify-between">
             <h3 class="font-semibold text-ink-gray-9 line-clamp-1">{{ campaign.campaign_name }}</h3>
             <Badge :label="campaign.status || 'Draft'" variant="subtle"
-              :theme="campaign.status === 'Running' ? 'green' : campaign.status === 'Completed' ? 'blue' : campaign.status === 'Paused' ? 'orange' : 'gray'"
+              :theme="campaign.status === 'Active' ? 'green' : campaign.status === 'Completed' ? 'blue' : campaign.status === 'Cancelled' ? 'orange' : 'gray'"
             />
           </div>
 
@@ -135,10 +135,10 @@ const pageSize = 20;
 
 const statusFilters = [
   { label: "All", value: "" },
-  { label: "Running", value: "Running" },
-  { label: "Planning", value: "Planning" },
+  { label: "Active", value: "Active" },
+  { label: "Draft", value: "Draft" },
   { label: "Completed", value: "Completed" },
-  { label: "Paused", value: "Paused" },
+  { label: "Cancelled", value: "Cancelled" },
 ];
 
 const campaignsResource = createResource({

@@ -498,9 +498,10 @@ async function createDemoCampaign() {
       method: 'frappe.client.insert',
       args: {
         doc: {
-          doctype: 'Campaign',
+          doctype: 'Marketing Campaign',
           campaign_name: demoData.value.campaign_name,
           description: demoData.value.campaign_description,
+          company: window.frappe.boot.sysdefaults?.company || '',
         },
       },
     })
