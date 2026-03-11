@@ -99,7 +99,7 @@
       <div v-if="!campaigns.length && !campaignsResource.loading" class="relative flex h-full w-full justify-center">
         <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
           <IconTarget class="h-7 w-7 text-ink-gray-5" />
-          <span class="text-lg font-medium text-ink-gray-8">
+          <span class="text-base font-medium text-ink-gray-8">
             {{ searchQuery || selectedStatus ? 'No campaigns match your filters' : 'No campaigns yet' }}
           </span>
           <span class="text-center text-sm text-ink-gray-6">

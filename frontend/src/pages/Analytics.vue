@@ -89,7 +89,7 @@
           <div v-else class="relative flex h-40 w-full justify-center">
             <div class="absolute left-1/2 flex -translate-x-1/2 flex-col items-center gap-3" style="top: 25%">
               <IconBarChart class="h-7 w-7 text-ink-gray-5" />
-              <span class="text-lg font-medium text-ink-gray-8">No analytics data</span>
+              <span class="text-base font-medium text-ink-gray-8">No analytics data</span>
               <span class="text-center text-sm text-ink-gray-6">Connect your analytics platforms to start tracking</span>
               <Button @click="goToConnectors" variant="solid" label="Add Connector">
                 <template #prefix>

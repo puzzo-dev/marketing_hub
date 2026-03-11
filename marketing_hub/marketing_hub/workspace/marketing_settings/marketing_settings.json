@@ -121,19 +121,16 @@
     "public": 1,
     "shortcuts": [
         {
-            "color": "Blue",
             "label": "Marketing Hub Settings",
             "link_to": "Marketing Hub Settings",
             "type": "DocType"
         },
         {
-            "color": "Green",
             "label": "New Template",
             "link_to": "Marketing Template",
             "type": "DocType"
         },
         {
-            "color": "Purple",
             "label": "New Asset",
             "link_to": "Content Asset",
             "type": "DocType"

@@ -24,7 +24,7 @@
       <div v-else-if="segments.length === 0" class="relative flex h-full w-full justify-center">
         <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
           <IconUsers class="h-7 w-7 text-ink-gray-5" />
-          <span class="text-lg font-medium text-ink-gray-8">No segments yet</span>
+          <span class="text-base font-medium text-ink-gray-8">No segments yet</span>
           <span class="text-center text-sm text-ink-gray-6">Create your first segment to target specific audiences</span>
           <Button @click="createNewSegment" variant="solid" label="Create First Segment">
             <template #prefix>

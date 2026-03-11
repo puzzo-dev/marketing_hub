@@ -1,23 +1,25 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
-    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
-        <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-ink-gray-9">New Campaign</h1>
-            <p class="mt-1 text-sm text-ink-gray-6">Create a new marketing campaign</p>
-          </div>
-          <div class="flex gap-2">
-            <Button variant="ghost" @click="$router.push('/marketing/campaigns')">Cancel</Button>
-            <Button variant="solid" :loading="saving" @click="createCampaign">Create Campaign</Button>
-          </div>
-        </div>
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[
+          { label: 'Campaigns', route: { path: '/marketing/campaigns' } },
+          { label: 'New Campaign' }
+        ]" />
+      </template>
+      <template #right-header>
+        <Button variant="ghost" @click="$router.push('/marketing/campaigns')">Cancel</Button>
+        <Button variant="solid" :loading="saving" @click="createCampaign">Create Campaign</Button>
+      </template>
+    </LayoutHeader>
+
+    <div class="flex-1 overflow-auto">
+      <div class="mx-auto max-w-3xl px-5 py-6">
 
         <div class="space-y-6">
           <!-- Basic Info -->
           <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Campaign Details</h2>
+            <h2 class="mb-4 text-base font-medium text-ink-gray-9">Campaign Details</h2>
             <div class="space-y-4">
               <FormControl
                 v-model="form.campaign_name"
@@ -59,7 +61,7 @@
 
           <!-- Schedule & Budget -->
           <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Schedule & Budget</h2>
+            <h2 class="mb-4 text-base font-medium text-ink-gray-9">Schedule & Budget</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <FormControl
                 v-model="form.start_date"
@@ -82,7 +84,7 @@
 
           <!-- Channel Settings -->
           <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Channels</h2>
+            <h2 class="mb-4 text-base font-medium text-ink-gray-9">Channels</h2>
             <div class="mb-4 flex items-center justify-between">
               <div>
                 <div class="font-medium text-ink-gray-9">Omni Campaign</div>
@@ -113,7 +115,7 @@
 
           <!-- CRM Link -->
           <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">CRM Integration</h2>
+            <h2 class="mb-4 text-base font-medium text-ink-gray-9">CRM Integration</h2>
             <FormControl
               v-model="form.email_campaign"
               label="Linked Email Campaign (CRM)"
@@ -131,7 +133,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, FormControl, Switch, createResource, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, createResource, toast } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 
 const router = useRouter()
 const saving = ref(false)

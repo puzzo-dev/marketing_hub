@@ -58,20 +58,17 @@
         {
             "label": "New Ad Account",
             "link_to": "Ad Account",
-            "type": "DocType",
-            "color": "Blue"
+            "type": "DocType"
         },
         {
             "label": "New Connector",
             "link_to": "Analytics Connector",
-            "type": "DocType",
-            "color": "Green"
+            "type": "DocType"
         },
         {
             "label": "New Social Post",
             "link_to": "Social Post",
-            "type": "DocType",
-            "color": "Purple"
+            "type": "DocType"
         }
     ],
     "title": "Social Connect"

@@ -1,51 +1,75 @@
 <template>
   <div
-    class="relative flex h-full flex-col justify-between border-r bg-surface-menu-bar"
-    :class="isCollapsed ? 'w-14' : 'w-[220px]'"
+    class="relative flex h-full flex-col justify-between border-r bg-surface-menu-bar transition-all duration-300 ease-in-out"
+    :class="isCollapsed ? 'w-12' : 'w-[220px]'"
   >
     <div class="p-2">
       <UserMenu :isCollapsed="isCollapsed" @open-settings="showSettings = true" />
     </div>
 
-    <div class="flex-1 overflow-y-auto px-2">
-      <template v-for="section in sidebarSections" :key="section.label">
-        <div v-if="section.label && !isCollapsed" class="mt-4 mb-1 px-2 text-xs font-medium uppercase text-ink-gray-5">
-          {{ section.label }}
-        </div>
-        <div v-else-if="section.label" class="mt-3 mb-1 border-t border-outline-gray-1 mx-1" />
-        <nav class="space-y-0.5">
-          <router-link
-            v-for="item in section.items"
-            :key="item.label"
-            :to="item.to"
-            custom
-            v-slot="{ navigate }"
+    <div class="flex-1 overflow-y-auto">
+      <div class="flex flex-col">
+        <template v-for="section in sidebarSections" :key="section.label">
+          <div v-if="section.label" class="border-t mx-2 my-1.5" />
+          <div
+            v-if="section.label"
+            class="flex items-center gap-1.5 text-ink-gray-5 transition-all duration-300 ease-in-out"
+            :class="isCollapsed ? 'h-0 overflow-hidden opacity-0' : 'px-4 pt-[11px] pb-2 w-auto opacity-100'"
           >
-            <button
-              @click="navigate"
-              class="group flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm"
-              :class="
-                item.isActive
-                  ? 'bg-surface-selected text-ink-gray-9 font-medium'
-                  : 'text-ink-gray-7 hover:bg-surface-gray-2'
-              "
-              :title="isCollapsed ? item.label : undefined"
+            <span class="text-xs font-medium uppercase tracking-wider">{{ section.label }}</span>
+          </div>
+          <nav class="flex flex-col">
+            <router-link
+              v-for="item in section.items"
+              :key="item.label"
+              :to="item.to"
+              custom
+              v-slot="{ navigate }"
             >
-              <component :is="item.icon" class="h-4 w-4 flex-shrink-0" />
-              <span v-if="!isCollapsed">{{ item.label }}</span>
-            </button>
-          </router-link>
-        </nav>
-      </template>
+              <button
+                @click="navigate"
+                class="mx-2 my-[1.5px] flex h-7.5 cursor-pointer items-center rounded text-ink-gray-8 duration-300 ease-in-out focus:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+                :class="item.isActive ? 'bg-surface-selected shadow-sm' : 'hover:bg-surface-gray-2'"
+                :title="isCollapsed ? item.label : undefined"
+              >
+                <div
+                  class="flex w-full items-center justify-between duration-300 ease-in-out"
+                  :class="isCollapsed ? 'ml-[3px] p-1' : 'px-2 py-[7px]'"
+                >
+                  <div class="flex items-center truncate">
+                    <component :is="item.icon" class="size-4 flex-shrink-0 text-ink-gray-8" />
+                    <span
+                      class="flex-1 flex-shrink-0 truncate text-sm duration-300 ease-in-out"
+                      :class="isCollapsed ? 'ml-0 w-0 overflow-hidden opacity-0' : 'ml-2 w-auto opacity-100'"
+                    >{{ item.label }}</span>
+                  </div>
+                </div>
+              </button>
+            </router-link>
+          </nav>
+        </template>
+      </div>
     </div>
 
     <div class="m-2 flex flex-col gap-1">
       <button
         @click="isCollapsed = !isCollapsed"
-        class="flex h-7 w-full items-center gap-2 rounded px-2 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
+        class="mx-0 flex h-7.5 w-full cursor-pointer items-center rounded text-ink-gray-7 duration-300 ease-in-out hover:bg-surface-gray-2"
       >
-        <component :is="isCollapsed ? IconPanelLeftOpen : IconPanelLeftClose" class="h-4 w-4" />
-        <span v-if="!isCollapsed">Collapse</span>
+        <div
+          class="flex w-full items-center duration-300 ease-in-out"
+          :class="isCollapsed ? 'ml-[3px] p-1' : 'px-2 py-[7px]'"
+        >
+          <component
+            :is="isCollapsed ? IconPanelLeftOpen : IconPanelLeftClose"
+            class="size-4 flex-shrink-0 text-ink-gray-7 duration-300 ease-in-out"
+            :class="{ '[transform:rotateY(180deg)]': isCollapsed }"
+          />
+          <span
+            class="flex-1 flex-shrink-0 truncate text-sm duration-300 ease-in-out"
+            :class="isCollapsed ? 'ml-0 w-0 overflow-hidden opacity-0' : 'ml-2 w-auto opacity-100'"
+          >Collapse</span>
+        </div>
       </button>
     </div>
 

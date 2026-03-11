@@ -90,7 +90,7 @@
       <div v-else class="relative flex h-full w-full justify-center">
         <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
           <IconShare2 class="h-7 w-7 text-ink-gray-5" />
-          <span class="text-lg font-medium text-ink-gray-8">No social posts yet</span>
+          <span class="text-base font-medium text-ink-gray-8">No social posts yet</span>
           <span class="text-center text-sm text-ink-gray-6">Create your first post to start engaging with your audience</span>
           <Button @click="createNewPost" variant="solid" label="Create Post">
             <template #prefix>

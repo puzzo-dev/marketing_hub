@@ -1,33 +1,24 @@
 <template>
-  <div class="flex h-full flex-col bg-surface-cards">
+  <div class="flex h-full flex-col">
     <!-- Header -->
-    <div class="h-16 shrink-0 border-b border-outline-gray-1 flex items-center justify-between px-5 bg-surface-cards">
-      <div class="flex items-center gap-2">
-        <Button variant="ghost" @click="$router.back()">
-          <template #prefix>
-            <FeatherIcon name="arrow-left" class="h-4 w-4" />
-          </template>
-        </Button>
-        <h1 class="text-xl font-semibold text-ink-gray-9">
-          {{ isNew ? 'New Content Asset' : formData.asset_name }}
-        </h1>
-      </div>
-      <div class="flex gap-2">
-        <Button
-          variant="solid"
-          :loading="saving"
-          @click="saveContent"
-        >
-          Save
-        </Button>
-      </div>
-    </div>
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[
+          { label: 'Content', route: { path: '/marketing/content' } },
+          { label: isNew ? 'New Asset' : formData.asset_name || 'Edit' }
+        ]" />
+      </template>
+      <template #right-header>
+        <Button variant="ghost" @click="$router.back()">Cancel</Button>
+        <Button variant="solid" :loading="saving" @click="saveContent">Save</Button>
+      </template>
+    </LayoutHeader>
 
     <!-- Main Body -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Editor Column (Left) -->
-      <div class="flex-1 border-r border-outline-gray-1 p-6 overflow-y-auto">
-        <div class="max-w-3xl mx-auto space-y-6">
+      <div class="flex-1 border-r border-outline-gray-1 overflow-y-auto">
+        <div class="max-w-3xl mx-auto p-6 space-y-6">
           <FormControl
             label="Name / Title"
             v-model="formData.asset_name"
@@ -70,7 +61,7 @@
 
       <!-- Settings Column (Right) -->
       <div class="w-80 bg-surface-gray-1 p-6 overflow-y-auto">
-        <h3 class="font-semibold text-ink-gray-9 mb-4">Settings</h3>
+        <h3 class="text-sm font-medium text-ink-gray-5 mb-4">Settings</h3>
         
         <div class="space-y-6">
           <FormControl
@@ -107,8 +98,8 @@
 
         <!-- Preview Section -->
         <div>
-          <h3 class="font-semibold text-ink-gray-9 mb-2">Preview</h3>
-          <div class="bg-surface-cards border border-outline-gray-1 rounded p-4 text-sm text-ink-gray-6 min-h-[100px]">
+          <h3 class="text-sm font-medium text-ink-gray-5 mb-2">Preview</h3>
+          <div class="bg-surface-white border border-outline-gray-1 rounded-lg p-4 text-sm text-ink-gray-6 min-h-[100px]">
             <div v-if="formData.content_type === 'Text'">
               {{ formData.content_text || 'No content yet...' }}
             </div>
@@ -125,7 +116,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createResource, Button, FormControl, FeatherIcon, toast } from 'frappe-ui'
+import { createResource, Breadcrumbs, Button, FormControl, FeatherIcon, toast } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 
 const route = useRoute()
 const router = useRouter()

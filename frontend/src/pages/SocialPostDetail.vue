@@ -27,24 +27,34 @@
         <!-- Content Preview (2 cols) -->
         <div class="lg:col-span-2 space-y-5">
           <!-- Post Content -->
-          <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
-            <h3 class="mb-3 text-sm font-medium text-ink-gray-5">Content</h3>
-            <div v-if="post.doc.content" class="prose max-w-none text-sm text-ink-gray-9" v-html="sanitizedContent"></div>
-            <p v-else class="text-sm text-ink-gray-5 italic">No content written yet</p>
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-white">
+            <div class="border-b border-outline-gray-1 px-5 py-3">
+              <h3 class="text-sm font-medium text-ink-gray-5">Content</h3>
+            </div>
+            <div class="px-5 py-4">
+              <div v-if="post.doc.content" class="prose max-w-none text-sm text-ink-gray-9" v-html="sanitizedContent"></div>
+              <p v-else class="text-sm text-ink-gray-5 italic">No content written yet</p>
+            </div>
           </div>
 
           <!-- Media -->
-          <div v-if="post.doc.media_attachment" class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
-            <h3 class="mb-3 text-sm font-medium text-ink-gray-5">Media</h3>
-            <img :src="post.doc.media_attachment" class="rounded-lg max-h-96 w-full object-cover" alt="Post media" />
+          <div v-if="post.doc.media_attachment" class="rounded-lg border border-outline-gray-1 bg-surface-white">
+            <div class="border-b border-outline-gray-1 px-5 py-3">
+              <h3 class="text-sm font-medium text-ink-gray-5">Media</h3>
+            </div>
+            <div class="p-5">
+              <img :src="post.doc.media_attachment" class="rounded-lg max-h-96 w-full object-cover" alt="Post media" />
+            </div>
           </div>
 
           <!-- Engagement Stats -->
-          <div v-if="post.doc.status === 'Published'" class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
-            <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Engagement</h3>
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div v-if="post.doc.status === 'Published'" class="rounded-lg border border-outline-gray-1 bg-surface-white">
+            <div class="border-b border-outline-gray-1 px-5 py-3">
+              <h3 class="text-sm font-medium text-ink-gray-5">Engagement</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3 lg:grid-cols-6">
               <div v-for="stat in engagementStats" :key="stat.label" class="text-center">
-                <p class="text-xl font-bold text-ink-gray-9">{{ stat.value }}</p>
+                <p class="text-lg font-semibold text-ink-gray-9">{{ stat.value }}</p>
                 <p class="text-xs text-ink-gray-5 mt-1">{{ stat.label }}</p>
               </div>
             </div>

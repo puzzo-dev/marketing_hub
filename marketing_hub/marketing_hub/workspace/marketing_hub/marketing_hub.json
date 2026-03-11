@@ -365,46 +365,34 @@
     "public": 1,
     "shortcuts": [
         {
-            "color": "Green",
-            "icon": "arrow-right",
             "label": "New Campaign",
             "link_to": "Marketing Campaign",
             "type": "DocType",
             "url": ""
         },
         {
-            "color": "Blue",
-            "icon": "arrow-right",
             "label": "Sync Analytics",
             "link_to": "Analytics Connector",
             "type": "DocType",
             "url": ""
         },
         {
-            "color": "Orange",
-            "icon": "arrow-right",
             "label": "New Omni Blast",
             "link_to": "Omni Blast",
             "type": "DocType"
         },
         {
-            "color": "Grey",
-            "icon": "arrow-right",
             "label": "ROAS Report",
             "link_to": "ROAS Analysis",
             "type": "Report",
             "is_query_report": 1
         },
         {
-            "color": "Purple",
-            "icon": "arrow-right",
             "label": "Social Media",
             "link_to": "Social Post",
             "type": "DocType"
         },
         {
-            "color": "Cyan",
-            "icon": "arrow-right",
             "label": "Content Assets",
             "link_to": "Content Asset",
             "type": "DocType"

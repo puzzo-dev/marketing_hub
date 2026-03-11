@@ -64,14 +64,12 @@
         {
             "label": "New Omni Blast",
             "link_to": "Omni Blast",
-            "type": "DocType",
-            "color": "Orange"
+            "type": "DocType"
         },
         {
             "label": "New Social Post",
             "link_to": "Social Post",
-            "type": "DocType",
-            "color": "Purple"
+            "type": "DocType"
         }
     ],
     "title": "Marketing Operations"

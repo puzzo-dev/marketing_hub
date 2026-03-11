@@ -59,7 +59,7 @@
         <!-- Active Campaigns (2 cols) -->
         <div class="lg:col-span-2">
           <div class="mb-3 flex items-center justify-between">
-            <h3 class="text-lg font-medium text-ink-gray-9">Active Campaigns</h3>
+            <h3 class="text-base font-medium text-ink-gray-9">Active Campaigns</h3>
             <Button @click="$router.push('/marketing/campaigns/new')" variant="solid" label="New Campaign">
               <template #prefix>
                 <IconPlus class="h-4 w-4" />
@@ -97,7 +97,7 @@
           <div v-else class="relative flex h-40 w-full items-center justify-center">
             <div class="flex flex-col items-center gap-3">
               <IconTarget class="h-7 w-7 text-ink-gray-5" />
-              <span class="text-lg font-medium text-ink-gray-8">No active campaigns</span>
+              <span class="text-base font-medium text-ink-gray-8">No active campaigns</span>
               <Button @click="$router.push('/marketing/campaigns/new')" variant="solid" label="New Campaign">
                 <template #prefix>
                   <IconPlus class="h-4 w-4" />
@@ -109,7 +109,7 @@
 
         <!-- Recent Activities (1 col) -->
         <div>
-          <h3 class="mb-3 text-lg font-medium text-ink-gray-9">Recent Activity</h3>
+          <h3 class="mb-3 text-base font-medium text-ink-gray-9">Recent Activity</h3>
           <div class="rounded-lg border border-outline-gray-1">
             <div v-if="activities.length" class="divide-y divide-outline-gray-1">
               <div
@@ -156,7 +156,7 @@
 
       <!-- Quick Links Grid -->
       <div>
-        <h3 class="mb-3 text-lg font-medium text-ink-gray-9">Quick Actions</h3>
+        <h3 class="mb-3 text-base font-medium text-ink-gray-9">Quick Actions</h3>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <router-link
             v-for="action in quickActions"

@@ -11,87 +11,131 @@
         <Badge v-if="campaign.doc" :label="campaign.doc.status || 'Draft'" variant="subtle"
           :theme="campaign.doc.status === 'Active' ? 'green' : campaign.doc.status === 'Completed' ? 'blue' : 'gray'"
         />
-        <Button @click="openInDesk" variant="ghost" label="Open in Desk">
+        <Button @click="openInDesk" variant="ghost">
           <template #prefix>
             <IconExternalLink class="h-4 w-4" />
           </template>
+          Open in Desk
         </Button>
       </template>
     </LayoutHeader>
 
-    <div v-if="campaign.doc" class="flex-1 overflow-auto p-5">
-      <!-- Stats Row -->
-      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm">
-          <div class="text-xs font-medium uppercase text-ink-gray-5">Budget</div>
-          <div class="mt-1 text-xl font-semibold text-ink-gray-9">{{ formatCurrency(campaign.doc.budget || 0) }}</div>
-        </div>
-        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm">
-          <div class="text-xs font-medium uppercase text-ink-gray-5">Spend</div>
-          <div class="mt-1 text-xl font-semibold text-ink-gray-9">{{ formatCurrency(metrics.spend) }}</div>
-          <div v-if="campaign.doc.budget" class="mt-2">
-            <div class="h-1.5 w-full rounded-full bg-surface-gray-2">
-              <div class="h-1.5 rounded-full transition-all"
-                :class="budgetPercent > 80 ? 'bg-ink-red-3' : budgetPercent > 60 ? 'bg-ink-orange-3' : 'bg-ink-green-3'"
-                :style="{ width: Math.min(budgetPercent, 100) + '%' }"
-              />
+    <div v-if="campaign.doc" class="flex-1 overflow-auto">
+      <div class="grid gap-6 p-5 lg:grid-cols-3">
+        <!-- Main Content (2 cols) -->
+        <div class="lg:col-span-2 space-y-5">
+          <!-- Stats Row -->
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4">
+              <div class="text-xs font-medium text-ink-gray-5">Budget</div>
+              <div class="mt-1.5 text-lg font-semibold text-ink-gray-9">{{ formatCurrency(campaign.doc.budget || 0) }}</div>
             </div>
-            <p class="mt-1 text-xs text-ink-gray-5">{{ budgetPercent.toFixed(0) }}% utilized</p>
-          </div>
-        </div>
-        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm">
-          <div class="text-xs font-medium uppercase text-ink-gray-5">Revenue</div>
-          <div class="mt-1 text-xl font-semibold text-ink-green-3">{{ formatCurrency(metrics.revenue) }}</div>
-        </div>
-        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm">
-          <div class="text-xs font-medium uppercase text-ink-gray-5">ROAS</div>
-          <div class="mt-1 text-xl font-semibold" :class="metrics.roas >= 3 ? 'text-ink-green-3' : metrics.roas >= 1 ? 'text-ink-orange-3' : 'text-ink-red-3'">
-            {{ (metrics.roas || 0).toFixed(2) }}x
-          </div>
-        </div>
-      </div>
-
-      <!-- Campaign Activities -->
-      <div class="mb-6">
-        <h4 class="mb-3 text-base font-medium text-ink-gray-9">Campaign Activities</h4>
-        <div v-if="activities.data?.length" class="space-y-2">
-          <div v-for="act in activities.data" :key="act.name"
-            class="flex cursor-pointer items-center justify-between rounded-lg border border-outline-gray-1 bg-surface-white p-4 transition-shadow hover:shadow"
-            @click="window.location.href = '/app/campaign-activity/' + act.name"
-          >
-            <div>
-              <p class="text-sm font-medium text-ink-gray-9">{{ act.subject || act.name }}</p>
-              <p class="mt-0.5 text-xs text-ink-gray-5">{{ act.channel || 'Multi-channel' }} · {{ act.scheduled_date || 'Not scheduled' }}</p>
-            </div>
-            <Badge :label="act.status || 'Draft'" variant="subtle" />
-          </div>
-        </div>
-        <div v-else class="flex flex-col items-center gap-2 rounded-lg border border-outline-gray-1 p-8">
-          <IconActivity class="h-7 w-7 text-ink-gray-5" />
-          <p class="text-sm text-ink-gray-6">No activities for this campaign</p>
-        </div>
-      </div>
-
-      <!-- Leads Section -->
-      <div>
-        <h4 class="mb-3 text-base font-medium text-ink-gray-9">Attributed Leads</h4>
-        <div v-if="leads.data?.length" class="rounded-lg border border-outline-gray-1">
-          <div class="divide-y divide-outline-gray-1">
-            <div v-for="lead in leads.data" :key="lead.name"
-              class="flex cursor-pointer items-center justify-between px-4 py-3 transition-colors hover:bg-surface-gray-2"
-              @click="window.location.href = '/app/lead/' + lead.name"
-            >
-              <div>
-                <p class="text-sm font-medium text-ink-gray-9">{{ lead.lead_name || lead.name }}</p>
-                <p class="text-xs text-ink-gray-5">{{ lead.company_name || 'No company' }} · {{ lead.source || 'Direct' }}</p>
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4">
+              <div class="text-xs font-medium text-ink-gray-5">Spend</div>
+              <div class="mt-1.5 text-lg font-semibold text-ink-gray-9">{{ formatCurrency(metrics.spend) }}</div>
+              <div v-if="campaign.doc.budget" class="mt-2">
+                <div class="h-1 w-full rounded-full bg-surface-gray-2">
+                  <div class="h-1 rounded-full transition-all"
+                    :class="budgetPercent > 80 ? 'bg-ink-red-3' : budgetPercent > 60 ? 'bg-ink-orange-3' : 'bg-ink-green-3'"
+                    :style="{ width: Math.min(budgetPercent, 100) + '%' }"
+                  />
+                </div>
+                <p class="mt-1 text-[11px] text-ink-gray-5">{{ budgetPercent.toFixed(0) }}% utilized</p>
               </div>
-              <Badge :label="lead.status || 'Open'" variant="subtle" />
+            </div>
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4">
+              <div class="text-xs font-medium text-ink-gray-5">Revenue</div>
+              <div class="mt-1.5 text-lg font-semibold text-ink-green-3">{{ formatCurrency(metrics.revenue) }}</div>
+            </div>
+            <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-4">
+              <div class="text-xs font-medium text-ink-gray-5">ROAS</div>
+              <div class="mt-1.5 text-lg font-semibold" :class="metrics.roas >= 3 ? 'text-ink-green-3' : metrics.roas >= 1 ? 'text-ink-orange-3' : 'text-ink-red-3'">
+                {{ (metrics.roas || 0).toFixed(2) }}x
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Activities -->
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-white">
+            <div class="border-b border-outline-gray-1 px-5 py-3">
+              <h4 class="text-sm font-medium text-ink-gray-9">Campaign Activities</h4>
+            </div>
+            <div v-if="activities.data?.length" class="divide-y divide-outline-gray-1">
+              <div v-for="act in activities.data" :key="act.name"
+                class="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-surface-gray-2"
+                @click="window.location.href = '/app/campaign-activity/' + act.name"
+              >
+                <div>
+                  <p class="text-sm font-medium text-ink-gray-9">{{ act.subject || act.name }}</p>
+                  <p class="mt-0.5 text-xs text-ink-gray-5">{{ act.channel || 'Multi-channel' }} · {{ act.scheduled_date || 'Not scheduled' }}</p>
+                </div>
+                <Badge :label="act.status || 'Draft'" variant="subtle" />
+              </div>
+            </div>
+            <div v-else class="flex flex-col items-center gap-2 py-10">
+              <IconActivity class="h-6 w-6 text-ink-gray-4" />
+              <p class="text-sm text-ink-gray-5">No activities for this campaign</p>
+            </div>
+          </div>
+
+          <!-- Leads Section -->
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-white">
+            <div class="border-b border-outline-gray-1 px-5 py-3">
+              <h4 class="text-sm font-medium text-ink-gray-9">Attributed Leads</h4>
+            </div>
+            <div v-if="leads.data?.length" class="divide-y divide-outline-gray-1">
+              <div v-for="lead in leads.data" :key="lead.name"
+                class="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-surface-gray-2"
+                @click="window.location.href = '/app/lead/' + lead.name"
+              >
+                <div>
+                  <p class="text-sm font-medium text-ink-gray-9">{{ lead.lead_name || lead.name }}</p>
+                  <p class="mt-0.5 text-xs text-ink-gray-5">{{ lead.company_name || 'No company' }} · {{ lead.source || 'Direct' }}</p>
+                </div>
+                <Badge :label="lead.status || 'Open'" variant="subtle" />
+              </div>
+            </div>
+            <div v-else class="flex flex-col items-center gap-2 py-10">
+              <IconUsers class="h-6 w-6 text-ink-gray-4" />
+              <p class="text-sm text-ink-gray-5">No leads attributed yet</p>
             </div>
           </div>
         </div>
-        <div v-else class="flex flex-col items-center gap-2 rounded-lg border border-outline-gray-1 p-8">
-          <IconUsers class="h-7 w-7 text-ink-gray-5" />
-          <p class="text-sm text-ink-gray-6">No leads attributed to this campaign yet</p>
+
+        <!-- Sidebar (1 col) -->
+        <div class="space-y-5">
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+            <h4 class="mb-4 text-sm font-medium text-ink-gray-5">Details</h4>
+            <dl class="space-y-3">
+              <div>
+                <dt class="text-xs text-ink-gray-5">Status</dt>
+                <dd class="mt-0.5">
+                  <Badge :label="campaign.doc.status || 'Draft'" variant="subtle"
+                    :theme="campaign.doc.status === 'Active' ? 'green' : campaign.doc.status === 'Completed' ? 'blue' : 'gray'" />
+                </dd>
+              </div>
+              <div v-if="campaign.doc.start_date">
+                <dt class="text-xs text-ink-gray-5">Start Date</dt>
+                <dd class="mt-0.5 text-sm text-ink-gray-9">{{ campaign.doc.start_date }}</dd>
+              </div>
+              <div v-if="campaign.doc.end_date">
+                <dt class="text-xs text-ink-gray-5">End Date</dt>
+                <dd class="mt-0.5 text-sm text-ink-gray-9">{{ campaign.doc.end_date }}</dd>
+              </div>
+              <div v-if="campaign.doc.company">
+                <dt class="text-xs text-ink-gray-5">Company</dt>
+                <dd class="mt-0.5 text-sm text-ink-gray-9">{{ campaign.doc.company }}</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+            <h4 class="mb-4 text-sm font-medium text-ink-gray-5">Actions</h4>
+            <div class="space-y-2">
+              <Button class="w-full" variant="subtle" label="Edit in Desk" @click="openInDesk">
+                <template #prefix><IconExternalLink class="h-4 w-4" /></template>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

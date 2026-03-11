@@ -1,28 +1,29 @@
 <template>
-  <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
-    <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
-        <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-ink-gray-9">New Social Post</h1>
-            <p class="mt-1 text-sm text-ink-gray-6">Create a new social media post</p>
-          </div>
-          <div class="flex gap-2">
-            <Button variant="ghost" @click="$router.push('/marketing/social')">Cancel</Button>
-            <Button variant="subtle" :loading="saving" @click="createPost('Draft')">Save as Draft</Button>
-            <Button variant="solid" :loading="saving" @click="createPost('Scheduled')" :disabled="!form.scheduled_time">
-              Schedule
-            </Button>
-          </div>
-        </div>
+  <div class="flex h-full flex-col overflow-hidden">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="[
+          { label: 'Social Media', route: { path: '/marketing/social' } },
+          { label: 'New Post' }
+        ]" />
+      </template>
+      <template #right-header>
+        <Button variant="ghost" @click="$router.push('/marketing/social')">Cancel</Button>
+        <Button variant="subtle" :loading="saving" @click="createPost('Draft')">Save as Draft</Button>
+        <Button variant="solid" :loading="saving" @click="createPost('Scheduled')" :disabled="!form.scheduled_time">
+          Schedule
+        </Button>
+      </template>
+    </LayoutHeader>
 
+    <div class="flex-1 overflow-auto">
+      <div class="mx-auto max-w-4xl px-5 py-6">
         <div class="grid gap-6 lg:grid-cols-3">
           <!-- Content Column (2 cols) -->
           <div class="lg:col-span-2 space-y-6">
             <!-- Basic Info -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Post Details</h2>
+              <h2 class="mb-4 text-base font-medium text-ink-gray-9">Post Details</h2>
               <div class="space-y-4">
                 <FormControl
                   v-model="form.post_title"
@@ -51,7 +52,7 @@
 
             <!-- Media -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Media</h2>
+              <h2 class="mb-4 text-base font-medium text-ink-gray-9">Media</h2>
               <div class="rounded-lg border-2 border-dashed border-outline-gray-3 p-8 text-center">
                 <FeatherIcon name="image" class="mx-auto h-10 w-10 text-ink-gray-4" />
                 <p class="mt-2 text-sm text-ink-gray-6">Attach an image or video</p>
@@ -65,7 +66,7 @@
 
             <!-- Targeting -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Targeting & Tags</h2>
+              <h2 class="mb-4 text-base font-medium text-ink-gray-9">Targeting & Tags</h2>
               <div class="space-y-4">
                 <FormControl
                   v-model="form.hashtags"
@@ -93,7 +94,7 @@
           <div class="space-y-6">
             <!-- Platform & Campaign -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h3 class="mb-4 font-semibold text-ink-gray-9">Publishing</h3>
+              <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Publishing</h3>
               <div class="space-y-4">
                 <FormControl
                   v-model="form.platform"
@@ -131,7 +132,7 @@
 
             <!-- Schedule -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h3 class="mb-4 font-semibold text-ink-gray-9">Schedule</h3>
+              <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Schedule</h3>
               <FormControl
                 v-model="form.scheduled_time"
                 label="Schedule Date & Time"
@@ -141,7 +142,7 @@
 
             <!-- Options -->
             <div class="rounded-lg border border-outline-gray-1 bg-surface-cards p-6 shadow-sm">
-              <h3 class="mb-4 font-semibold text-ink-gray-9">Options</h3>
+              <h3 class="mb-4 text-sm font-medium text-ink-gray-5">Options</h3>
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-ink-gray-9">Enable Comments</span>
@@ -163,7 +164,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, FormControl, Switch, FeatherIcon, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, FeatherIcon, toast } from 'frappe-ui'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 
 const router = useRouter()
 const saving = ref(false)
