@@ -33,7 +33,7 @@ def get_columns():
 			"fieldname": "campaign",
 			"label": _("Campaign"),
 			"fieldtype": "Link",
-			"options": "Campaign",
+			"options": "Marketing Campaign",
 			"width": 150
 		},
 		{

@@ -28,8 +28,10 @@ def get_columns():
 
 def get_data(filters):
     conditions = ""
+    values = {}
     if filters.get("campaign"):
-        conditions = f" AND c.name = '{filters.get('campaign')}'"
+        conditions = " AND c.name = %(campaign)s"
+        values["campaign"] = filters.get("campaign")
 
     # Get campaigns - Marketing Campaign
     campaigns = frappe.db.sql(f"""
@@ -41,7 +43,7 @@ def get_data(filters):
         WHERE c.docstatus < 2
         {conditions}
         ORDER BY c.creation DESC
-    """, as_dict=1)
+    """, values, as_dict=1)
 
     data = []
     for campaign in campaigns:

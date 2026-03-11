@@ -190,11 +190,11 @@ def setup_workspace_visibility(login_manager=None):
 def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can_execute=1):
 	"""Assign a user to a campaign via User Permission"""
 	# Check if caller has permission to assign
-	if not frappe.has_permission("Campaign", "write"):
+	if not frappe.has_permission("Marketing Campaign", "write"):
 		frappe.throw(_("You don't have permission to assign users to campaigns"))
 	
 	# Check if campaign exists
-	if not frappe.db.exists("Campaign", campaign):
+	if not frappe.db.exists("Marketing Campaign", campaign):
 		frappe.throw(_("Campaign {0} not found").format(campaign))
 	
 	# Check if user exists
@@ -204,7 +204,7 @@ def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can
 	# Check if already assigned
 	existing = frappe.db.exists("User Permission", {
 		"user": user,
-		"allow": "Campaign",
+		"allow": "Marketing Campaign",
 		"for_value": campaign
 	})
 	
@@ -215,7 +215,7 @@ def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can
 	# Create User Permission
 	user_perm = frappe.new_doc("User Permission")
 	user_perm.user = user
-	user_perm.allow = "Campaign"
+	user_perm.allow = "Marketing Campaign"
 	user_perm.for_value = campaign
 	user_perm.applicable_for = "Marketing Hub"
 	user_perm.insert(ignore_permissions=True)
@@ -234,7 +234,7 @@ def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can
 def remove_user_from_campaign(campaign, user):
 	"""Remove user assignment from campaign"""
 	# Check if caller has permission
-	if not frappe.has_permission("Campaign", "write"):
+	if not frappe.has_permission("Marketing Campaign", "write"):
 		frappe.throw(_("You don't have permission to modify campaign assignments"))
 	
 	# Find and delete User Permission
@@ -242,7 +242,7 @@ def remove_user_from_campaign(campaign, user):
 		"User Permission",
 		filters={
 			"user": user,
-			"allow": "Campaign",
+			"allow": "Marketing Campaign",
 			"for_value": campaign
 		},
 		pluck="name"
@@ -262,13 +262,13 @@ def remove_user_from_campaign(campaign, user):
 @frappe.whitelist()
 def get_campaign_assigned_users(campaign):
 	"""Get list of users assigned to a campaign"""
-	if not frappe.has_permission("Campaign", "read"):
+	if not frappe.has_permission("Marketing Campaign", "read"):
 		frappe.throw(_("You don't have permission to view campaign assignments"))
 	
 	assigned_users = frappe.get_all(
 		"User Permission",
 		filters={
-			"allow": "Campaign",
+			"allow": "Marketing Campaign",
 			"for_value": campaign
 		},
 		fields=["user", "creation", "modified"]

@@ -38,9 +38,9 @@ class CampaignContent(Document):
             elif self.channel == "Email":
                 return "email"
             elif self.channel in ["WhatsApp", "SMS"]:
-            return "messaging"
-        else:
-            return "organic"
+                return "messaging"
+            else:
+                return "organic"
 
     def before_save(self):
         self.generate_preview()

@@ -14,31 +14,34 @@ def get_columns():
 		{"fieldname": "clicks", "label": "Clicks", "fieldtype": "Int", "width": 120},
 		{"fieldname": "ctr", "label": "CTR (%)", "fieldtype": "Float", "width": 100},
 		{"fieldname": "conversions", "label": "Conversions", "fieldtype": "Int", "width": 100},
-		{"fieldname": "cost", "label": "Spend", "fieldtype": "Currency", "width": 120},
+		{"fieldname": "spend", "label": "Spend", "fieldtype": "Currency", "width": 120},
 		{"fieldname": "cpa", "label": "CPA", "fieldtype": "Currency", "width": 120},
 	]
 
 def get_data(filters):
 	conditions = ""
+	values = {}
 	if filters.get("from_date") and filters.get("to_date"):
-		conditions += f" AND date BETWEEN '{filters.get('from_date')}' AND '{filters.get('to_date')}'"
+		conditions += " AND log_date BETWEEN %(from_date)s AND %(to_date)s"
+		values["from_date"] = filters.get("from_date")
+		values["to_date"] = filters.get("to_date")
 
 	data = frappe.db.sql(f"""
 		SELECT 
-			platform as channel,
+			channel,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks,
 			SUM(conversions) as conversions,
-			SUM(cost) as cost
+			SUM(spend) as spend
 		FROM `tabAnalytics Daily Log`
 		WHERE 1=1 {conditions}
-		GROUP BY platform
+		GROUP BY channel
 		ORDER BY conversions DESC
-	""", as_dict=True)
+	""", values, as_dict=True)
 
 	for row in data:
 		row.ctr = flt(row.clicks / row.impressions * 100, 2) if row.impressions > 0 else 0
-		row.cpa = flt(row.cost / row.conversions, 2) if row.conversions > 0 else 0
+		row.cpa = flt(row.spend / row.conversions, 2) if row.conversions > 0 else 0
 
 	return data
 

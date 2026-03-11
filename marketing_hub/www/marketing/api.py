@@ -724,7 +724,7 @@ def get_budget_overview():
 		
 		# Total Spend (from Analytics Daily Log + Manual Expenses)
 		ad_spend = frappe.db.sql("""
-			SELECT SUM(cost) FROM `tabAnalytics Daily Log`
+			SELECT SUM(spend) FROM `tabAnalytics Daily Log`
 		""")[0][0] or 0.0
 		
 		manual_spend = frappe.db.sql("""
@@ -751,8 +751,8 @@ def get_budget_overview():
 			
 			# Monthly Actual
 			m_ad_spend = frappe.db.sql("""
-				SELECT SUM(cost) FROM `tabAnalytics Daily Log` 
-				WHERE date BETWEEN %s AND %s
+				SELECT SUM(spend) FROM `tabAnalytics Daily Log` 
+				WHERE log_date BETWEEN %s AND %s
 			""", (month_start, month_end))[0][0] or 0.0
 			
 			m_manual_spend = frappe.db.sql("""

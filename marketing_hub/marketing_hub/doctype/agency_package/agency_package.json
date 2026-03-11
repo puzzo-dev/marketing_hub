@@ -1,0 +1,184 @@
+{
+ "actions": [],
+ "autoname": "field:package_name",
+ "creation": "2026-03-11 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "package_name",
+  "column_break_1",
+  "is_active",
+  "section_break_limits",
+  "campaign_limit",
+  "blast_limit",
+  "social_post_limit",
+  "column_break_limits",
+  "user_limit",
+  "storage_limit_mb",
+  "section_break_channels",
+  "included_channels",
+  "section_break_billing",
+  "monthly_fee",
+  "currency",
+  "column_break_billing",
+  "billing_cycle_months",
+  "section_break_desc",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "package_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Package Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "section_break_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits"
+  },
+  {
+   "default": "0",
+   "description": "0 = Unlimited",
+   "fieldname": "campaign_limit",
+   "fieldtype": "Int",
+   "label": "Campaign Limit"
+  },
+  {
+   "default": "0",
+   "description": "0 = Unlimited",
+   "fieldname": "blast_limit",
+   "fieldtype": "Int",
+   "label": "Blast Limit (Monthly)"
+  },
+  {
+   "default": "0",
+   "description": "0 = Unlimited",
+   "fieldname": "social_post_limit",
+   "fieldtype": "Int",
+   "label": "Social Post Limit (Monthly)"
+  },
+  {
+   "fieldname": "column_break_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "0 = Unlimited",
+   "fieldname": "user_limit",
+   "fieldtype": "Int",
+   "label": "User Limit"
+  },
+  {
+   "default": "0",
+   "description": "0 = Unlimited",
+   "fieldname": "storage_limit_mb",
+   "fieldtype": "Int",
+   "label": "Storage Limit (MB)"
+  },
+  {
+   "fieldname": "section_break_channels",
+   "fieldtype": "Section Break",
+   "label": "Channels"
+  },
+  {
+   "description": "One channel per line. Use 'All Channels' for unlimited access.",
+   "fieldname": "included_channels",
+   "fieldtype": "Small Text",
+   "label": "Included Channels"
+  },
+  {
+   "fieldname": "section_break_billing",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "monthly_fee",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monthly Fee",
+   "options": "currency"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "column_break_billing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "billing_cycle_months",
+   "fieldtype": "Int",
+   "label": "Billing Cycle (Months)"
+  },
+  {
+   "fieldname": "section_break_desc",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-03-11 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Agency Package",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Marketing User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
