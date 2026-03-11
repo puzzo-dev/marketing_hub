@@ -21,7 +21,7 @@ def execute():
 		# Create unique index
 		frappe.db.sql("""
 			ALTER TABLE `tabAnalytics Daily Log`
-			ADD UNIQUE INDEX unique_analytics_log (date, campaign, platform, ad_account)
+			ADD UNIQUE INDEX unique_analytics_log (log_date, campaign, channel, connector)
 		""")
 		
 		print("Successfully created unique index on Analytics Daily Log")
@@ -37,16 +37,16 @@ def execute():
 			
 			# Find duplicates
 			duplicates = frappe.db.sql("""
-				SELECT date, campaign, platform, ad_account, COUNT(*) as count
+				SELECT log_date, campaign, channel, connector, COUNT(*) as count
 				FROM `tabAnalytics Daily Log`
-				GROUP BY date, campaign, platform, ad_account
+				GROUP BY log_date, campaign, channel, connector
 				HAVING count > 1
 			""", as_dict=True)
 			
 			if duplicates:
 				print(f"Found {len(duplicates)} sets of duplicate records:")
 				for dup in duplicates[:10]:  # Show first 10
-					print(f"  - Date: {dup.date}, Campaign: {dup.campaign}, Platform: {dup.platform}, Count: {dup.count}")
+					print(f"  - Date: {dup.log_date}, Campaign: {dup.campaign}, Channel: {dup.channel}, Count: {dup.count}")
 		else:
 			frappe.log_error(f"Error creating unique index: {str(e)}", "Analytics Daily Log Index Creation")
 			print(f"Error: {str(e)}")

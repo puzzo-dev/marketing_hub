@@ -33,6 +33,7 @@
     "hide_custom": 0,
     "icon": "sell",
     "idx": 0,
+    "indicator_color": "",
     "is_hidden": 0,
     "label": "Marketing Hub",
     "number_cards": [

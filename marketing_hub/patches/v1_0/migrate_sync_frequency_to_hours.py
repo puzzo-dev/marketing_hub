@@ -35,8 +35,11 @@ def execute():
 				update_modified=False
 			)
 			print(f"Converted sync_frequency: {old_value} -> {new_value} hours")
-		elif old_value and old_value.isdigit():
+		elif old_value and isinstance(old_value, int):
 			# Already numeric, keep it
+			print(f"Keeping numeric value: {old_value} hours")
+		elif old_value and str(old_value).isdigit():
+			# Numeric string, keep it
 			print(f"Keeping numeric value: {old_value} hours")
 		else:
 			# Set default 24 hours (daily)

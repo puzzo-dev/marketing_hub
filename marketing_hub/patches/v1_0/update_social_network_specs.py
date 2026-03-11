@@ -150,14 +150,16 @@ def execute():
 			continue
 		
 		try:
-			network = frappe.get_doc("Social Media Network", network_name)
-			
-			# Update only if fields are empty
 			for field, value in specs.items():
-				if not network.get(field) and value is not None:
-					network.set(field, value)
+				if value is not None:
+					frappe.db.set_value(
+						"Social Media Network",
+						network_name,
+						field,
+						value,
+						update_modified=False
+					)
 			
-			network.save(ignore_permissions=True)
 			print(f"Updated specs for: {network_name}")
 		except Exception as e:
 			print(f"Failed to update {network_name}: {str(e)}")

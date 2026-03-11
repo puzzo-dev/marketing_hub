@@ -8,6 +8,7 @@
     "hide_custom": 0,
     "icon": "workflow",
     "idx": 2,
+    "indicator_color": "",
     "is_hidden": 0,
     "label": "Marketing Operations",
     "parent_page": "Marketing Hub",
