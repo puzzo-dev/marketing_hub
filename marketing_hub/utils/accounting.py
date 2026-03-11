@@ -321,3 +321,181 @@ def update_campaign_spent_amount(doc, method=None):
 	
 	# Update campaign
 	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_actual_cost", flt(total_spent), update_modified=False)
+
+
+# ─── Ledger / Settings helpers (merged from inner utils) ────────────────────
+
+def make_marketing_gl_entry(
+	voucher_type,
+	voucher_no,
+	company,
+	posting_date,
+	expense_account,
+	amount,
+	payment_account=None,
+	cost_center=None,
+	project=None,
+	campaign=None,
+	remarks=None,
+	cancel=False,
+):
+	"""
+	Create General Ledger entries for marketing expenses (standalone, no doc required).
+	"""
+	from erpnext.accounts.general_ledger import make_gl_entries as _make_gl_entries
+	from erpnext.accounts.doctype.budget.budget import validate_expense_against_budget
+
+	settings = get_marketing_hub_settings(company)
+	if not settings:
+		frappe.throw(_("Marketing Hub Settings not found for company {0}").format(company))
+
+	if not settings.enable_gl_entry:
+		return []
+
+	if not expense_account:
+		expense_account = settings.default_expense_account
+	if not cost_center:
+		cost_center = settings.default_cost_center
+	if not expense_account:
+		frappe.throw(_("Marketing Expense Account not set in Marketing Hub Settings"))
+
+	from frappe.utils import getdate
+	currency = frappe.get_cached_value("Company", company, "default_currency")
+
+	gl_entries = [
+		{
+			"posting_date": getdate(posting_date),
+			"account": expense_account,
+			"debit": flt(amount),
+			"debit_in_account_currency": flt(amount),
+			"against": payment_account or "TBD",
+			"cost_center": cost_center,
+			"project": project,
+			"voucher_type": voucher_type,
+			"voucher_no": voucher_no,
+			"company": company,
+			"account_currency": currency,
+			"remarks": remarks or f"Marketing expense from {voucher_type}",
+		}
+	]
+
+	if payment_account:
+		gl_entries.append({
+			"posting_date": getdate(posting_date),
+			"account": payment_account,
+			"credit": flt(amount),
+			"credit_in_account_currency": flt(amount),
+			"against": expense_account,
+			"cost_center": cost_center,
+			"project": project,
+			"voucher_type": voucher_type,
+			"voucher_no": voucher_no,
+			"company": company,
+			"account_currency": currency,
+			"remarks": remarks or f"Payment for marketing expense from {voucher_type}",
+		})
+
+	if settings.validate_budget and not cancel:
+		validate_expense_against_budget(
+			{"account": expense_account, "cost_center": cost_center, "company": company},
+			{"posting_date": getdate(posting_date), "doctype": voucher_type},
+		)
+
+	if gl_entries:
+		_make_gl_entries(gl_entries, cancel=cancel, adv_adj=False)
+
+	return gl_entries
+
+
+def get_marketing_hub_settings(company=None):
+	"""Get Marketing Hub Settings singleton"""
+	try:
+		return frappe.get_single("Marketing Hub Settings")
+	except frappe.DoesNotExistError:
+		return None
+
+
+@frappe.whitelist()
+def get_marketing_expense_account(company):
+	"""Get default marketing expense account from settings"""
+	settings = get_marketing_hub_settings(company)
+	return settings.default_expense_account if settings else None
+
+
+def get_marketing_cost_center(company):
+	"""Get default marketing cost center from settings"""
+	settings = get_marketing_hub_settings(company)
+	return settings.default_cost_center if settings else None
+
+
+@frappe.whitelist()
+def get_campaign_ledger_summary(campaign, company=None):
+	"""Get ledger summary for a campaign"""
+	if not company:
+		campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
+		company = campaign_doc.company if hasattr(campaign_doc, "company") else None
+
+	total_expenses = frappe.db.sql(
+		"""
+		SELECT SUM(amount) as total
+		FROM `tabMarketing Expense`
+		WHERE campaign = %s AND docstatus = 1
+		{0}
+		""".format("AND company = %s" if company else ""),
+		(campaign, company) if company else (campaign,),
+		as_dict=1,
+	)[0].total or 0
+
+	campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
+	budget = campaign_doc.budget if hasattr(campaign_doc, "budget") else 0
+	utilization = (total_expenses / budget * 100) if budget else 0
+	remaining = budget - total_expenses if budget else None
+
+	return {
+		"campaign": campaign,
+		"company": company,
+		"total_expenses": total_expenses,
+		"budget": budget,
+		"remaining": remaining,
+		"utilization_percentage": utilization,
+		"over_budget": total_expenses > budget if budget else False,
+	}
+
+
+@frappe.whitelist()
+def get_marketing_ledger_summary(company, from_date=None, to_date=None):
+	"""Get overall marketing ledger summary for a company"""
+	date_filter = _get_date_filter_sql(from_date, to_date)
+
+	expenses_by_category = frappe.db.sql(
+		"""
+		SELECT expense_category, SUM(amount) as total, COUNT(*) as count
+		FROM `tabMarketing Expense`
+		WHERE company = %(company)s AND docstatus = 1 {0}
+		GROUP BY expense_category
+		ORDER BY total DESC
+		""".format(date_filter),
+		{"company": company, "from_date": from_date, "to_date": to_date},
+		as_dict=1,
+	)
+
+	total_expenses = sum(row.total for row in expenses_by_category)
+	return {
+		"company": company,
+		"from_date": from_date,
+		"to_date": to_date,
+		"total_expenses": total_expenses,
+		"expenses_by_category": expenses_by_category,
+		"category_count": len(expenses_by_category),
+	}
+
+
+def _get_date_filter_sql(from_date, to_date):
+	"""Build date filter SQL clause"""
+	if from_date and to_date:
+		return "AND posting_date BETWEEN %(from_date)s AND %(to_date)s"
+	elif from_date:
+		return "AND posting_date >= %(from_date)s"
+	elif to_date:
+		return "AND posting_date <= %(to_date)s"
+	return ""

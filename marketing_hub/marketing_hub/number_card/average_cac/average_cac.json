@@ -9,7 +9,7 @@
     "is_public": 1,
     "is_standard": 1,
     "label": "Avg CAC",
-    "method": "marketing_hub.marketing_hub.utils.dashboard.get_average_cac",
+    "method": "marketing_hub.utils.dashboard.get_average_cac",
     "modified": "2026-03-11 10:00:00.000000",
     "modified_by": "Administrator",
     "module": "Marketing Hub",

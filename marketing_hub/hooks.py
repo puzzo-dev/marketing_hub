@@ -83,7 +83,7 @@ fixtures = [
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/marketing_hub/css/marketing_hub.css"
+app_include_css = "/assets/marketing_hub/css/marketing_hub.css"
 app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include js, css files in header of web template

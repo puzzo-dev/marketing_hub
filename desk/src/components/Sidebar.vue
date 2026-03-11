@@ -60,10 +60,9 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import UserMenu from './UserMenu.vue'
 import SettingsDialog from './SettingsDialog.vue'
-import { useConfigStore } from '@/stores/config'
 
 import IconLayoutDashboard from '~icons/lucide/layout-dashboard'
 import IconMegaphone from '~icons/lucide/megaphone'
@@ -72,16 +71,12 @@ import IconBarChart3 from '~icons/lucide/bar-chart-2'
 import IconSend from '~icons/lucide/send'
 import IconUsers from '~icons/lucide/users'
 import IconFileText from '~icons/lucide/file-text'
-import IconBuilding from '~icons/lucide/building-2'
-import IconCreditCard from '~icons/lucide/credit-card'
 import IconSettings from '~icons/lucide/settings'
 import IconPanelLeftOpen from '~icons/lucide/panel-left-open'
 import IconPanelLeftClose from '~icons/lucide/panel-left-close'
 import IconWallet from '~icons/lucide/wallet'
 
 const route = useRoute()
-const router = useRouter()
-const configStore = useConfigStore()
 
 const isCollapsed = ref(false)
 const showSettings = ref(false)
@@ -104,24 +99,14 @@ const sidebarSections = computed(() => {
       items: [
         { label: 'Campaigns', icon: IconMegaphone, to: '/marketing/campaigns', isActive: isActiveRoute('/marketing/campaigns') },
         { label: 'Omni Blast', icon: IconSend, to: '/marketing/blast/new', isActive: isActiveRoute('/marketing/blast') },
+        { label: 'Social Media', icon: IconShare2, to: '/marketing/social', isActive: isActiveRoute('/marketing/social') },
         { label: 'Segments', icon: IconUsers, to: '/marketing/segments', isActive: isActiveRoute('/marketing/segments') },
         { label: 'Content', icon: IconFileText, to: '/marketing/content', isActive: isActiveRoute('/marketing/content') },
         { label: 'Expenses', icon: IconWallet, to: '/marketing/expenses', isActive: isActiveRoute('/marketing/expenses') },
-        { label: 'Social Media', icon: IconShare2, to: '/marketing/social', isActive: isActiveRoute('/marketing/social') },
         { label: 'Analytics', icon: IconBarChart3, to: '/marketing/analytics', isActive: isActiveRoute('/marketing/analytics') },
       ],
     },
   ]
-
-  if (configStore.isAgencyMode) {
-    sections.push({
-      label: 'Agency',
-      items: [
-        { label: 'Clients', icon: IconBuilding, to: '/marketing/clients', isActive: isActiveRoute('/marketing/clients') },
-        { label: 'Subscriptions', icon: IconCreditCard, to: '/marketing/subscriptions', isActive: isActiveRoute('/marketing/subscriptions') },
-      ],
-    })
-  }
 
   sections.push({
     label: 'System',

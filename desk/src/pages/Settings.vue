@@ -260,7 +260,6 @@
           </template>
 
           <!-- Actions already in header -->
-        </div>
       </div>
     </div>
   </div>

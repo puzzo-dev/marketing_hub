@@ -1,6 +1,6 @@
 {
     "charts": [],
-    "content": "[{\"id\":\"shortcuts_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"settings_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Hub Settings\",\"col\":3}},{\"id\":\"template_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Template\",\"col\":3}},{\"id\":\"asset_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Asset\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"settings_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings & Configuration</b></span>\",\"col\":12}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Templates\",\"col\":4}},{\"id\":\"oauth_card\",\"type\":\"card\",\"data\":{\"card_name\":\"OAuth & Integration\",\"col\":4}},{\"id\":\"attribution_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Attribution & Analytics\",\"col\":4}}]",
+    "content": "[{\"id\":\"shortcuts_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"settings_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Hub Settings\",\"col\":3}},{\"id\":\"template_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Template\",\"col\":3}},{\"id\":\"asset_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Asset\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"settings_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Settings & Configuration</b></span>\",\"col\":12}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":4}},{\"id\":\"templates_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Content\",\"col\":4}},{\"id\":\"oauth_card\",\"type\":\"card\",\"data\":{\"card_name\":\"OAuth & Integration\",\"col\":4}},{\"id\":\"attribution_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Attribution & Analytics\",\"col\":4}}]",
     "creation": "2026-01-18 12:00:00.000000",
     "docstatus": 0,
     "doctype": "Workspace",
@@ -43,7 +43,7 @@
             "type": "Link"
         },
         {
-            "label": "Templates",
+            "label": "Content",
             "type": "Card Break"
         },
         {

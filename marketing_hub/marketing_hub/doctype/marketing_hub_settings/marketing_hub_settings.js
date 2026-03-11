@@ -74,7 +74,7 @@ frappe.ui.form.on('Marketing Hub Settings', {
 		// Set default accounts when company changes
 		if (frm.doc.company) {
 			frappe.call({
-				method: 'marketing_hub.marketing_hub.utils.accounting.get_marketing_expense_account',
+				method: 'marketing_hub.utils.accounting.get_marketing_expense_account',
 				args: {
 					company: frm.doc.company
 				},
