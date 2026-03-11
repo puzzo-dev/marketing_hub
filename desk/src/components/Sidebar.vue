@@ -23,6 +23,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MarketingHubLogo from './Icons/MarketingHubLogo.vue'
 import { useSidebar } from '@/stores/sidebar'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 
 import IconLayoutDashboard from '~icons/lucide/layout-dashboard'
 import IconMegaphone from '~icons/lucide/megaphone'
@@ -37,11 +38,14 @@ import IconChevronRight from '~icons/lucide/chevron-right'
 import IconSend from '~icons/lucide/send'
 import IconUsers from '~icons/lucide/users'
 import IconFileText from '~icons/lucide/file-text'
+import IconBuilding from '~icons/lucide/building-2'
+import IconCreditCard from '~icons/lucide/credit-card'
 
 const route = useRoute()
 const router = useRouter()
 const { isExpanded: isCollapsed } = useSidebar()
 const userStore = useUserStore()
+const configStore = useConfigStore()
 
 // Get installed apps with their full metadata (logo, title, route)
 // We still rely on window.installed_apps injection from index.py for now as it's boot data
@@ -121,74 +125,100 @@ function isActiveRoute(path) {
 }
 
 // Sidebar sections
-const sidebarSections = computed(() => [
-  {
-    label: '',
-    items: [
-      {
-        label: 'Dashboard',
-        icon: IconLayoutDashboard,
-        to: '/marketing',
-        isActive: isActiveRoute('/marketing') && route.path === '/marketing',
-        onClick: () => router.push('/marketing'),
-      },
-    ],
-  },
-  {
-    label: 'Marketing',
-    items: [
-      {
-        label: 'Campaigns',
-        icon: IconMegaphone,
-        to: '/marketing/campaigns',
-        isActive: isActiveRoute('/marketing/campaigns'),
-        onClick: () => router.push('/marketing/campaigns'),
-      },
-      {
-        label: 'Omni Blast',
-        icon: IconSend,
-        to: '/marketing/blast/new',
-        isActive: isActiveRoute('/marketing/blast'),
-        onClick: () => router.push('/marketing/blast/new'),
-      },
-      {
-        label: 'Segments',
-        icon: IconUsers,
-        to: '/marketing/segments',
-        isActive: isActiveRoute('/marketing/segments'),
-        onClick: () => router.push('/marketing/segments'),
-      },
-      {
-        label: 'Content',
-        icon: IconFileText,
-        to: '/marketing/content',
-        isActive: isActiveRoute('/marketing/content'),
-        onClick: () => router.push('/marketing/content'),
-      },
-      {
-        label: 'Expenses',
-        icon: IconBarChart3, /* Reusing bar chart icon or maybe a wallet/credit card if available, sticking to BarChart for financial */
-        to: '/marketing/expenses',
-        isActive: isActiveRoute('/marketing/expenses'),
-        onClick: () => router.push('/marketing/expenses'),
-      },
-      {
-        label: 'Social Media',
-        icon: IconShare2,
-        to: '/marketing/social',
-        isActive: isActiveRoute('/marketing/social'),
-        onClick: () => router.push('/marketing/social'),
-      },
-      {
-        label: 'Analytics',
-        icon: IconBarChart3,
-        to: '/marketing/analytics',
-        isActive: isActiveRoute('/marketing/analytics'),
-        onClick: () => router.push('/marketing/analytics'),
-      },
-    ],
-  },
-  {
+const sidebarSections = computed(() => {
+  const sections = [
+    {
+      label: '',
+      items: [
+        {
+          label: 'Dashboard',
+          icon: IconLayoutDashboard,
+          to: '/marketing',
+          isActive: isActiveRoute('/marketing') && route.path === '/marketing',
+          onClick: () => router.push('/marketing'),
+        },
+      ],
+    },
+    {
+      label: 'Marketing',
+      items: [
+        {
+          label: 'Campaigns',
+          icon: IconMegaphone,
+          to: '/marketing/campaigns',
+          isActive: isActiveRoute('/marketing/campaigns'),
+          onClick: () => router.push('/marketing/campaigns'),
+        },
+        {
+          label: 'Omni Blast',
+          icon: IconSend,
+          to: '/marketing/blast/new',
+          isActive: isActiveRoute('/marketing/blast'),
+          onClick: () => router.push('/marketing/blast/new'),
+        },
+        {
+          label: 'Segments',
+          icon: IconUsers,
+          to: '/marketing/segments',
+          isActive: isActiveRoute('/marketing/segments'),
+          onClick: () => router.push('/marketing/segments'),
+        },
+        {
+          label: 'Content',
+          icon: IconFileText,
+          to: '/marketing/content',
+          isActive: isActiveRoute('/marketing/content'),
+          onClick: () => router.push('/marketing/content'),
+        },
+        {
+          label: 'Expenses',
+          icon: IconBarChart3,
+          to: '/marketing/expenses',
+          isActive: isActiveRoute('/marketing/expenses'),
+          onClick: () => router.push('/marketing/expenses'),
+        },
+        {
+          label: 'Social Media',
+          icon: IconShare2,
+          to: '/marketing/social',
+          isActive: isActiveRoute('/marketing/social'),
+          onClick: () => router.push('/marketing/social'),
+        },
+        {
+          label: 'Analytics',
+          icon: IconBarChart3,
+          to: '/marketing/analytics',
+          isActive: isActiveRoute('/marketing/analytics'),
+          onClick: () => router.push('/marketing/analytics'),
+        },
+      ],
+    },
+  ]
+
+  // Agency mode: show Clients & Subscriptions section for admins
+  if (configStore.isAgencyMode) {
+    sections.push({
+      label: 'Agency',
+      items: [
+        {
+          label: 'Clients',
+          icon: IconBuilding,
+          to: '/marketing/clients',
+          isActive: isActiveRoute('/marketing/clients'),
+          onClick: () => router.push('/marketing/clients'),
+        },
+        {
+          label: 'Subscriptions',
+          icon: IconCreditCard,
+          to: '/marketing/subscriptions',
+          isActive: isActiveRoute('/marketing/subscriptions'),
+          onClick: () => router.push('/marketing/subscriptions'),
+        },
+      ],
+    })
+  }
+
+  sections.push({
     label: 'System',
     items: [
       {
@@ -199,6 +229,8 @@ const sidebarSections = computed(() => [
         onClick: () => router.push('/marketing/settings'),
       },
     ],
-  },
-])
+  })
+
+  return sections
+})
 </script>

@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { createResource } from 'frappe-ui'
 
 export const useConfigStore = defineStore('config', () => {
+    const isReady = ref(false)
+
     const settings = ref({
         company: '',
         default_lead_source: '',
@@ -61,11 +63,19 @@ export const useConfigStore = defineStore('config', () => {
                     agency_mode: !!data.agency_mode,
                 }
             }
+            isReady.value = true
+        },
+        onError() {
+            isReady.value = true
         }
     })
 
+    const isAgencyMode = computed(() => settings.value.agency_mode)
+
     return {
         settings,
+        isReady,
+        isAgencyMode,
         fetch: settingsResource.fetch
     }
 })

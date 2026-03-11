@@ -32,13 +32,13 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    const role = computed(() => {
-        const roles = window.frappe?.boot?.user?.roles || []
-        if (roles.includes('System Manager') || roles.includes('Marketing Manager')) {
-            return 'Admin'
-        }
-        return 'Agent'
-    })
+    const roles = computed(() => window.frappe?.boot?.user?.roles || [])
+
+    const isAdmin = computed(() =>
+        roles.value.includes('System Manager') || roles.value.includes('Marketing Manager')
+    )
+
+    const role = computed(() => isAdmin.value ? 'Admin' : 'Agent')
 
     const isLoggedIn = computed(() => !!user.value)
     const name = computed(() => window.frappe?.session?.user_fullname || 'User')
@@ -48,6 +48,8 @@ export const useUserStore = defineStore('user', () => {
     return {
         user,
         role,
+        roles,
+        isAdmin,
         isLoggedIn,
         name,
         email,
