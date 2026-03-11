@@ -6,11 +6,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marketing Hub</title>
-  <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/desk/favicon.svg" />
-  {%- for css in desk_assets.stylesheets %}
+  <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/frontend/favicon.svg" />
+  {%- for css in frontend_assets.stylesheets %}
   <link rel="stylesheet" crossorigin href="{{ css }}" />
   {%- endfor %}
-  {%- for preload in desk_assets.modulepreloads %}
+  {%- for preload in frontend_assets.modulepreloads %}
   <link rel="modulepreload" crossorigin href="{{ preload }}" />
   {%- endfor %}
 </head>
@@ -36,7 +36,7 @@
     window.installed_apps = {{ installed_apps | tojson }};
   </script>
 
-  {%- for script in desk_assets.scripts %}
+  {%- for script in frontend_assets.scripts %}
   <script type="module" crossorigin src="{{ script }}"></script>
   {%- endfor %}
 </body>

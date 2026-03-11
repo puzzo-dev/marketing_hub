@@ -13,7 +13,7 @@ required_apps = ["frappe_whatsapp"]
 add_to_apps_screen = [
     {
         "name": "marketing_hub",
-        "logo": "/assets/marketing_hub/desk/logo.svg",
+        "logo": "/assets/marketing_hub/frontend/logo.svg",
         "title": "Marketing Hub",
         "route": "/app/marketing-hub",
         "has_permission": "marketing_hub.api.permission.has_app_permission"
@@ -87,7 +87,7 @@ app_include_css = "/assets/marketing_hub/css/marketing_hub.css"
 app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include js, css files in header of web template
-web_include_css = "/assets/marketing_hub/css/portal.css"
+# web_include_css = "/assets/marketing_hub/css/portal.css"
 # web_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 
 # include custom scss in every website theme (without file extension ".scss")
@@ -165,7 +165,7 @@ web_include_css = "/assets/marketing_hub/css/portal.css"
 # before_app_uninstall = "marketing_hub.utils.before_app_uninstall"
 # after_app_uninstall = "marketing_hub.utils.after_app_uninstall"
 
-after_migrate = "marketing_hub.setup.setup_notifications"
+after_migrate = "marketing_hub.install.setup_notifications"
 
 # Desk Notifications
 # ------------------

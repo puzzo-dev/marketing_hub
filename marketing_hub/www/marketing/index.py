@@ -14,7 +14,7 @@ def get_context(context):
         raise frappe.Redirect
 
     # Get Vite-built asset paths from the compiled index.html
-    context.desk_assets = _get_desk_assets()
+    context.frontend_assets = _get_frontend_assets()
 
     # Pass installed apps to frontend for app switcher
     context.installed_apps = get_apps_for_user()
@@ -28,10 +28,10 @@ def get_context(context):
     return context
 
 
-def _get_desk_assets():
-    """Read the Vite-built public/desk/index.html and extract asset paths."""
+def _get_frontend_assets():
+    """Read the Vite-built public/frontend/index.html and extract asset paths."""
     app_path = frappe.get_app_path("marketing_hub")
-    built_index = os.path.join(app_path, "public", "desk", "index.html")
+    built_index = os.path.join(app_path, "public", "frontend", "index.html")
 
     assets = {
         "scripts": [],
