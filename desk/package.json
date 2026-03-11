@@ -11,6 +11,7 @@
   "dependencies": {
     "frappe-ui": "^0.1.54",
     "lodash": "^4.17.23",
+    "pinia": "^3.0.4",
     "vue": "^3.4.3",
     "vue-router": "^4.2.5"
   },

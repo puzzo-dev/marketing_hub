@@ -3,18 +3,18 @@
     <template #default="{ open }">
       <button
         class="flex h-9 w-full items-center gap-2 rounded px-2 text-sm duration-200 ease-in-out"
-        :class="open ? 'bg-white shadow-sm' : 'hover:bg-gray-100'"
+        :class="open ? 'bg-surface-cards shadow-sm' : 'hover:bg-surface-gray-2'"
       >
-        <div class="flex h-6 w-6 items-center justify-center rounded bg-gray-600 text-white text-xs font-medium flex-shrink-0">
+        <div class="flex h-6 w-6 items-center justify-center rounded bg-ink-gray-5 text-surface-white text-xs font-medium flex-shrink-0">
           {{ userInitials }}
         </div>
-        <span v-show="isExpanded" class="flex-1 text-left text-gray-700 truncate">
+        <span v-show="isExpanded" class="flex-1 text-left text-ink-gray-7 truncate">
           {{ userName }}
         </span>
         <component
           v-show="isExpanded"
           :is="IconChevronDown"
-          class="h-3 w-3 text-gray-500 flex-shrink-0"
+          class="h-3 w-3 text-ink-gray-5 flex-shrink-0"
         />
       </button>
     </template>

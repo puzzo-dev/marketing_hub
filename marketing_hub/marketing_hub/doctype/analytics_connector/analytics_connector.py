@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime, add_to_date, getdate
 import requests
 import json
+import time
 
 
 class AnalyticsConnector(Document):
@@ -37,40 +38,100 @@ class AnalyticsConnector(Document):
 	
 	@frappe.whitelist()
 	def sync_analytics(self):
-		"""Fetch analytics data from platform and create Analytics Daily Log entries"""
+		"""Fetch analytics data from platform and create Analytics Daily Log entries.
+		Includes retry logic with exponential backoff (max 3 retries).
+		"""
 		if not self.is_active:
 			return {"status": "Error", "message": "Connector is not active"}
 		
 		if self.sync_status == "Paused":
 			return {"status": "Error", "message": "Connector is paused"}
 		
-		try:
-			# Get ad account credentials
-			ad_account = frappe.get_doc("Ad Account", self.ad_account)
+		max_retries = 3
+		base_delay = 2  # seconds
+		last_error = None
+		
+		for attempt in range(1, max_retries + 1):
+			try:
+				# Get ad account credentials
+				ad_account = frappe.get_doc("Ad Account", self.ad_account)
+				
+				# Fetch data based on platform
+				data = self.sync_network_ads(ad_account)
+				
+				# Create Analytics Daily Log entries
+				self.create_analytics_logs(data)
+				
+				# Update sync status — success
+				self.last_sync_date = now_datetime()
+				self.total_syncs = (self.total_syncs or 0) + 1
+				self.consecutive_failures = 0
+				self.sync_status = "Active"
+				self.last_error = ""
+				self.set_next_sync_date()
+				self.save()
+				
+				return {"status": "Success", "message": f"Synced {len(data)} records", "records": len(data)}
 			
-			# Fetch data based on platform
-			data = self.sync_network_ads(ad_account)
+			except requests.exceptions.HTTPError as e:
+				response = getattr(e, 'response', None)
+				status_code = response.status_code if response is not None else 0
+				
+				# Rate limited — respect Retry-After header
+				if status_code == 429:
+					retry_after = int(response.headers.get('Retry-After', 60))
+					frappe.logger().warning(
+						f"Analytics sync rate limited for {self.name}, retrying after {retry_after}s"
+					)
+					if attempt < max_retries:
+						time.sleep(min(retry_after, 120))  # Cap at 2 minutes
+						continue
+				
+				# Auth errors — don't retry
+				if status_code in (401, 403):
+					last_error = f"Authentication failed (HTTP {status_code}): {str(e)}"
+					break
+				
+				# Server errors — retry with backoff
+				if status_code >= 500 and attempt < max_retries:
+					delay = base_delay * (2 ** (attempt - 1))
+					frappe.logger().warning(
+						f"Analytics sync server error for {self.name} (attempt {attempt}), retrying in {delay}s"
+					)
+					time.sleep(delay)
+					continue
+				
+				last_error = str(e)
+				break
 			
-			# Create Analytics Daily Log entries
-			self.create_analytics_logs(data)
+			except requests.exceptions.ConnectionError as e:
+				# Network error — retry with backoff
+				if attempt < max_retries:
+					delay = base_delay * (2 ** (attempt - 1))
+					time.sleep(delay)
+					continue
+				last_error = f"Connection error: {str(e)}"
+				break
 			
-			# Update sync status
-			self.last_sync_date = now_datetime()
-			self.total_syncs = (self.total_syncs or 0) + 1
-			self.sync_status = "Active"
-			self.last_error = ""
-			self.set_next_sync_date()
-			self.save()
-			
-			return {"status": "Success", "message": f"Synced {len(data)} records", "records": len(data)}
-			
-		except Exception as e:
+			except Exception as e:
+				last_error = str(e)
+				break
+		
+		# All retries exhausted — record failure
+		self.failed_syncs = (self.failed_syncs or 0) + 1
+		self.consecutive_failures = (self.consecutive_failures or 0) + 1
+		self.last_error = last_error or "Unknown error"
+		
+		# Auto-pause after 5 consecutive failures
+		if self.consecutive_failures >= 5:
+			self.sync_status = "Paused"
+			self.last_error += " [Auto-paused after 5 consecutive failures]"
+		else:
 			self.sync_status = "Error"
-			self.failed_syncs = (self.failed_syncs or 0) + 1
-			self.last_error = str(e)
-			self.save()
-			frappe.log_error(f"Analytics sync failed: {str(e)}", "Analytics Connector Sync")
-			return {"status": "Error", "message": str(e)}
+		
+		self.save()
+		frappe.log_error(f"Analytics sync failed: {last_error}", "Analytics Connector Sync")
+		return {"status": "Error", "message": last_error}
 
 	def sync_network_ads(self, ad_account):
 		"""
@@ -133,42 +194,36 @@ class AnalyticsConnector(Document):
 	def _sync_google_ads(self, ad_account):
 		"""Sync data from Google Ads API"""
 		oauth_token = ad_account.get_oauth_token()
-		# Google Ads API v14
-		url = f"https://googleads.googleapis.com/v14/customers/{ad_account.customer_id}/googleAds:searchStream"
+		# Google Ads API v17
+		url = f"https://googleads.googleapis.com/v17/customers/{ad_account.customer_id}/googleAds:searchStream"
 		
-		# Get developer token from settings or ad account (assuming stored in settings for now)
+		# Get developer token from settings
 		developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
 		if not developer_token:
-			# Fallback or error if critical
-			pass 
+			frappe.throw("Google Ads Developer Token is not configured in Marketing Hub Settings")
 
 		headers = {
 			"Authorization": f"Bearer {oauth_token.access_token}",
-			"developer-token": developer_token or "INSERT_DEV_TOKEN",
+			"developer-token": developer_token,
 			"login-customer-id": ad_account.customer_id 
 		}
 
-		query = f"""
-			SELECT
-				campaign.id,
-				campaign.name,
-				metrics.impressions,
-				metrics.clicks,
-				metrics.cost_micros,
-				metrics.conversions,
-				metrics.conversions_value
-			FROM campaign
-			WHERE segments.date BETWEEN '{self.sync_start_date or getdate()}' AND '{getdate()}'
-		"""
+		# Use parameterized date values to prevent injection
+		sync_start = str(self.sync_start_date or getdate())
+		sync_end = str(getdate())
+
+		query = (
+			"SELECT "
+			"campaign.id, campaign.name, "
+			"metrics.impressions, metrics.clicks, "
+			"metrics.cost_micros, metrics.conversions, "
+			"metrics.conversions_value "
+			"FROM campaign "
+			f"WHERE segments.date BETWEEN '{sync_start}' AND '{sync_end}'"
+		)
 
 		response = requests.post(url, headers=headers, json={"query": query})
-		
-		try:
-			response.raise_for_status()
-		except Exception as e:
-			if response.status_code == 400:
-				frappe.log_error(f"Google Ads Query Error: {response.text}", "Google Ads Sync")
-			raise e
+		response.raise_for_status()
 
 		return self.parse_google_ads_response(response.json())
 	
@@ -350,8 +405,7 @@ class AnalyticsConnector(Document):
 			if not base_url:
 				return {"status": "Error", "message": f"No API configuration found for {self.platform}"}
 			
-			if self.platform == "Meta Ads":
-				# Use {account_id}/campaigns pattern
+			if self.platform in ("Meta Ads", "Facebook", "Instagram"):
 				url = f"{base_url}/{ad_account.ad_account_id}/campaigns"
 				params = {
 					"access_token": oauth_token.access_token,
@@ -363,6 +417,60 @@ class AnalyticsConnector(Document):
 				response.raise_for_status()
 				
 				campaigns = response.json().get("data", [])
+				return {"status": "Success", "campaigns": campaigns}
+			
+			elif self.platform == "Google Ads":
+				developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
+				if not developer_token:
+					return {"status": "Error", "message": "Google Ads Developer Token not configured"}
+				
+				url = f"https://googleads.googleapis.com/v17/customers/{ad_account.customer_id}/googleAds:searchStream"
+				headers = {
+					"Authorization": f"Bearer {oauth_token.access_token}",
+					"developer-token": developer_token,
+					"login-customer-id": ad_account.customer_id
+				}
+				query = "SELECT campaign.id, campaign.name, campaign.status FROM campaign ORDER BY campaign.name"
+				
+				response = requests.post(url, headers=headers, json={"query": query})
+				response.raise_for_status()
+				
+				campaigns = []
+				for batch in response.json():
+					for row in batch.get("results", []):
+						campaign = row.get("campaign", {})
+						campaigns.append({
+							"id": str(campaign.get("id")),
+							"name": campaign.get("name"),
+							"status": campaign.get("status")
+						})
+				
+				return {"status": "Success", "campaigns": campaigns}
+			
+			elif self.platform == "LinkedIn Ads":
+				url = f"{base_url}/adCampaignsV2"
+				headers = {
+					"Authorization": f"Bearer {oauth_token.access_token}",
+					"X-Restli-Protocol-Version": "2.0.0"
+				}
+				params = {
+					"q": "search",
+					"search.account.values[0]": f"urn:li:sponsoredAccount:{ad_account.account_urn}",
+					"count": 100
+				}
+				
+				response = requests.get(url, headers=headers, params=params)
+				response.raise_for_status()
+				
+				campaigns = []
+				for element in response.json().get("elements", []):
+					campaign_id = element.get("id", "")
+					campaigns.append({
+						"id": str(campaign_id),
+						"name": element.get("name"),
+						"status": element.get("status")
+					})
+				
 				return {"status": "Success", "campaigns": campaigns}
 			
 			else:

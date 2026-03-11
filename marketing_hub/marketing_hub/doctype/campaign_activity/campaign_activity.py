@@ -27,6 +27,10 @@ class CampaignActivity(Document):
 	
 	def on_update(self):
 		"""Execute if scheduled time reached"""
+		# Guard: only auto-execute if not already called from execute()
+		if getattr(self, '_executing', False):
+			return
+
 		if self.status == "Scheduled" and self.scheduled_date:
 			if now_datetime() >= self.scheduled_date:
 				self.execute()
@@ -38,6 +42,7 @@ class CampaignActivity(Document):
 			return {"status": "Error", "message": "Activity already completed"}
 		
 		try:
+			self._executing = True
 			self.status = "In Progress"
 			self.started_at = now_datetime()
 			self.save()

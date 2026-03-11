@@ -13,6 +13,7 @@
   "column_break_5",
   "campaign",
   "marketing_expense_ref",
+  "party_type",
   "party",
   "description"
  ],
@@ -57,7 +58,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Campaign",
-   "options": "Campaign"
+   "options": "Marketing Campaign"
   },
   {
    "fieldname": "marketing_expense_ref",
@@ -65,6 +66,12 @@
    "label": "Reference Expense",
    "options": "Marketing Expense",
    "read_only": 1
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "label": "Party Type",
+   "options": "\nSupplier\nCustomer\nEmployee"
   },
   {
    "fieldname": "party",

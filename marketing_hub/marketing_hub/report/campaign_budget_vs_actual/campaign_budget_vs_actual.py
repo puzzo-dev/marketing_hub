@@ -21,7 +21,7 @@ def get_columns():
 			"fieldname": "campaign_name",
 			"label": _("Campaign"),
 			"fieldtype": "Link",
-			"options": "Campaign",
+			"options": "Marketing Campaign",
 			"width": 200
 		},
 		{
@@ -97,7 +97,7 @@ def get_data(filters):
 			name as campaign_name,
 			campaign_name as title,
 			status
-		FROM `tabCampaign`
+		FROM `tabMarketing Campaign`
 		WHERE 1=1
 		{conditions}
 		ORDER BY name DESC
@@ -105,7 +105,7 @@ def get_data(filters):
 	
 	for campaign in campaigns:
 		# Get budget from Campaign
-		budget = frappe.db.get_value("Campaign", campaign.campaign_name, "budget_amount") or 0
+		budget = frappe.db.get_value("Marketing Campaign", campaign.campaign_name, "budget") or 0
 		campaign["budget_amount"] = flt(budget)
 		
 		# Get actual spent from Marketing Expenses

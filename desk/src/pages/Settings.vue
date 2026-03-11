@@ -46,7 +46,7 @@
                 type="password"
                 placeholder="Enter your Google Ads Developer Token"
               />
-              <div class="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+              <div class="rounded-md bg-surface-gray-2 p-3 text-sm text-ink-gray-6">
                 You also need to configure OAuth credentials in the Ad Account doctype for each account.
               </div>
             </div>

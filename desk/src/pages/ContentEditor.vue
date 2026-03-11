@@ -1,14 +1,14 @@
 <template>
-  <div class="flex h-full flex-col bg-white">
+  <div class="flex h-full flex-col bg-surface-cards">
     <!-- Header -->
-    <div class="h-16 border-b flex items-center justify-between px-5 bg-white shrink-0">
+    <div class="h-16 shrink-0 border-b border-outline-gray-1 flex items-center justify-between px-5 bg-surface-cards">
       <div class="flex items-center gap-2">
         <Button variant="ghost" @click="$router.back()">
           <template #prefix>
             <FeatherIcon name="arrow-left" class="h-4 w-4" />
           </template>
         </Button>
-        <h1 class="text-xl font-semibold text-gray-900">
+        <h1 class="text-xl font-semibold text-ink-gray-9">
           {{ isNew ? 'New Content Asset' : formData.asset_name }}
         </h1>
       </div>
@@ -26,7 +26,7 @@
     <!-- Main Body -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Editor Column (Left) -->
-      <div class="flex-1 border-r p-6 overflow-y-auto">
+      <div class="flex-1 border-r border-outline-gray-1 p-6 overflow-y-auto">
         <div class="max-w-3xl mx-auto space-y-6">
           <FormControl
             label="Name / Title"
@@ -36,24 +36,24 @@
           />
 
           <div v-if="formData.content_type === 'Text'">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
+            <label class="block text-sm font-medium text-ink-gray-9 mb-2">Content</label>
             <textarea
               v-model="formData.content_text"
               rows="15"
-              class="w-full rounded-md border border-gray-300 p-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="w-full rounded-md border border-outline-gray-2 p-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Write your content here..."
             ></textarea>
-            <p class="mt-1 text-sm text-gray-500 flex justify-between">
+            <p class="mt-1 text-sm text-ink-gray-5 flex justify-between">
               <span>Supports basic text content for emails and posts.</span>
               <span>{{ formData.content_text?.length || 0 }} chars</span>
             </p>
           </div>
 
-          <div v-else class="rounded-lg border-2 border-dashed border-gray-300 p-10 text-center">
+          <div v-else class="rounded-lg border-2 border-dashed border-outline-gray-3 p-10 text-center">
             <div class="flex justify-center mb-4">
-              <FeatherIcon name="image" class="h-10 w-10 text-gray-400" />
+              <FeatherIcon name="image" class="h-10 w-10 text-ink-gray-4" />
             </div>
-            <p class="text-gray-600 mb-4">Upload {{ formData.content_type }} Asset</p>
+            <p class="text-ink-gray-6 mb-4">Upload {{ formData.content_type }} Asset</p>
             <Button variant="outline" @click="triggerUpload">Choose File</Button>
             <input
               ref="fileInput"
@@ -61,7 +61,7 @@
               class="hidden"
               @change="handleFileSelect"
             />
-            <div v-if="formData.file_url" class="mt-4 p-2 bg-gray-50 rounded text-sm text-gray-700">
+            <div v-if="formData.file_url" class="mt-4 p-2 bg-surface-gray-1 rounded text-sm text-ink-gray-7">
               Selected: {{ formData.file_url }}
             </div>
           </div>
@@ -69,8 +69,8 @@
       </div>
 
       <!-- Settings Column (Right) -->
-      <div class="w-80 bg-gray-50 p-6 overflow-y-auto">
-        <h3 class="font-semibold text-gray-900 mb-4">Settings</h3>
+      <div class="w-80 bg-surface-gray-1 p-6 overflow-y-auto">
+        <h3 class="font-semibold text-ink-gray-9 mb-4">Settings</h3>
         
         <div class="space-y-6">
           <FormControl
@@ -103,16 +103,16 @@
           />
         </div>
 
-        <hr class="my-6 border-gray-200" />
+        <hr class="my-6 border-outline-gray-2" />
 
         <!-- Preview Section -->
         <div>
-          <h3 class="font-semibold text-gray-900 mb-2">Preview</h3>
-          <div class="bg-white border rounded p-4 text-sm text-gray-600 min-h-[100px]">
+          <h3 class="font-semibold text-ink-gray-9 mb-2">Preview</h3>
+          <div class="bg-surface-cards border border-outline-gray-1 rounded p-4 text-sm text-ink-gray-6 min-h-[100px]">
             <div v-if="formData.content_type === 'Text'">
               {{ formData.content_text || 'No content yet...' }}
             </div>
-            <div v-else class="flex items-center justify-center h-full text-gray-400">
+            <div v-else class="flex items-center justify-center h-full text-ink-gray-4">
               Media Preview
             </div>
           </div>
@@ -167,8 +167,7 @@ function triggerUpload() {
 function handleFileSelect(event) {
   const file = event.target.files[0]
   if (file) {
-    // In a real app, upload this file first
-    formData.value.file_url = file.name // Placeholder
+    formData.value.file_url = file.name
     toast({
       title: 'File Selected',
       text: 'File upload logic needed here',
@@ -179,7 +178,7 @@ function handleFileSelect(event) {
 
 async function saveContent() {
   if (!formData.value.asset_name) {
-    toast({ title: 'Error', text: 'Name is required', icon: 'x', iconClasses: 'text-red-600' })
+    toast({ title: 'Error', text: 'Name is required', icon: 'x', iconClasses: 'text-ink-red-3' })
     return
   }
 
@@ -195,7 +194,7 @@ async function saveContent() {
           }
         }
       })
-      toast({ title: 'Success', text: 'Content created', icon: 'check', iconClasses: 'text-green-600' })
+      toast({ title: 'Success', text: 'Content created', icon: 'check', iconClasses: 'text-ink-green-3' })
       router.push({ name: 'Content' })
     } else {
       await window.frappe.call({
@@ -212,10 +211,10 @@ async function saveContent() {
           }
         }
       })
-      toast({ title: 'Saved', text: 'Changes saved', icon: 'check', iconClasses: 'text-green-600' })
+      toast({ title: 'Saved', text: 'Changes saved', icon: 'check', iconClasses: 'text-ink-green-3' })
     }
   } catch (error) {
-    toast({ title: 'Error', text: error.message, icon: 'x', iconClasses: 'text-red-600' })
+    toast({ title: 'Error', text: error.message, icon: 'x', iconClasses: 'text-ink-red-3' })
   } finally {
     saving.value = false
   }

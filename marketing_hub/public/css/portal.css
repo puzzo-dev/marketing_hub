@@ -265,6 +265,7 @@ body {
     font-weight: 600;
     color: var(--text-color);
 }
+
 /* Social Media Styles */
 .posts-grid {
     display: grid;
@@ -307,11 +308,30 @@ body {
     text-transform: uppercase;
 }
 
-.platform-facebook { background: #e7f3ff; color: #1877f2; }
-.platform-instagram { background: #fce4ec; color: #e4405f; }
-.platform-twitter/x { background: #e3f2fd; color: #1da1f2; }
-.platform-linkedin { background: #e8f4f8; color: #0077b5; }
-.platform-tiktok { background: #f3e5f5; color: #000000; }
+.platform-facebook {
+    background: #e7f3ff;
+    color: #1877f2;
+}
+
+.platform-instagram {
+    background: #fce4ec;
+    color: #e4405f;
+}
+
+.platform-twitter-x {
+    background: #e3f2fd;
+    color: #1da1f2;
+}
+
+.platform-linkedin {
+    background: #e8f4f8;
+    color: #0077b5;
+}
+
+.platform-tiktok {
+    background: #f3e5f5;
+    color: #000000;
+}
 
 .status-badge {
     padding: 4px 12px;
@@ -320,10 +340,25 @@ body {
     font-weight: 600;
 }
 
-.status-draft { background: #f3f4f6; color: #6b7280; }
-.status-scheduled { background: #fef3c7; color: #92400e; }
-.status-published { background: #d1fae5; color: #065f46; }
-.status-failed { background: #fee2e2; color: #991b1b; }
+.status-draft {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.status-scheduled {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-published {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
 
 .post-actions {
     display: flex;

@@ -48,7 +48,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Optimized For Channel",
-   "options": "\nEmail\nWhatsApp\nSMS\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nReddit Ads\nSocial Media\nPrint\nWebsite"
+   "options": "\nEmail\nWhatsApp\nSMS\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nSocial Media\nPrint\nWebsite"
   },
   {
    "fieldname": "column_break_4",
@@ -172,7 +172,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Sales Manager",
+   "role": "Marketing Manager",
    "share": 1,
    "write": 1
   }

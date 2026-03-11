@@ -1,19 +1,19 @@
 <template>
-  <div class="flex h-screen w-screen flex-col overflow-hidden bg-gray-50">
+  <div class="flex h-screen w-screen flex-col overflow-hidden bg-surface-gray-1">
     <!-- Simple Topbar for Agents -->
-    <div class="flex h-14 items-center justify-between border-b bg-white px-5 shadow-sm">
+    <div class="flex h-14 items-center justify-between border-b border-outline-gray-1 bg-surface-cards px-5 shadow-sm">
       <div class="flex items-center gap-2">
-        <div class="h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold">MH</div>
-        <span class="font-semibold text-gray-900">Marketing Hub</span>
-        <span class="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Agent Portal</span>
+        <div class="h-8 w-8 rounded bg-primary-600 flex items-center justify-center text-surface-white font-bold">MH</div>
+        <span class="font-semibold text-ink-gray-9">Marketing Hub</span>
+        <span class="ml-2 rounded bg-surface-gray-2 px-2 py-0.5 text-xs font-medium text-ink-gray-7">Agent Portal</span>
       </div>
       <div class="flex items-center gap-4">
-        <router-link to="/marketing" class="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</router-link>
-        <router-link to="/marketing/campaigns" class="text-sm font-medium text-gray-600 hover:text-gray-900">Campaigns</router-link>
-        <div class="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+        <router-link to="/marketing" class="text-sm font-medium text-ink-gray-5 hover:text-ink-gray-9">Dashboard</router-link>
+        <router-link to="/marketing/campaigns" class="text-sm font-medium text-ink-gray-5 hover:text-ink-gray-9">Campaigns</router-link>
+        <div class="h-8 w-8 rounded-full bg-surface-gray-3 overflow-hidden">
            <!-- User Avatar Fallback -->
            <img v-if="userStore.image" :src="userStore.image" class="h-full w-full object-cover" />
-           <div v-else class="h-full w-full flex items-center justify-center text-xs text-gray-500 font-bold">
+           <div v-else class="h-full w-full flex items-center justify-center text-xs text-ink-gray-5 font-bold">
              {{ userStore.name[0] }}
            </div>
         </div>

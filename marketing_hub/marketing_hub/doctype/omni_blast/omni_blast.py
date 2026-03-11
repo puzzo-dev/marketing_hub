@@ -27,14 +27,13 @@ class OmniBlast(Document):
 	@frappe.whitelist()
 	def generate_posts(self):
 		"""Generate Social Post for each selected network"""
-		if not self.networks:
+		# Table MultiSelect stores child rows with link field
+		network_list = [row.social_media_network for row in self.networks if row.social_media_network]
+		if not network_list:
 			frappe.throw("No networks selected")
-		
-		# Parse networks (Table MultiSelect stores as comma-separated string)
-		network_list = [n.strip() for n in self.networks.split(',') if n.strip()] if isinstance(self.networks, str) else self.networks
-		
+
 		created_post_links = []
-		
+
 		for network_name in network_list:
 			# Get network details
 			network = frappe.get_doc("Social Media Network", network_name)
@@ -65,7 +64,7 @@ class OmniBlast(Document):
 				"doctype": "Social Post",
 				"post_title": f"{self.blast_title} - {network_name}",
 				"campaign": self.campaign,
-				"social_media_network": network_name,  # Link to Social Media Network
+				"platform": network_name,  # Link to Social Media Network
 				"post_type": "Image" if self.media_attachment else "Text",
 				"status": "Draft",
 				"scheduled_time": self.scheduled_time if self.blast_type == "Scheduled" else None,
@@ -95,53 +94,112 @@ class OmniBlast(Document):
 
 	@frappe.whitelist()
 	def execute_blast(self):
-		"""Execute the blast by publishing all created posts"""
+		"""Execute the blast by publishing all created posts via the social adapter."""
 		if not self.created_posts:
 			frappe.throw("No posts to publish. Generate posts first.")
-		
-		self.status = "Publishing"
-		self.save()
-		
-		published_count = 0
-		failed_count = 0
 		
 		# Parse created posts (newline-separated list of post names)
 		post_list = [p.strip() for p in self.created_posts.split('\n') if p.strip()]
 		
-		for post_name in post_list:
-			try:
-				if not frappe.db.exists("Social Post", post_name):
-					continue
-					
-				social_post = frappe.get_doc("Social Post", post_name)
-				
-				# Update status to Scheduled or Published
-				if self.blast_type == "Scheduled":
-					social_post.status = "Scheduled"
-				else:
-					social_post.status = "Published"
-					social_post.published_time = frappe.utils.now_datetime()
-				
+		# For large blasts (>5 posts), run in background
+		if len(post_list) > 5:
+			self.status = "Publishing"
+			self.save()
+			frappe.enqueue(
+				"marketing_hub.marketing_hub.doctype.omni_blast.omni_blast._execute_blast_posts",
+				blast_name=self.name,
+				post_list=post_list,
+				queue="default",
+				timeout=600,
+				job_id=f"omni_blast_{self.name}"
+			)
+			frappe.msgprint(f"Publishing {len(post_list)} posts in background...")
+			return {"published": 0, "failed": 0, "status": "enqueued"}
+		
+		return _execute_blast_posts(self.name, post_list)
+
+
+def _execute_blast_posts(blast_name, post_list):
+	"""Execute publishing for a list of Social Post names.
+	Can run synchronously or as a background job.
+	"""
+	from marketing_hub.utils.social_adapter import publish_to_platform
+	
+	blast = frappe.get_doc("Omni Blast", blast_name)
+	blast.status = "Publishing"
+	blast.save()
+	frappe.db.commit()
+	
+	published_count = 0
+	failed_count = 0
+	errors = []
+	
+	for post_name in post_list:
+		try:
+			if not frappe.db.exists("Social Post", post_name):
+				failed_count += 1
+				errors.append(f"{post_name}: Post not found")
+				continue
+			
+			social_post = frappe.get_doc("Social Post", post_name)
+			
+			# Skip already-published or deleted posts
+			if social_post.status in ("Published", "Deleted"):
+				published_count += 1
+				continue
+			
+			# For scheduled blasts, just mark as Scheduled
+			if blast.blast_type == "Scheduled":
+				social_post.status = "Scheduled"
 				social_post.save()
 				published_count += 1
-				
-			except Exception as e:
-				frappe.log_error(f"Failed to publish post {post_name}: {str(e)}")
+				continue
+			
+			# Get the network to determine channel type
+			network = frappe.get_cached_doc("Social Media Network", social_post.social_media_network)
+			
+			# Non-social channels are handled elsewhere (Email/WhatsApp/SMS)
+			if network.network_type in ("Email", "Messaging", "SMS"):
+				social_post.status = "Published"
+				social_post.published_time = frappe.utils.now_datetime()
+				social_post.save()
+				published_count += 1
+				continue
+			
+			# Social media channels — publish via GenericAdapter
+			result = publish_to_platform(social_post)
+			
+			if result.get("success"):
+				published_count += 1
+			else:
 				failed_count += 1
-		
-		# Update blast status
-		if failed_count > 0 and published_count == 0:
-			self.status = "Failed"
-		elif failed_count > 0:
-			self.status = "Published"  # Partial success
-		else:
-			self.status = "Published"
-		
-		self.save()
-		
+				errors.append(f"{post_name}: {result.get('error', 'Unknown error')}")
+			
+			frappe.db.commit()
+			
+		except Exception as e:
+			frappe.log_error(f"Failed to publish post {post_name}: {str(e)}", "Omni Blast Publish")
+			failed_count += 1
+			errors.append(f"{post_name}: {str(e)}")
+			frappe.db.rollback()
+	
+	# Update blast status
+	if failed_count > 0 and published_count == 0:
+		blast.status = "Failed"
+	elif failed_count > 0:
+		blast.status = "Partially Published"
+	else:
+		blast.status = "Published"
+	
+	if errors:
+		blast.error_log = "\n".join(errors[:20])  # Cap at 20 errors
+	
+	blast.save()
+	frappe.db.commit()
+	
+	result = {"published": published_count, "failed": failed_count}
+	
+	if not frappe.flags.in_test:
 		frappe.msgprint(f"Published {published_count} posts. Failed: {failed_count}")
-		
-		return {
-			"published": published_count,
-			"failed": failed_count
-		}
+	
+	return result

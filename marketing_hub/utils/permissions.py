@@ -22,11 +22,11 @@ def get_campaign_permission_query_conditions(user):
 	
 	# Others see only campaigns they own or are assigned to
 	return f"""(
-		`tabCampaign`.owner = '{frappe.db.escape(user)}' 
-		OR `tabCampaign`.name IN (
+		`tabMarketing Campaign`.owner = '{frappe.db.escape(user)}' 
+		OR `tabMarketing Campaign`.name IN (
 			SELECT DISTINCT parent 
 			FROM `tabUser Permission` 
-			WHERE allow = 'Campaign' 
+			WHERE allow = 'Marketing Campaign' 
 			AND user = '{frappe.db.escape(user)}'
 			AND applicable_for IN ('', NULL, 'Marketing Hub')
 		)
@@ -59,7 +59,7 @@ def has_campaign_permission(doc, ptype, user):
 		"User Permission",
 		filters={
 			"user": user,
-			"allow": "Campaign",
+			"allow": "Marketing Campaign",
 			"for_value": doc.name
 		},
 		limit=1
@@ -71,7 +71,7 @@ def has_campaign_permission(doc, ptype, user):
 			return True
 		elif ptype in ("write", "submit", "cancel"):
 			# Check if they have write permission specifically
-			return frappe.has_permission("Campaign", ptype, user=user)
+			return frappe.has_permission("Marketing Campaign", ptype, user=user)
 		elif ptype == "delete":
 			# Only owners, System Manager, Marketing Manager can delete
 			return False
@@ -94,13 +94,13 @@ def get_campaign_activity_permission_query_conditions(user):
 	
 	# Others see activities from campaigns they can access
 	return f"""(
-		`tabCampaign Activity`.parent IN (
-			SELECT name FROM `tabCampaign`
+		`tabCampaign Activity`.campaign IN (
+			SELECT name FROM `tabMarketing Campaign`
 			WHERE owner = '{frappe.db.escape(user)}'
 			OR name IN (
 				SELECT DISTINCT for_value 
 				FROM `tabUser Permission` 
-				WHERE allow = 'Campaign' 
+				WHERE allow = 'Marketing Campaign' 
 				AND user = '{frappe.db.escape(user)}'
 			)
 		)
@@ -112,10 +112,10 @@ def has_campaign_activity_permission(doc, ptype, user):
 	if not user:
 		user = frappe.session.user
 	
-	# Check parent campaign permission
-	if doc.parent:
+	# Check parent campaign permission via campaign link field
+	if doc.campaign:
 		try:
-			campaign = frappe.get_doc("Campaign", doc.parent)
+			campaign = frappe.get_doc("Marketing Campaign", doc.campaign)
 			return has_campaign_permission(campaign, ptype, user)
 		except frappe.DoesNotExistError:
 			return False
@@ -129,7 +129,7 @@ def get_marketing_segment_permission_query_conditions(user):
 		user = frappe.session.user
 	
 	# Marketing roles see all segments
-	marketing_roles = ["System Manager", "Marketing Manager", "Sales Manager", 
+	marketing_roles = ["System Manager", "Marketing Manager", "Marketing User",
 					   "Marketing Executive", "Marketing Analyst"]
 	
 	user_roles = frappe.get_roles(user)

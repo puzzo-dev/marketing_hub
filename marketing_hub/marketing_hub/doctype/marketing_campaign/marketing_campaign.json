@@ -9,6 +9,7 @@
         "campaign_name",
         "status",
         "is_omni_campaign",
+        "channels",
         "column_break_1",
         "email_campaign",
         "company",
@@ -17,7 +18,10 @@
         "end_date",
         "column_break_3",
         "budget",
-        "total_actual_cost"
+        "total_actual_cost",
+        "total_spent",
+        "description_section",
+        "description"
     ],
     "fields": [
         {
@@ -97,6 +101,24 @@
             "fieldtype": "Currency",
             "label": "Total Actual Cost",
             "read_only": 1
+        },
+        {
+            "default": "0.0",
+            "fieldname": "total_spent",
+            "fieldtype": "Currency",
+            "label": "Total Spent",
+            "read_only": 1,
+            "description": "Auto-calculated from Marketing Expenses"
+        },
+        {
+            "fieldname": "description_section",
+            "fieldtype": "Section Break",
+            "label": "Description"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text Editor",
+            "label": "Description"
         }
     ],
     "index_web_pages_for_search": 1,
@@ -128,6 +150,17 @@
             "read": 1,
             "report": 1,
             "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User",
             "share": 1,
             "write": 1
         }

@@ -57,10 +57,7 @@
 
     <!-- Posts -->
     <div v-if="postsResource.loading" class="flex items-center justify-center py-12">
-      <div class="text-center">
-        <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-ink-gray-3 border-t-red-600"></div>
-        <p class="mt-2 text-sm text-ink-gray-5">Loading posts...</p>
-      </div>
+      <LoadingIndicator class="h-8 w-8" />
     </div>
 
     <div v-else-if="filteredPosts.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,9 +122,9 @@
     </div>
 
     <div v-else class="rounded-lg border-2 border-dashed border-outline-gray-2 bg-surface-cards p-12 text-center">
-      <FeatherIcon name="share-2" class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No social posts yet</h3>
-      <p class="mt-1 text-sm text-gray-500">
+      <FeatherIcon name="share-2" class="mx-auto h-12 w-12 text-ink-gray-4" />
+      <h3 class="mt-2 text-sm font-medium text-ink-gray-9">No social posts yet</h3>
+      <p class="mt-1 text-sm text-ink-gray-5">
         Create your first post to start engaging with your audience
       </p>
       <Button class="mt-4" @click="createNewPost">
@@ -142,12 +139,15 @@
 </template>
 
 <script setup>
-import { createResource } from "frappe-ui";
+import { createResource, LoadingIndicator } from "frappe-ui";
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 // Fetch social posts
 const postsResource = createResource({
-  url: "marketing_hub.www.marketing.index.get_social_posts",
+  url: "marketing_hub.www.marketing.api.get_social_posts",
   params: {
     filters: {},
     limit: 20,
@@ -206,10 +206,10 @@ function formatNumber(num) {
 }
 
 function editPost(name) {
-  window.location.href = `/app/social-post/${name}`;
+  router.push('/marketing/social/' + name);
 }
 
 function createNewPost() {
-  window.location.href = `/app/social-post/new`;
+  router.push('/marketing/social/new');
 }
 </script>

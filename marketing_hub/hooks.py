@@ -20,16 +20,7 @@ add_to_apps_screen = [
     }
 ]
 
-desk_pages = [
-    {
-        "module": "Marketing Hub",
-        "label": "Marketing Dashboard",
-        "route": "/marketing_hub",
-        "_route": "/marketing_hub",
-        "_static": True,
-        "icon": "broadcast",
-    }
-]
+
 
 website_route_rules = [
     {
@@ -67,10 +58,22 @@ fixtures = [
                 "name",
                 "in",
                 [
-                    "Marketing Hub"
+                    "Marketing Hub",
+                    "Social Connect",
+                    "Marketing Operations",
+                    "Marketing Settings"
                 ]
             ]
         ]
+    },
+    {
+        "dt": "Social Media Network",
+        "filters": [
+            ["is_active", "=", 1]
+        ]
+    },
+    {
+        "dt": "Attribution Model"
     }
 ]
 

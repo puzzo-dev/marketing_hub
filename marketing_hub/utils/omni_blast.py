@@ -39,6 +39,8 @@ def execute_blast(campaign_activity):
                 results[channel] = _execute_push_blast(activity)
             elif channel == "Meta Ads":
                 results[channel] = _execute_meta_ads_blast(activity)
+            elif channel in ("Facebook", "Instagram", "LinkedIn", "Twitter", "X"):
+                results[channel] = _execute_social_post_blast(activity, channel)
             else:
                 results[channel] = {"status": "Not Implemented", "count": 0}
         except Exception as e:
@@ -315,17 +317,103 @@ def _get_template(campaign, channel_type):
         return None
 
 def _execute_meta_ads_blast(activity):
-    """Execute Meta Ads blast (stub for now)"""
-    # TODO: Implement Meta Ads campaign creation and blast logic
+    """Execute Meta Ads campaign creation blast using GenericAdapter"""
+    from marketing_hub.utils.social_adapter import publish_to_platform
+
     if not activity.segment:
         return {"status": "Error", "message": "No segment defined"}
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
     recipients = _get_segment_recipients(segment)
 
-    # Stub: Just return recipient count for now
+    if not recipients:
+        return {"status": "Error", "message": "No recipients found in segment"}
+
+    # Check for a linked Social Post for Meta
+    social_posts = frappe.get_all(
+        "Social Post",
+        filters={
+            "campaign_activity": activity.name,
+            "platform": ["in", ["Meta Ads", "Facebook", "Instagram"]],
+            "status": ["not in", ["Published", "Deleted"]]
+        },
+        pluck="name"
+    )
+
+    if not social_posts:
+        return {
+            "status": "Error",
+            "message": "No Meta/Facebook/Instagram Social Posts found for this activity"
+        }
+
+    published = 0
+    failed = 0
+    for post_name in social_posts:
+        try:
+            post = frappe.get_doc("Social Post", post_name)
+            result = publish_to_platform(post)
+            if result.get("success"):
+                published += 1
+            else:
+                failed += 1
+        except Exception as e:
+            frappe.log_error(f"Meta blast post error: {str(e)}", "Omni Blast Meta")
+            failed += 1
+
     return {
-        "status": "Stub",
-        "message": "Meta Ads blast integration required",
+        "status": "Completed" if published > 0 else "Error",
+        "published": published,
+        "failed": failed,
         "potential_recipients": len(recipients)
+    }
+
+
+def _execute_social_post_blast(activity, channel):
+    """Execute social media blast for a specific channel via GenericAdapter."""
+    from marketing_hub.utils.social_adapter import publish_to_platform
+
+    if not activity.segment:
+        return {"status": "Error", "message": "No segment defined"}
+
+    # Find Social Posts for this activity and channel
+    social_posts = frappe.get_all(
+        "Social Post",
+        filters={
+            "campaign_activity": activity.name,
+            "platform": channel,
+            "status": ["not in", ["Published", "Deleted"]]
+        },
+        pluck="name"
+    )
+
+    if not social_posts:
+        return {
+            "status": "Error",
+            "message": f"No {channel} Social Posts found for this activity"
+        }
+
+    published = 0
+    failed = 0
+
+    for post_name in social_posts:
+        try:
+            post = frappe.get_doc("Social Post", post_name)
+            result = publish_to_platform(post)
+            if result.get("success"):
+                published += 1
+            else:
+                failed += 1
+            frappe.db.commit()
+        except Exception as e:
+            frappe.log_error(
+                f"Social blast error for {channel} post {post_name}: {str(e)}",
+                "Omni Blast Social"
+            )
+            failed += 1
+            frappe.db.rollback()
+
+    return {
+        "status": "Completed" if published > 0 else "Error",
+        "published": published,
+        "failed": failed
     }

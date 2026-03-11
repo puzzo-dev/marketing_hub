@@ -50,7 +50,7 @@ def check_budget_exceeded(doc):
     if not settings or not settings.validate_budget:
         return
 
-    campaign = frappe.get_doc("Campaign", doc.campaign)
+    campaign = frappe.get_doc("Marketing Campaign", doc.campaign)
     if not campaign.budget:
         # No budget set, assume unlimited? or strict? usually unlimited.
         return
@@ -196,7 +196,7 @@ def make_marketing_gl_entry(
 def get_marketing_hub_settings(company):
 	"""Get Marketing Hub Settings for a company"""
 	try:
-		return frappe.get_doc("Marketing Hub Settings", company)
+		return frappe.get_single("Marketing Hub Settings")
 	except frappe.DoesNotExistError:
 		return None
 
@@ -226,7 +226,7 @@ def get_campaign_ledger_summary(campaign, company=None):
 		dict: Summary with total expenses, budget, and utilization
 	"""
 	if not company:
-		campaign_doc = frappe.get_doc("Campaign", campaign)
+		campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
 		company = campaign_doc.company if hasattr(campaign_doc, 'company') else None
 
 	# Get total expenses from Marketing Expense
@@ -241,7 +241,7 @@ def get_campaign_ledger_summary(campaign, company=None):
 	), {"campaign": campaign, "company": company}, as_dict=1)[0].total or 0
 
 	# Get campaign budget
-	campaign_doc = frappe.get_doc("Campaign", campaign)
+	campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
 	budget = campaign_doc.budget if hasattr(campaign_doc, 'budget') else 0
 
 	# Calculate utilization

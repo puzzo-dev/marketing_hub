@@ -15,6 +15,10 @@ Just create a Social Media Network record with:
 - Platform limits
 
 Done! Zero Python code required.
+
+For platform-specific behavior, create a custom adapter:
+- Extend BasePlatformAdapter
+- Set custom_adapter_class in Social Media Network
 """
 
 from marketing_hub.utils.social_adapters.generic import (
@@ -24,9 +28,19 @@ from marketing_hub.utils.social_adapters.generic import (
 	AuthenticationError
 )
 
+from marketing_hub.utils.social_adapters.base import BasePlatformAdapter
+from marketing_hub.utils.social_adapters.meta import MetaAdapter
+from marketing_hub.utils.social_adapters.linkedin import LinkedInAdapter
+from marketing_hub.utils.social_adapters.twitter import TwitterAdapter
+
 __all__ = [
+	'BasePlatformAdapter',
 	'GenericAdapter',
+	'MetaAdapter',
+	'LinkedInAdapter',
+	'TwitterAdapter',
 	'PlatformAPIError',
 	'RateLimitError',
 	'AuthenticationError',
 ]
+

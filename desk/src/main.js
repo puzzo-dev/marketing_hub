@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 import {
   Badge,
   Button,
@@ -30,7 +31,18 @@ const globalComponents = {
 
 setConfig("resourceFetcher", frappeRequest);
 
+// Configure socket.io to use the correct port from Frappe's boot data
+// In production, socketio runs on the same port as the web server (behind nginx)
+// In dev, it's on the port specified by window.socketio_port (typically 9000)
+if (window.frappe?.boot?.socketio_port) {
+  setConfig("socketio_port", window.frappe.boot.socketio_port);
+}
+
 const app = createApp(App);
+
+// Register Pinia BEFORE any component that uses defineStore is mounted
+const pinia = createPinia();
+app.use(pinia);
 
 app.use(FrappeUI);
 app.use(router);
@@ -39,7 +51,6 @@ for (const c in globalComponents) {
   app.component(c, globalComponents[c]);
 }
 
-let socket;
 if (import.meta.env.DEV) {
   frappeRequest({
     url: "/api/method/marketing_hub.www.marketing.index.get_context_for_dev",

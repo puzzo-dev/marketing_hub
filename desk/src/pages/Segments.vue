@@ -112,16 +112,10 @@
 
           <!-- Status Badge -->
           <div class="absolute right-3 top-3">
-            <span
-              :class="[
-                'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                segment.disabled
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-green-100 text-green-700',
-              ]"
-            >
-              {{ segment.disabled ? 'Disabled' : 'Active' }}
-            </span>
+            <Badge
+              :label="segment.disabled ? 'Disabled' : 'Active'"
+              :theme="segment.disabled ? 'red' : 'green'"
+            />
           </div>
         </div>
       </div>
@@ -212,9 +206,9 @@
           <!-- Preview Count -->
           <div
             v-if="segmentPreview.count !== null"
-            class="rounded-md bg-blue-50 p-3"
+            class="rounded-md bg-surface-gray-2 p-3"
           >
-            <p class="text-sm text-blue-900">
+            <p class="text-sm text-ink-gray-9">
               <strong>{{ formatNumber(segmentPreview.count) }}</strong> contacts match these filters
             </p>
           </div>
@@ -271,15 +265,16 @@
                   <th class="px-3 py-2 text-left text-xs font-medium text-ink-gray-6">Status</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-outline-gray-2 bg-white">
+              <tbody class="divide-y divide-outline-gray-2 bg-surface-cards">
                 <tr v-for="record in testResults.records" :key="record.name">
                   <td class="px-3 py-2 text-sm text-ink-gray-9">{{ record.name }}</td>
                   <td class="px-3 py-2 text-sm text-ink-gray-6">{{ record.email || '—' }}</td>
                   <td class="px-3 py-2 text-sm text-ink-gray-6">{{ record.mobile_no || '—' }}</td>
                   <td class="px-3 py-2 text-sm">
-                    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                      {{ record.status || 'Active' }}
-                    </span>
+                    <Badge
+                      :label="record.status || 'Active'"
+                      theme="green"
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -297,7 +292,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { createResource, Button, FormControl, FeatherIcon, LoadingIndicator, Dialog, Dropdown } from 'frappe-ui'
+import { createResource, Button, FormControl, FeatherIcon, LoadingIndicator, Dialog, Dropdown, Badge } from 'frappe-ui'
 import { toast } from 'frappe-ui'
 
 // Resources

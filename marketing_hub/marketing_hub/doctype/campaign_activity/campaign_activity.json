@@ -240,7 +240,7 @@
             "print": 1,
             "read": 1,
             "report": 1,
-            "role": "Sales Manager",
+            "role": "Marketing Manager",
             "share": 1,
             "write": 1
         },
@@ -251,7 +251,7 @@
             "print": 1,
             "read": 1,
             "report": 1,
-            "role": "Sales User",
+            "role": "Marketing User",
             "share": 1,
             "write": 1
         }

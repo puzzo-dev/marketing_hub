@@ -126,7 +126,7 @@ def get_default_payable_account(company):
 	"""Get default payable account for marketing expenses"""
 	
 	# Try Marketing Hub Settings first
-	settings = frappe.get_cached_doc("Marketing Hub Settings", company)
+	settings = frappe.get_single("Marketing Hub Settings")
 	if hasattr(settings, "default_payable_account") and settings.default_payable_account:
 		return settings.default_payable_account
 	
@@ -282,13 +282,13 @@ def check_budget_exceeded(doc):
 		return False
 	
 	# Get campaign budget
-	budget = frappe.db.get_value("Marketing Campaign", doc.campaign, ["budget", "total_spent"], as_dict=True)
+	budget = frappe.db.get_value("Marketing Campaign", doc.campaign, ["budget", "total_actual_cost"], as_dict=True)
 	
 	if not budget or not budget.budget:
 		return False
 	
 	# Calculate total spent including this expense
-	total_with_current = flt(budget.total_spent) + flt(doc.amount)
+	total_with_current = flt(budget.total_actual_cost) + flt(doc.amount)
 	
 	if total_with_current > flt(budget.budget):
 		budget_link = get_link_to_form("Marketing Campaign", doc.campaign)
@@ -320,4 +320,4 @@ def update_campaign_spent_amount(doc, method=None):
 	""", doc.campaign)[0][0] or 0
 	
 	# Update campaign
-	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_spent", flt(total_spent), update_modified=False)
+	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_actual_cost", flt(total_spent), update_modified=False)

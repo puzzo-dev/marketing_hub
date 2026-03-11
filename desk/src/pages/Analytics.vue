@@ -10,10 +10,7 @@
 
       <!-- Loading State -->
       <div v-if="analyticsResource.loading" class="flex items-center justify-center py-12">
-        <div class="text-center">
-          <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-ink-gray-3 border-t-red-600"></div>
-          <p class="mt-2 text-sm text-ink-gray-5">Loading analytics...</p>
-        </div>
+        <LoadingIndicator class="h-8 w-8" />
       </div>
 
       <template v-else>
@@ -136,7 +133,7 @@
 </template>
 
 <script setup>
-import { createResource, AxisChart } from "frappe-ui";
+import { createResource, AxisChart, LoadingIndicator } from "frappe-ui";
 import { computed } from "vue";
 
 const analyticsResource = createResource({
@@ -150,6 +147,8 @@ const analyticsResource = createResource({
 
 const dailyMetrics = computed(() => analyticsResource.data?.daily_metrics || []);
 const channelBreakdown = computed(() => analyticsResource.data?.channel_breakdown || []);
+const connectors = computed(() => analyticsResource.data?.connectors || []);
+const channelPerformance = computed(() => channelBreakdown.value);
 
 // Prepare chart data for Frappe UI LineChart
 const chartData = computed(() => {

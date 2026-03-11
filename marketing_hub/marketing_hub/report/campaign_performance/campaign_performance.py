@@ -9,7 +9,7 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"fieldname": "campaign", "label": "Campaign", "fieldtype": "Link", "options": "Campaign", "width": 150},
+		{"fieldname": "campaign", "label": "Campaign", "fieldtype": "Link", "options": "Marketing Campaign", "width": 150},
 		{"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 100},
 		{"fieldname": "start_date", "label": "Start Date", "fieldtype": "Date", "width": 100},
 		{"fieldname": "cost", "label": "Spend", "fieldtype": "Currency", "width": 120},
@@ -21,29 +21,34 @@ def get_columns():
 
 def get_data(filters):
 	data = []
-	
+
 	conditions = ""
+	values = {}
+
 	if filters.get("from_date") and filters.get("to_date"):
-		conditions += f" AND a.date BETWEEN '{filters.get('from_date')}' AND '{filters.get('to_date')}'"
-	
+		conditions += " AND a.log_date BETWEEN %(from_date)s AND %(to_date)s"
+		values["from_date"] = filters.get("from_date")
+		values["to_date"] = filters.get("to_date")
+
 	if filters.get("status"):
-		conditions += f" AND c.status = '{filters.get('status')}'"
+		conditions += " AND c.status = %(status)s"
+		values["status"] = filters.get("status")
 
 	# Fetch aggregated data
-	campaigns = frappe.db.sql(f"""
-		SELECT 
+	campaigns = frappe.db.sql("""
+		SELECT
 			c.name as campaign,
 			c.status,
 			c.start_date,
-			SUM(a.cost) as cost,
-			SUM(a.conversion_value) as revenue,
+			SUM(a.spend) as cost,
+			SUM(a.revenue) as revenue,
 			AVG(a.roas) as roas
-		FROM `tabCampaign` c
+		FROM `tabMarketing Campaign` c
 		LEFT JOIN `tabAnalytics Daily Log` a ON a.campaign = c.name
 		WHERE 1=1 {conditions}
 		GROUP BY c.name
 		ORDER BY revenue DESC
-	""", as_dict=True)
+	""".format(conditions=conditions), values, as_dict=True)
 
 	for row in campaigns:
 		# Get lead count separately to ensure accuracy
@@ -70,3 +75,4 @@ def get_chart(data):
 		"type": "bar",
 		"colors": ["#fc8472", "#a8bbd9"]
 	}
+

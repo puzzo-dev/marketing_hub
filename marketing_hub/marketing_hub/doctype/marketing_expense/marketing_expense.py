@@ -91,7 +91,7 @@ def get_campaign_budget_status(campaign, company):
 	""", (campaign, company), as_dict=1)[0].total or 0
 
 	# Get campaign budget
-	campaign_doc = frappe.get_doc("Campaign", campaign)
+	campaign_doc = frappe.get_doc("Marketing Campaign", campaign)
 	budget = campaign_doc.budget if hasattr(campaign_doc, 'budget') else 0
 
 	return {

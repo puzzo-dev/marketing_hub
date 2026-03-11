@@ -39,7 +39,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Campaign",
-   "options": "Campaign",
+   "options": "Marketing Campaign",
    "reqd": 1
   },
   {
@@ -47,7 +47,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Channel",
-   "options": "Email\nWhatsApp\nSMS\nPush Notification\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nReddit Ads",
+   "options": "Email\nWhatsApp\nSMS\nPush Notification\nGoogle Ads\nMeta Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads",
    "reqd": 1
   },
   {
@@ -215,7 +215,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Sales Manager",
+   "role": "Marketing Manager",
    "share": 1,
    "write": 1
   },
@@ -226,7 +226,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Sales User",
+   "role": "Marketing User",
    "share": 1,
    "write": 1
   }

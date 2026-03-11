@@ -1,17 +1,44 @@
+{%- block head_include %}{% endblock %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Marketing Hub</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/desk/favicon.svg" />
-    <script type="module" crossorigin src="/assets/marketing_hub/desk/assets/index-h6L_A3W0.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/vendor-PgoknEpb.js">
-    <link rel="modulepreload" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-Bw7llfBW.js">
-    <link rel="stylesheet" crossorigin href="/assets/marketing_hub/desk/assets/frappe-ui-LYft-JyX.css">
-    <link rel="stylesheet" crossorigin href="/assets/marketing_hub/desk/assets/index-CaKxBpHq.css">
-  </head>
-  <body>
-    <div id="app"></div>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketing Hub</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/desk/favicon.svg" />
+  {%- for css in desk_assets.stylesheets %}
+  <link rel="stylesheet" crossorigin href="{{ css }}" />
+  {%- endfor %}
+  {%- for preload in desk_assets.modulepreloads %}
+  <link rel="modulepreload" crossorigin href="{{ preload }}" />
+  {%- endfor %}
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script>
+    // Frappe boot data for FrappeUI (socket.io, csrf, session)
+    window.csrf_token = "{{ frappe.session.csrf_token }}";
+    window.frappe = window.frappe || {};
+    window.frappe.csrf_token = window.csrf_token;
+    window.frappe.boot = {
+      socketio_port: "{{ socketio_port }}",
+      csrf_token: window.csrf_token,
+      sitename: "{{ sitename }}",
+    };
+    window.frappe.session = {
+      user: "{{ frappe.session.user }}",
+      user_fullname: "{{ user_fullname }}",
+      user_image: "{{ user_image }}",
+    };
+    window.installed_apps = {{ installed_apps | tojson }};
+  </script>
+
+  {%- for script in desk_assets.scripts %}
+  <script type="module" crossorigin src="{{ script }}"></script>
+  {%- endfor %}
+</body>
+
 </html>

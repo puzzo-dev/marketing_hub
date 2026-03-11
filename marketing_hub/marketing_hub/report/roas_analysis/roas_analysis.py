@@ -24,7 +24,7 @@ def get_columns(filters):
 			"fieldname": "campaign",
 			"label": _("Campaign"),
 			"fieldtype": "Link",
-			"options": "Campaign",
+			"options": "Marketing Campaign",
 			"width": 200
 		})
 		columns.append({
@@ -131,8 +131,7 @@ def get_campaign_data(filters):
 	# Get campaigns
 	campaigns = frappe.db.sql("""
 		SELECT
-			c.name as campaign,
-			c.channels_used as channels
+			c.name as campaign
 		FROM `tabMarketing Campaign` c
 		WHERE c.docstatus < 2
 		{conditions}
@@ -144,8 +143,14 @@ def get_campaign_data(filters):
 	for campaign in campaigns:
 		row = get_campaign_metrics(campaign.campaign)
 		row["campaign"] = campaign.campaign
-		# Handle channels_used which is a multiselect field (newline separated)
-		row["channels"] = campaign.channels.replace("\n", ", ") if campaign.channels else "-"
+
+		# Get channels from Table MultiSelect
+		channel_names = frappe.get_all(
+			"Marketing Campaign Channel",
+			filters={"parent": campaign.campaign, "parenttype": "Marketing Campaign"},
+			pluck="social_media_network"
+		)
+		row["channels"] = ", ".join(channel_names) if channel_names else "-"
 
 		# Only include if meets minimum ROAS threshold
 		min_roas = filters.get("min_roas", 0)
@@ -157,11 +162,10 @@ def get_campaign_data(filters):
 
 def get_channel_data(filters):
 	"""Get ROAS data grouped by channel"""
-	# Get all campaigns within date range
-	conditions = get_date_conditions(filters)
+	conditions = get_conditions(filters)
 
 	campaigns = frappe.db.sql("""
-		SELECT name, channels_used
+		SELECT name
 		FROM `tabMarketing Campaign`
 		WHERE docstatus < 2
 		{conditions}
@@ -171,11 +175,15 @@ def get_channel_data(filters):
 	channel_data = {}
 
 	for campaign in campaigns:
-		channels = (campaign.channels_used or "").replace("\n", ",").split(",")
+		# Get channels from Table MultiSelect
+		channel_names = frappe.get_all(
+			"Marketing Campaign Channel",
+			filters={"parent": campaign.name, "parenttype": "Marketing Campaign"},
+			pluck="social_media_network"
+		)
 		metrics = get_campaign_metrics(campaign.name)
 
-		for channel in channels:
-			channel = channel.strip()
+		for channel in channel_names:
 			if not channel:
 				continue
 
@@ -190,7 +198,7 @@ def get_channel_data(filters):
 				}
 
 			# Divide metrics equally among channels
-			channel_count = len([c for c in channels if c.strip()])
+			channel_count = len(channel_names) or 1
 			channel_data[channel]["spend"] += metrics["spend"] / channel_count
 			channel_data[channel]["revenue"] += metrics["revenue"] / channel_count
 			channel_data[channel]["impressions"] += metrics["impressions"] / channel_count
@@ -218,13 +226,13 @@ def get_channel_data(filters):
 
 def get_monthly_data(filters):
 	"""Get ROAS data grouped by month"""
-	# Get analytics data grouped by month
 	date_conditions = get_date_conditions(filters)
 
 	monthly_data = frappe.db.sql("""
 		SELECT
 			DATE_FORMAT(log_date, '%%Y-%%m') as month,
 			SUM(spend) as spend,
+			SUM(revenue) as revenue,
 			SUM(impressions) as impressions,
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`
@@ -234,11 +242,26 @@ def get_monthly_data(filters):
 		ORDER BY month DESC
 	""".format(conditions=date_conditions), filters, as_dict=1)
 
-# ...
+	data = []
+	for row in monthly_data:
+		row["roas"] = row["revenue"] / row["spend"] if row.get("spend") and row["spend"] > 0 else 0
+		row["ctr"] = (row["clicks"] / row["impressions"]) * 100 if row.get("impressions") and row["impressions"] > 0 else 0
+		row["cpc"] = row["spend"] / row["clicks"] if row.get("clicks") and row["clicks"] > 0 else 0
+
+		# Get leads for this month (approximate)
+		row["leads"] = 0
+		row["cpl"] = 0
+
+		# Apply minimum ROAS filter
+		min_roas = filters.get("min_roas", 0)
+		if row["roas"] >= min_roas:
+			data.append(row)
+
+	return data
+
 
 def get_campaign_metrics(campaign):
 	"""Get metrics for a single campaign"""
-	# Get cost and engagement from Analytics Daily Log
 	analytics = frappe.db.sql("""
 		SELECT
 			SUM(spend) as cost,
@@ -298,10 +321,10 @@ def get_date_conditions(filters):
 	conditions = []
 
 	if filters.get("from_date"):
-		conditions.append("date >= %(from_date)s")
+		conditions.append("log_date >= %(from_date)s")
 
 	if filters.get("to_date"):
-		conditions.append("date <= %(to_date)s")
+		conditions.append("log_date <= %(to_date)s")
 
 	return " AND " + " AND ".join(conditions) if conditions else ""
 

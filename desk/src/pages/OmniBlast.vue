@@ -103,14 +103,14 @@
               >
                 <div class="mb-2 text-2xl">{{ channel.icon }}</div>
                 <div class="text-sm font-medium text-ink-gray-9">{{ channel.label }}</div>
-                <div v-if="!channel.enabled" class="mt-1 text-xs text-red-600">
+                <div v-if="!channel.enabled" class="mt-1 text-xs text-ink-red-3">
                   {{ channel.disabledReason }}
                 </div>
               </div>
             </div>
 
-            <div v-if="formData.channels.length === 0" class="mt-4 rounded-md bg-amber-50 p-3">
-              <p class="text-sm text-amber-800">Please select at least one channel</p>
+            <div v-if="formData.channels.length === 0" class="mt-4 rounded-md bg-surface-amber-1 p-3 border border-outline-amber-1">
+              <p class="text-sm text-ink-amber-3">Please select at least one channel</p>
             </div>
           </div>
 
@@ -132,12 +132,12 @@
 
             <div
               v-if="formData.segment && !segmentPreview.loading && segmentPreview.data"
-              class="mt-4 rounded-md bg-blue-50 p-4"
+              class="mt-4 rounded-md bg-surface-gray-2 p-4 border border-outline-gray-2"
             >
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-sm font-medium text-blue-900">Segment Preview</p>
-                  <p class="mt-1 text-xs text-blue-700">
+                  <p class="text-sm font-medium text-ink-gray-9">Segment Preview</p>
+                  <p class="mt-1 text-xs text-ink-gray-6">
                     {{ segmentPreview.data.count }} recipients will receive this blast
                   </p>
                 </div>
@@ -189,8 +189,8 @@
               class="mb-4"
             />
 
-            <div class="rounded-md bg-blue-50 p-3">
-              <p class="text-xs text-blue-700">
+            <div class="rounded-md bg-surface-gray-2 p-3 border border-outline-gray-2">
+              <p class="text-xs text-ink-gray-6">
                 <strong>Tip:</strong> Content will be automatically adapted for each channel.
                 SMS will be truncated to 160 characters, HTML will be stripped for plain text channels.
               </p>
@@ -225,13 +225,13 @@
               <div class="rounded-md border border-outline-gray-2 p-4">
                 <h3 class="mb-2 text-sm font-medium text-ink-gray-9">Channels</h3>
                 <div class="flex flex-wrap gap-2">
-                  <span
+                  <Badge
                     v-for="channel in formData.channels"
                     :key="channel"
-                    class="inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700"
-                  >
-                    {{ channel }}
-                  </span>
+                    :label="channel"
+                    variant="subtle"
+                    theme="blue"
+                  />
                 </div>
               </div>
 
@@ -320,7 +320,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { createResource, Button, FormControl, FeatherIcon, LoadingIndicator } from 'frappe-ui'
+import { createResource, createListResource, Button, FormControl, FeatherIcon, LoadingIndicator, Badge } from 'frappe-ui'
 import { toast } from 'frappe-ui'
 
 const router = useRouter()
@@ -348,13 +348,38 @@ const formData = ref({
   template: '',
 })
 
-// Available channels
+// Available channels — seeded with defaults, then overridden from Social Media Network DocType
 const channels = ref([
   { value: 'Email', label: 'Email', icon: '📧', enabled: true },
   { value: 'SMS', label: 'SMS', icon: '💬', enabled: true },
   { value: 'WhatsApp', label: 'WhatsApp', icon: '📱', enabled: true },
   { value: 'Push Notification', label: 'Push', icon: '🔔', enabled: false, disabledReason: 'Not configured' },
 ])
+
+// Fetch available networks from Social Media Network DocType
+const networksResource = createListResource({
+  doctype: 'Social Media Network',
+  fields: ['name', 'platform_name', 'platform_type', 'enabled'],
+  pageLength: 50,
+  auto: true,
+  onSuccess(data) {
+    if (data && data.length) {
+      const iconMap = {
+        Email: '📧', SMS: '💬', WhatsApp: '📱',
+        Facebook: '📘', Instagram: '📷', Twitter: '🐦',
+        LinkedIn: '💼', YouTube: '📺', TikTok: '🎵',
+        Pinterest: '📌', Telegram: '✈️',
+      }
+      channels.value = data.map(n => ({
+        value: n.platform_name || n.name,
+        label: n.platform_name || n.name,
+        icon: iconMap[n.platform_name] || '📡',
+        enabled: n.enabled !== 0,
+        disabledReason: n.enabled === 0 ? 'Disabled in settings' : '',
+      }))
+    }
+  },
+})
 
 // API Resources
 const campaignsResource = createResource({

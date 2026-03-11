@@ -24,7 +24,7 @@ def get_dashboard_data():
 		last_30_days = add_days(today_date, -30)
 		
 		# Active campaigns count
-		active_campaigns = frappe.db.count("Campaign", {
+		active_campaigns = frappe.db.count("Marketing Campaign", {
 			"status": "Running"
 		})
 		
@@ -37,11 +37,10 @@ def get_dashboard_data():
 		
 		# Previous period spend (for comparison)
 		prev_period_start = add_days(last_30_days, -30)
-		prev_period_spend = frappe.db.get_value(
-			"Analytics Daily Log",
-			{"date": [">=", prev_period_start], "date": ["<", last_30_days]},
-			"sum(cost)"
-		) or 0.0
+		prev_period_spend = frappe.db.sql("""
+			SELECT SUM(cost) FROM `tabAnalytics Daily Log`
+			WHERE date >= %s AND date < %s
+		""", (prev_period_start, last_30_days))[0][0] or 0.0
 		
 		# Leads generated (last 30 days)
 		leads_generated = frappe.db.count("Lead", {
@@ -50,11 +49,11 @@ def get_dashboard_data():
 		})
 		
 		# Previous period leads
-		prev_period_leads = frappe.db.count("Lead", {
-			"creation": [">=", prev_period_start],
-			"creation": ["<", last_30_days],
-			"source": ["is", "set"]
-		})
+		prev_period_leads = frappe.db.sql("""
+			SELECT COUNT(*) FROM `tabLead`
+			WHERE creation >= %s AND creation < %s
+			AND source IS NOT NULL AND source != ''
+		""", (prev_period_start, last_30_days))[0][0] or 0
 		
 		# Revenue (last 30 days) - from Analytics Daily Log conversions
 		total_revenue = frappe.db.get_value(
@@ -90,7 +89,7 @@ def get_dashboard_data():
 				SUM(a.cost) as spend,
 				SUM(a.conversion_value) as revenue,
 				AVG(a.roas) as roas
-			FROM `tabCampaign` c
+			FROM `tabMarketing Campaign` c
 			LEFT JOIN `tabAnalytics Daily Log` a ON a.campaign = c.name
 			WHERE a.date >= %(from_date)s
 			GROUP BY c.name
@@ -221,7 +220,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 		
 		# Get campaigns
 		campaigns = frappe.get_all(
-			"Campaign",
+			"Marketing Campaign",
 			fields=[
 				"name",
 				"campaign_name",
@@ -280,7 +279,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			campaign["leads_count"] = frappe.db.count("Lead", {"campaign_name": campaign.campaign_name})
 		
 		# Get total count for pagination
-		total_count = frappe.db.count("Campaign", base_filters)
+		total_count = frappe.db.count("Marketing Campaign", base_filters)
 		
 		return {
 			"campaigns": campaigns,
@@ -415,7 +414,7 @@ def create_campaign(data):
 			data = json.loads(data)
 		
 		campaign = frappe.get_doc({
-			"doctype": "Campaign",
+			"doctype": "Marketing Campaign",
 			"campaign_name": data.get("campaign_name"),
 			"description": data.get("description"),
 			"status": data.get("status", "Planning"),
@@ -540,7 +539,7 @@ def get_content_list(filters=None, limit=20, offset=0):
 		# Enrich with campaign name
 		for content in content_list:
 			if content.campaign:
-				content["campaign_name"] = frappe.db.get_value("Campaign", content.campaign, "campaign_name")
+				content["campaign_name"] = frappe.db.get_value("Marketing Campaign", content.campaign, "campaign_name")
 				
 		total_count = frappe.db.count("Content Asset", base_filters)
 		
@@ -641,7 +640,7 @@ def get_expense_list(filters=None, limit=20, offset=0):
 		# Enrich
 		for expense in expenses:
 			if expense.campaign:
-				expense["campaign_name"] = frappe.db.get_value("Campaign", expense.campaign, "campaign_name")
+				expense["campaign_name"] = frappe.db.get_value("Marketing Campaign", expense.campaign, "campaign_name")
 				
 		total_count = frappe.db.count("Marketing Expense", base_filters)
 		
@@ -663,7 +662,7 @@ def get_budget_overview():
 	try:
 		# Total Budget (Sum of all campaign budgets)
 		total_budget = frappe.db.sql("""
-			SELECT SUM(budget) FROM `tabCampaign` WHERE status != 'Completed'
+			SELECT SUM(budget) FROM `tabMarketing Campaign` WHERE status != 'Completed'
 		""")[0][0] or 0.0
 		
 		# Total Spend (from Analytics Daily Log + Manual Expenses)

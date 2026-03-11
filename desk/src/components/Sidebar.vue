@@ -186,6 +186,11 @@ const sidebarSections = computed(() => [
         isActive: isActiveRoute('/marketing/analytics'),
         onClick: () => router.push('/marketing/analytics'),
       },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
       {
         label: 'Settings',
         icon: IconSettings,

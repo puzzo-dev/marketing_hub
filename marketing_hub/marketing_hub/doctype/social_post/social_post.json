@@ -11,13 +11,15 @@
         "campaign",
         "platform",
         "omni_blast",
+        "campaign_activity",
         "post_type",
         "status",
         "column_break_1",
         "scheduled_time",
         "published_time",
-        "account_id",
+        "account",
         "post_id",
+        "platform_post_id",
         "section_break_2",
         "content",
         "media_attachment",
@@ -39,7 +41,9 @@
         "likes",
         "comments_count",
         "shares",
-        "engagement_rate"
+        "engagement_rate",
+        "error_section",
+        "error_log"
     ],
     "fields": [
         {
@@ -70,6 +74,14 @@
             "options": "Omni Blast",
             "read_only": 1,
             "description": "If created from Omni Blast, link to parent blast"
+        },
+        {
+            "fieldname": "campaign_activity",
+            "fieldtype": "Link",
+            "label": "Campaign Activity",
+            "options": "Campaign Activity",
+            "read_only": 1,
+            "description": "If created from a Campaign Activity"
         },
         {
             "fieldname": "post_type",
@@ -115,6 +127,13 @@
             "label": "Post ID",
             "read_only": 1,
             "description": "Platform post ID after publishing"
+        },
+        {
+            "fieldname": "platform_post_id",
+            "fieldtype": "Data",
+            "label": "Platform Post ID",
+            "read_only": 1,
+            "description": "External post identifier returned by the platform API"
         },
         {
             "fieldname": "section_break_2",
@@ -247,6 +266,18 @@
             "label": "Engagement Rate",
             "read_only": 1,
             "precision": 2
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "error_section",
+            "fieldtype": "Section Break",
+            "label": "Errors"
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
         }
     ],
     "index_web_pages_for_search": 1,

@@ -39,6 +39,11 @@
   "supported_formats",
   "image_specifications",
   "video_specifications",
+  "supports_html",
+  "max_hashtags",
+  "max_mentions",
+  "max_images",
+  "max_videos",
   "text_limits",
   "best_practices",
   "description"

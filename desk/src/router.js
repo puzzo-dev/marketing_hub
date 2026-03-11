@@ -17,6 +17,11 @@ const routes = [
     component: () => import("@/pages/NewCampaign.vue"),
   },
   {
+    path: "/marketing/campaigns/:name",
+    name: "CampaignDetail",
+    component: () => import("@/pages/CampaignDetail.vue"),
+  },
+  {
     path: "/marketing/social",
     name: "Social",
     component: () => import("@/pages/Social.vue"),
@@ -25,6 +30,11 @@ const routes = [
     path: "/marketing/social/new",
     name: "NewSocialPost",
     component: () => import("@/pages/NewSocialPost.vue"),
+  },
+  {
+    path: "/marketing/social/:name",
+    name: "SocialPostDetail",
+    component: () => import("@/pages/SocialPostDetail.vue"),
   },
   {
     path: "/marketing/analytics",
@@ -65,6 +75,11 @@ const routes = [
     path: "/marketing/settings",
     name: "Settings",
     component: () => import("@/pages/Settings.vue"),
+  },
+  // Catch-all: redirect unknown paths to dashboard
+  {
+    path: "/marketing/:pathMatch(.*)*",
+    redirect: "/marketing",
   },
 ];
 

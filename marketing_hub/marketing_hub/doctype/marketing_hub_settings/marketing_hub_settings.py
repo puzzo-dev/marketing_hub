@@ -49,32 +49,13 @@ class MarketingHubSettings(Document):
 
 
 @frappe.whitelist()
-def get_settings(company=None):
-	"""Get Marketing Hub settings for a company"""
-	if not company:
-		company = frappe.defaults.get_user_default("Company")
-
-	if not company:
-		return None
-
-	settings = frappe.db.get_value(
-		"Marketing Hub Settings",
-		{"company": company},
-		"*",
-		as_dict=1
-	)
-
-	return settings
+def get_settings():
+	"""Get Marketing Hub settings (single doctype)"""
+	return frappe.get_single("Marketing Hub Settings").as_dict()
 
 
 @frappe.whitelist()
-def create_default_settings(company):
-	"""Create default settings for a company"""
-	if frappe.db.exists("Marketing Hub Settings", company):
-		return frappe.get_doc("Marketing Hub Settings", company)
+def create_default_settings():
+	"""Ensure Marketing Hub Settings exists (single doctype is auto-created)"""
+	return frappe.get_single("Marketing Hub Settings").as_dict()
 
-	settings = frappe.new_doc("Marketing Hub Settings")
-	settings.company = company
-	settings.insert(ignore_permissions=True)
-
-	return settings

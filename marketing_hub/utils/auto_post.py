@@ -31,7 +31,11 @@ def publish_scheduled_posts():
 
 @frappe.whitelist()
 def publish_post(post):
-    """Publish a social post to the configured platform"""
+    """Publish a social post to the configured platform.
+    Uses the unified social_adapter.publish_to_platform() for consistent
+    adapter resolution (including custom adapter classes) and token handling.
+    """
+    from marketing_hub.utils.social_adapter import publish_to_platform
 
     if isinstance(post, str):
         post = frappe.get_doc("Social Post", post)
@@ -45,28 +49,17 @@ def publish_post(post):
     frappe.db.commit()
 
     try:
-        # Use GenericAdapter for all platforms
-        from marketing_hub.utils.social_adapters import GenericAdapter
-        
-        # Get the ad account for this platform
-        ad_account = _get_ad_account(post.company, post.platform)
-        if not ad_account:
-            result = {"status": "Error", "message": f"No ad account configured for {post.platform}"}
-        else:
-            # Initialize adapter and publish
-            adapter = GenericAdapter(ad_account)
-            result = adapter.publish(post.content, post.media_file)
+        # Use unified adapter resolution — handles custom adapters, token refresh, etc.
+        result = publish_to_platform(post)
 
-        # Update post with results
-        post.status = "Published" if result.get("status") == "Success" else "Failed"
+        # publish_to_platform already updates post.status, platform_post_id, etc.
+        # Just store the full result JSON for debugging
+        post.reload()
         post.post_results = frappe.as_json(result)
-        post.published_time = now_datetime()
-        
-        if result.get("post_id"):
-            post.post_id = result.get("post_id")
-        if result.get("platform_url"):
-            post.platform_url = result.get("platform_url")
-        
+
+        if result.get("url"):
+            post.platform_url = result.get("url")
+
         post.save()
         frappe.db.commit()
 

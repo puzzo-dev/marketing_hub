@@ -1,13 +1,13 @@
 <template>
-  <nav class="border-b bg-white shadow-sm">
+  <nav class="border-b border-outline-gray-1 bg-surface-cards shadow-sm">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
         <div class="flex items-center">
           <router-link to="/marketing" class="flex items-center space-x-3">
-            <div class="flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white">
+            <div class="flex h-8 w-8 items-center justify-center rounded bg-primary-600 text-surface-white">
               <FeatherIcon name="trending-up" class="h-5 w-5" />
             </div>
-            <span class="text-xl font-semibold text-gray-900">Marketing Hub</span>
+            <span class="text-xl font-semibold text-ink-gray-9">Marketing Hub</span>
           </router-link>
 
           <div class="ml-10 flex space-x-4">
@@ -18,8 +18,8 @@
               class="rounded-md px-3 py-2 text-sm font-medium transition-colors"
               :class="[
                 $route.path === item.href
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                  ? 'bg-surface-gray-2 text-ink-gray-9'
+                  : 'text-ink-gray-5 hover:bg-surface-gray-1 hover:text-ink-gray-9',
               ]"
             >
               {{ item.name }}

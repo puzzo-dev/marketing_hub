@@ -1,0 +1,200 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:CONN-{platform}-{####}",
+    "creation": "2026-01-18 03:56:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "connector_name",
+        "platform",
+        "ad_account",
+        "column_break_3",
+        "is_active",
+        "sync_frequency",
+        "auto_create_campaigns",
+        "sync_schedule_section",
+        "sync_start_date",
+        "next_sync_date",
+        "column_break_8",
+        "last_sync_date",
+        "sync_status_section",
+        "sync_status",
+        "total_syncs",
+        "column_break_13",
+        "failed_syncs",
+        "consecutive_failures",
+        "error_section",
+        "last_error"
+    ],
+    "fields": [
+        {
+            "fieldname": "connector_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Connector Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "platform",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Platform",
+            "options": "Social Media Network",
+            "reqd": 1
+        },
+        {
+            "fieldname": "ad_account",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Ad Account",
+            "options": "Ad Account",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "1",
+            "fieldname": "is_active",
+            "fieldtype": "Check",
+            "label": "Is Active"
+        },
+        {
+            "default": "Daily",
+            "fieldname": "sync_frequency",
+            "fieldtype": "Select",
+            "label": "Sync Frequency",
+            "options": "Hourly\nDaily\nWeekly"
+        },
+        {
+            "default": "0",
+            "fieldname": "auto_create_campaigns",
+            "fieldtype": "Check",
+            "label": "Auto Create Campaigns",
+            "description": "Automatically create Marketing Campaign records from platform campaigns"
+        },
+        {
+            "fieldname": "sync_schedule_section",
+            "fieldtype": "Section Break",
+            "label": "Sync Schedule"
+        },
+        {
+            "fieldname": "sync_start_date",
+            "fieldtype": "Date",
+            "label": "Sync Start Date",
+            "description": "Fetch data starting from this date"
+        },
+        {
+            "fieldname": "next_sync_date",
+            "fieldtype": "Datetime",
+            "label": "Next Sync Date",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_8",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "last_sync_date",
+            "fieldtype": "Datetime",
+            "label": "Last Sync Date",
+            "read_only": 1
+        },
+        {
+            "fieldname": "sync_status_section",
+            "fieldtype": "Section Break",
+            "label": "Sync Status"
+        },
+        {
+            "default": "Active",
+            "fieldname": "sync_status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Sync Status",
+            "options": "Active\nError\nPaused"
+        },
+        {
+            "default": "0",
+            "fieldname": "total_syncs",
+            "fieldtype": "Int",
+            "label": "Total Syncs",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_13",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "failed_syncs",
+            "fieldtype": "Int",
+            "label": "Failed Syncs",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "consecutive_failures",
+            "fieldtype": "Int",
+            "label": "Consecutive Failures",
+            "read_only": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "error_section",
+            "fieldtype": "Section Break",
+            "label": "Error Details"
+        },
+        {
+            "fieldname": "last_error",
+            "fieldtype": "Text",
+            "label": "Last Error",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-01-18 03:56:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Analytics Connector",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}
