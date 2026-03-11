@@ -75,7 +75,7 @@ def check_client_subscription(client, campaign=None):
     # Check campaign limit if provided
     if campaign:
         client_campaigns = frappe.db.count(
-            "Campaign",
+            "Marketing Campaign",
             filters={"client": client}
         )
 

@@ -77,16 +77,7 @@ fixtures = [
     }
 ]
 
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "marketing_hub",
-# 		"logo": "/assets/marketing_hub/logo.png",
-# 		"title": "Marketing Hub",
-# 		"route": "/marketing_hub",
-# 		"has_permission": "marketing_hub.api.permission.has_app_permission"
-# 	}
-# ]
+
 
 # Includes in <head>
 # ------------------
@@ -211,7 +202,7 @@ has_permission = {
 
 doc_events = {
     "Lead": {
-        "on_update": "marketing_hub.utils.attribution_engine.get_real_lead_source"
+        "before_insert": "marketing_hub.utils.attribution_engine.get_real_lead_source"
     },
     "Campaign Activity": {
         "on_update": "marketing_hub.utils.omni_blast.execute_if_scheduled"
