@@ -9,50 +9,39 @@ Migration script to create Marketing Hub Settings for all companies
 import frappe
 
 def execute():
-	"""Create Marketing Hub Settings for all companies"""
+	"""Ensure Marketing Hub Settings has sensible defaults (single doctype)"""
 
-	companies = frappe.get_all("Company", fields=["name"])
+	settings = frappe.get_single("Marketing Hub Settings")
 
-	for company in companies:
-		company_name = company.get("name")
+	# Only set defaults if company is not yet configured
+	if not settings.company:
+		default_company = frappe.defaults.get_global_default("company")
+		if default_company:
+			settings.company = default_company
 
-		# Check if settings already exist
-		if not frappe.db.exists("Marketing Hub Settings", {"company": company_name}):
-			try:
-				settings = frappe.new_doc("Marketing Hub Settings")
-				settings.company = company_name
+	# Set sensible defaults for unset fields
+	defaults = {
+		"enable_auto_attribution": 1,
+		"enable_utm_tracking": 1,
+		"enable_email_blast": 1,
+		"enable_auto_post": 1,
+		"enable_analytics_sync": 1,
+		"enable_content_library": 1,
+		"enable_version_control": 1,
+		"sync_frequency": "Daily",
+	}
 
-				# Set sensible defaults
-				settings.enable_auto_attribution = 1
-				settings.enable_utm_tracking = 1
-				settings.enable_session_tracking = 1
-				settings.session_timeout_days = 30
-				settings.enable_email_blast = 1
-				settings.enable_auto_post = 1
-				settings.auto_post_interval_minutes = 15
-				settings.enable_analytics_sync = 1
-				settings.analytics_sync_schedule = "0 2 * * *"
-				settings.default_attribution_model = "Last Touch"
-				settings.track_conversions = 1
-				settings.enable_content_library = 1
-				settings.enable_version_control = 1
-				settings.notify_campaign_completion = 1
-				settings.notify_blast_execution = 1
-				settings.notify_analytics_sync = 1
-				settings.sync_frequency = "Daily"
+	changed = False
+	for field, value in defaults.items():
+		if not settings.get(field):
+			settings.set(field, value)
+			changed = True
 
-				# Check if old Marketing Hub Setup exists and migrate settings
-				try:
-					old_setup = frappe.get_single("Marketing Hub Setup")
-					if old_setup:
-						settings.agency_mode = 1 if old_setup.get("mode") == "Agency" else 0
-				except:
-					pass
-
-				settings.insert(ignore_permissions=True)
-				frappe.db.commit()
-
-				print(f"Created Marketing Hub Settings for {company_name}")
-			except Exception as e:
-				frappe.log_error(f"Failed to create Marketing Hub Settings for {company_name}: {str(e)}")
-				print(f"Error creating settings for {company_name}: {str(e)}")
+	if changed or not settings.company:
+		try:
+			settings.save(ignore_permissions=True)
+			frappe.db.commit()
+			print("Marketing Hub Settings defaults applied")
+		except Exception as e:
+			frappe.log_error(f"Failed to update Marketing Hub Settings: {str(e)}")
+			print(f"Error updating Marketing Hub Settings: {str(e)}")

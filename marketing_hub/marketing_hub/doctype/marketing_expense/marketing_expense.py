@@ -71,7 +71,7 @@ class MarketingExpense(Document):
 @frappe.whitelist()
 def get_default_expense_account(company):
 	"""Get default marketing expense account"""
-	settings = frappe.get_doc("Marketing Hub Settings", company)
+	settings = frappe.get_single("Marketing Hub Settings")
 	return settings.default_expense_account if settings else None
 
 

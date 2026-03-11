@@ -7,23 +7,11 @@ from frappe import _
 from frappe.utils import today, add_months
 
 def get_settings(company=None):
-    """Get Marketing Hub Settings for a company"""
-    if not company:
-        company = frappe.defaults.get_user_default("Company")
-
-    if not company:
-        return None
-
+    """Get Marketing Hub Settings (single doctype)"""
     try:
-        # Marketing Hub Settings is autonamed by company field
-        settings = frappe.get_doc("Marketing Hub Settings", company)
-        return settings
-    except frappe.DoesNotExistError:
-        # Create default settings if not found
-        settings = frappe.new_doc("Marketing Hub Settings")
-        settings.company = company
-        settings.insert(ignore_permissions=True)
-        return settings
+        return frappe.get_single("Marketing Hub Settings")
+    except Exception:
+        return None
 
 
 @frappe.whitelist()
