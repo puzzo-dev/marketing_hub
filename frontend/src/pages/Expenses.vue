@@ -30,15 +30,9 @@
       </div>
 
       <!-- Budget Trend Chart -->
-      <div v-if="budgetOverview.data?.chart" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+      <div v-if="budgetChartConfig" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5">
         <h4 class="mb-4 text-base font-medium text-ink-gray-9">Budget Trend (Last 6 Months)</h4>
-        <AxisChart
-          :data="budgetChartData"
-          :colors="['var(--blue-500)', 'var(--gray-400)']"
-          :axisOptions="{ xAxisMode: 'tick', xIsSeries: true }"
-          :tooltipOptions="{ formatTooltipY: (d) => formatCurrency(d) }"
-          type="bar"
-        />
+        <AxisChart :config="budgetChartConfig" />
       </div>
 
       <!-- Recent Expenses Table -->
@@ -110,7 +104,7 @@
               { label: 'Agency Fee', value: 'Agency Fee' },
               { label: 'Other', value: 'Other' },
             ]" />
-          <FormControl label="Campaign (Optional)" v-model="newExpense.campaign" placeholder="Link to a campaign" />
+          <FormControl label="Campaign (Optional)" type="autocomplete" v-model="newExpense.campaign" :options="campaignOptions" placeholder="Link to a campaign" />
         </div>
       </template>
       <template #actions>
@@ -165,24 +159,40 @@ const expensesResource = createResource({
   auto: true,
 })
 
+const campaignsResource = createResource({
+  url: 'frappe.client.get_list',
+  params: {
+    doctype: 'Marketing Campaign',
+    fields: ['name', 'campaign_name'],
+    filters: { status: ['in', ['Draft', 'Active']] },
+    limit_page_length: 100,
+  },
+  auto: true,
+})
+
 // Computed
 const expenses = computed(() => expensesResource.data?.expenses || [])
 
-const budgetChartData = computed(() => {
+const campaignOptions = computed(() =>
+  (campaignsResource.data || []).map(c => ({ label: c.campaign_name, value: c.name }))
+)
+
+const budgetChartConfig = computed(() => {
   const chart = budgetOverview.data?.chart
-  if (!chart) return { labels: [], datasets: [] }
+  if (!chart || !chart.labels?.length) return null
 
   return {
-    labels: chart.labels || [],
-    datasets: [
-      {
-        name: 'Actual Spend',
-        values: chart.actual || [],
-      },
-      {
-        name: 'Budget',
-        values: chart.budget || [],
-      },
+    title: 'Budget vs Spend',
+    data: chart.labels.map((label, i) => ({
+      month: label,
+      'Actual Spend': (chart.actual || [])[i] || 0,
+      Budget: (chart.budget || [])[i] || 0,
+    })),
+    xAxis: { key: 'month', type: 'category' },
+    yAxis: {},
+    series: [
+      { name: 'Actual Spend', type: 'bar', color: '#3B82F6' },
+      { name: 'Budget', type: 'line', color: '#9CA3AF', lineType: 'dashed' },
     ],
   }
 })

@@ -140,6 +140,58 @@
         </div>
       </div>
 
+      <!-- Charts Row -->
+      <div class="mb-6 grid gap-6 lg:grid-cols-2">
+        <!-- Spend & Revenue Trend -->
+        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+          <h4 class="mb-4 text-base font-medium text-ink-gray-9">Spend vs Revenue (30 Days)</h4>
+          <AxisChart v-if="spendTrendConfig" :config="spendTrendConfig" />
+          <div v-else class="flex h-48 items-center justify-center text-sm text-ink-gray-5">No analytics data yet</div>
+        </div>
+
+        <!-- Channel Spend Breakdown -->
+        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+          <h4 class="mb-4 text-base font-medium text-ink-gray-9">Spend by Channel</h4>
+          <DonutChart v-if="channelDonutConfig" :config="channelDonutConfig" />
+          <div v-else class="flex h-48 items-center justify-center text-sm text-ink-gray-5">No channel data yet</div>
+        </div>
+      </div>
+
+      <!-- Second Charts Row -->
+      <div class="mb-6 grid gap-6 lg:grid-cols-2">
+        <!-- Leads Trend -->
+        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+          <h4 class="mb-4 text-base font-medium text-ink-gray-9">Leads Generated (30 Days)</h4>
+          <AxisChart v-if="leadsTrendConfig" :config="leadsTrendConfig" />
+          <div v-else class="flex h-48 items-center justify-center text-sm text-ink-gray-5">No leads data yet</div>
+        </div>
+
+        <!-- Lead Sources Donut -->
+        <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+          <h4 class="mb-4 text-base font-medium text-ink-gray-9">Lead Sources</h4>
+          <DonutChart v-if="leadSourcesDonutConfig" :config="leadSourcesDonutConfig" />
+          <div v-else class="flex h-48 items-center justify-center text-sm text-ink-gray-5">No lead source data yet</div>
+        </div>
+      </div>
+
+      <!-- Conversion Funnel -->
+      <div v-if="funnelStages.length" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5">
+        <h4 class="mb-4 text-base font-medium text-ink-gray-9">Conversion Funnel (30 Days)</h4>
+        <div class="flex items-end gap-4">
+          <div v-for="(stage, idx) in funnelStages" :key="stage.stage" class="flex flex-1 flex-col items-center gap-2">
+            <span class="text-lg font-semibold text-ink-gray-9">{{ formatNumber(stage.value) }}</span>
+            <div
+              class="w-full rounded-t-md transition-all"
+              :style="{ height: funnelBarHeight(stage.value) + 'px', backgroundColor: funnelColors[idx] }"
+            />
+            <span class="text-xs font-medium text-ink-gray-6">{{ stage.stage }}</span>
+            <span v-if="idx > 0 && funnelStages[idx - 1].value > 0" class="text-[11px] text-ink-gray-5">
+              {{ ((stage.value / funnelStages[idx - 1].value) * 100).toFixed(1) }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
       <!-- Active Campaigns + Recent Activities -->
       <div class="mb-6 grid gap-6 lg:grid-cols-3">
         <!-- Active Campaigns (2 cols) -->
@@ -268,7 +320,7 @@
 </template>
 
 <script setup>
-import { Breadcrumbs, createResource } from "frappe-ui";
+import { Breadcrumbs, createResource, AxisChart, DonutChart } from "frappe-ui";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Onboarding from "@/components/Onboarding.vue";
@@ -295,6 +347,7 @@ import IconSettings from '~icons/lucide/settings'
 import IconBuilding from '~icons/lucide/building'
 import IconAlertTriangle from '~icons/lucide/alert-triangle'
 import IconFolderOpen from '~icons/lucide/folder-open'
+import IconLink2 from '~icons/lucide/link-2'
 
 const userStore = useUserStore();
 const configStore = useConfigStore();
@@ -336,6 +389,80 @@ const stats = computed(() => {
 const campaigns = computed(() => dashboard.data?.top_campaigns || []);
 const activities = computed(() => dashboard.data?.recent_activities || []);
 
+// Dashboard charts data
+const chartResource = createResource({
+  url: "marketing_hub.api.dashboard.get_dashboard_charts",
+  auto: true,
+});
+
+const funnelColors = ['#3B82F6', '#F59E0B', '#10B981']
+
+const spendTrendConfig = computed(() => {
+  const data = chartResource.data?.spend_trend
+  if (!data?.length) return null
+  return {
+    title: 'Spend vs Revenue',
+    data: data.map(d => ({ date: formatShortDate(d.date), Spend: d.spend, Revenue: d.revenue })),
+    xAxis: { key: 'date', type: 'category' },
+    yAxis: {},
+    series: [
+      { name: 'Spend', type: 'bar', color: '#EF4444' },
+      { name: 'Revenue', type: 'bar', color: '#10B981' },
+    ],
+  }
+})
+
+const channelDonutConfig = computed(() => {
+  const data = chartResource.data?.channel_breakdown
+  if (!data?.length) return null
+  return {
+    title: 'Channel Spend',
+    data,
+    categoryColumn: 'channel',
+    valueColumn: 'spend',
+    colors: ['#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981', '#EC4899'],
+  }
+})
+
+const leadsTrendConfig = computed(() => {
+  const data = chartResource.data?.leads_trend
+  if (!data?.length) return null
+  return {
+    title: 'Leads Over Time',
+    data: data.map(d => ({ date: formatShortDate(d.date), Leads: d.leads })),
+    xAxis: { key: 'date', type: 'category' },
+    yAxis: {},
+    series: [
+      { name: 'Leads', type: 'area', color: '#8B5CF6', fillOpacity: 0.15 },
+    ],
+  }
+})
+
+const leadSourcesDonutConfig = computed(() => {
+  const data = chartResource.data?.lead_sources
+  if (!data?.length) return null
+  return {
+    title: 'Lead Sources',
+    data,
+    categoryColumn: 'source',
+    valueColumn: 'count',
+    colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'],
+  }
+})
+
+const funnelStages = computed(() => chartResource.data?.funnel || [])
+
+function funnelBarHeight(value) {
+  const max = Math.max(...funnelStages.value.map(s => s.value), 1)
+  return Math.max((value / max) * 120, 8)
+}
+
+function formatNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
+  return String(n)
+}
+
 // Agency mode data
 const agencyDashboard = createResource({
   url: "marketing_hub.api.agency.get_agency_overview",
@@ -371,6 +498,7 @@ const quickActions = [
   { route: '/marketing/content', label: 'Content', description: 'Assets & templates', icon: IconFileText, bgClass: 'bg-surface-orange-1 group-hover:bg-surface-orange-2', iconClass: 'text-ink-orange-3' },
   { route: '/marketing/segments', label: 'Segments', description: 'Manage audiences', icon: IconUsers, bgClass: 'bg-surface-green-1 group-hover:bg-surface-green-2', iconClass: 'text-ink-green-3' },
   { route: '/marketing/expenses', label: 'Expenses', description: 'Track spending', icon: IconWallet, bgClass: 'bg-surface-red-1 group-hover:bg-surface-red-2', iconClass: 'text-ink-red-3' },
+  { route: '/marketing/tracking', label: 'Tracking Links', description: 'QR codes & links', icon: IconLink2, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
   { route: '/marketing/settings', label: 'Settings', description: 'Configure hub', icon: IconSettings, bgClass: 'bg-surface-gray-2 group-hover:bg-surface-gray-3', iconClass: 'text-ink-gray-5' },
 ];
 
@@ -395,6 +523,7 @@ function openActivity(name) {
 
 function refreshDashboard() {
   dashboard.reload();
+  chartResource.reload();
   if (configStore.isAgencyMode) agencyDashboard.reload();
 }
 

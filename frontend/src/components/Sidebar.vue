@@ -114,6 +114,8 @@ import IconPanelLeftOpen from '~icons/lucide/panel-left-open'
 import IconPanelLeftClose from '~icons/lucide/panel-left-close'
 import IconWallet from '~icons/lucide/wallet'
 import IconBuilding from '~icons/lucide/building'
+import IconLink2 from '~icons/lucide/link-2'
+import IconUserCheck from '~icons/lucide/user-check'
 
 const route = useRoute()
 const configStore = useConfigStore()
@@ -141,8 +143,10 @@ const sidebarSections = computed(() => {
         { label: 'Omni Blast', icon: IconSend, to: '/marketing/blast/new', isActive: isActiveRoute('/marketing/blast') },
         { label: 'Social Media', icon: IconShare2, to: '/marketing/social', isActive: isActiveRoute('/marketing/social') },
         { label: 'Segments', icon: IconUsers, to: '/marketing/segments', isActive: isActiveRoute('/marketing/segments') },
+        { label: 'Leads', icon: IconUserCheck, to: '/marketing/leads', isActive: isActiveRoute('/marketing/leads') },
         { label: 'Content', icon: IconFileText, to: '/marketing/content', isActive: isActiveRoute('/marketing/content') },
         { label: 'Expenses', icon: IconWallet, to: '/marketing/expenses', isActive: isActiveRoute('/marketing/expenses') },
+        { label: 'Tracking Links', icon: IconLink2, to: '/marketing/tracking', isActive: isActiveRoute('/marketing/tracking') },
         { label: 'Analytics', icon: IconBarChart3, to: '/marketing/analytics', isActive: isActiveRoute('/marketing/analytics') },
       ],
     },

@@ -57,6 +57,7 @@
               <div class="space-y-4">
                 <FormControl
                   label="Campaign"
+                  type="autocomplete"
                   v-model="formData.campaign"
                   :options="campaignOptions"
                   placeholder="Select a campaign"
@@ -71,6 +72,7 @@
                 <div class="grid grid-cols-2 gap-4">
                   <FormControl
                     label="Marketing Segment"
+                    type="autocomplete"
                     v-model="formData.segment"
                     :options="segmentOptions"
                     placeholder="Select audience"
@@ -160,6 +162,7 @@
               <FormControl
                 v-if="formData.channels.includes('Email')"
                 label="Email Template (optional)"
+                type="autocomplete"
                 v-model="formData.template"
                 :options="templateOptions"
                 placeholder="Select a template"
@@ -288,7 +291,7 @@ const channels = ref([
 // Fetch available networks from Social Media Network DocType
 const networksResource = createListResource({
   doctype: 'Social Media Network',
-  fields: ['name', 'platform_name', 'platform_type', 'enabled'],
+  fields: ['name', 'network_name', 'network_type', 'is_active'],
   pageLength: 50,
   auto: true,
   onSuccess(data) {
@@ -299,11 +302,11 @@ const networksResource = createListResource({
         WhatsApp: markRaw(IconSmartphone),
       }
       channels.value = data.map(n => ({
-        value: n.platform_name || n.name,
-        label: n.platform_name || n.name,
-        icon: iconMap[n.platform_name] || markRaw(IconBell),
-        enabled: Number(n.enabled) !== 0,
-        disabledReason: Number(n.enabled) === 0 ? 'Disabled in settings' : '',
+        value: n.network_name || n.name,
+        label: n.network_name || n.name,
+        icon: iconMap[n.network_name] || markRaw(IconBell),
+        enabled: Number(n.is_active) === 1,
+        disabledReason: Number(n.is_active) !== 1 ? 'Disabled in settings' : '',
       }))
     }
   },

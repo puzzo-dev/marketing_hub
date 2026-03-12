@@ -31,6 +31,10 @@ website_route_rules = [
         "from_route": "/marketing_hub/<path:app_path>",
         "to_route": "marketing_hub",
     },
+    {
+        "from_route": "/t/<short_code>",
+        "to_route": "tracking_redirect",
+    },
 ]
 
 # Fixtures

@@ -72,6 +72,16 @@ const routes = [
     component: () => import("@/pages/Expenses.vue"),
   },
   {
+    path: "/marketing/tracking",
+    name: "TrackingLinks",
+    component: () => import("@/pages/TrackingLinks.vue"),
+  },
+  {
+    path: "/marketing/leads",
+    name: "Leads",
+    component: () => import("@/pages/Leads.vue"),
+  },
+  {
     path: "/marketing/clients",
     name: "Clients",
     component: () => import("@/pages/Clients.vue"),

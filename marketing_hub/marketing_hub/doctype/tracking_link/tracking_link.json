@@ -1,0 +1,186 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "TRK-.#####",
+ "creation": "2025-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "link_name",
+  "destination_url",
+  "short_code",
+  "column_break_1",
+  "campaign",
+  "channel",
+  "status",
+  "section_utm",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "column_break_utm",
+  "utm_term",
+  "utm_content",
+  "section_tracking",
+  "total_clicks",
+  "unique_clicks",
+  "column_break_tracking",
+  "last_clicked",
+  "created_by",
+  "section_qr",
+  "qr_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "link_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Link Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "destination_url",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Destination URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "short_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Short Code",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Marketing Campaign"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Data",
+   "label": "Channel"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nExpired"
+  },
+  {
+   "fieldname": "section_utm",
+   "fieldtype": "Section Break",
+   "label": "UTM Parameters"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "UTM Source"
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "UTM Medium"
+  },
+  {
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "UTM Campaign"
+  },
+  {
+   "fieldname": "column_break_utm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "utm_term",
+   "fieldtype": "Data",
+   "label": "UTM Term"
+  },
+  {
+   "fieldname": "utm_content",
+   "fieldtype": "Data",
+   "label": "UTM Content"
+  },
+  {
+   "fieldname": "section_tracking",
+   "fieldtype": "Section Break",
+   "label": "Tracking Stats"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_clicks",
+   "fieldtype": "Int",
+   "label": "Total Clicks",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "unique_clicks",
+   "fieldtype": "Int",
+   "label": "Unique Clicks",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_tracking",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_clicked",
+   "fieldtype": "Datetime",
+   "label": "Last Clicked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_qr",
+   "fieldtype": "Section Break",
+   "label": "QR Code"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach Image",
+   "label": "QR Code",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2025-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketing Hub",
+ "name": "Tracking Link",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

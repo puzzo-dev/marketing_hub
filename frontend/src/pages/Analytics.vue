@@ -42,17 +42,9 @@
         </div>
 
         <!-- Performance Chart -->
-        <div v-if="dailyMetrics.length" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5 shadow-sm">
+        <div v-if="performanceChartConfig" class="mb-6 rounded-lg border border-outline-gray-1 bg-surface-white p-5 shadow-sm">
           <h4 class="mb-4 text-base font-medium text-ink-gray-9">Performance Trend</h4>
-          <AxisChart
-            title="Sales and Growth Rate"
-            subtitle="Bar and line combination"
-            :data="chartData"
-            :colors="['#EF4444', '#10B981']"
-            :axisOptions="{ xAxisMode: 'tick', xIsSeries: true }"
-            :tooltipOptions="{ formatTooltipY: (d) => formatCurrency(d) }"
-            type="line"
-          />
+          <AxisChart :config="performanceChartConfig" />
         </div>
 
         <!-- Channel Performance Table -->
@@ -127,27 +119,24 @@ const channelBreakdown = computed(() => analyticsResource.data?.channel_breakdow
 const connectors = computed(() => analyticsResource.data?.connectors || []);
 const channelPerformance = computed(() => channelBreakdown.value);
 
-// Prepare chart data for Frappe UI LineChart
-const chartData = computed(() => {
-  if (!dailyMetrics.value || dailyMetrics.value.length === 0) {
-    return { labels: [], datasets: [] };
-  }
+// Prepare chart config for frappe-ui AxisChart (ECharts-based)
+const performanceChartConfig = computed(() => {
+  if (!dailyMetrics.value?.length) return null
 
-  const labels = dailyMetrics.value.map(d => formatDate(d.date));
-  
   return {
-    labels,
-    datasets: [
-      {
-        name: 'Spend',
-        values: dailyMetrics.value.map(d => d.spend || 0),
-      },
-      {
-        name: 'Revenue',
-        values: dailyMetrics.value.map(d => d.revenue || 0),
-      },
+    title: 'Spend vs Revenue',
+    data: dailyMetrics.value.map(d => ({
+      date: formatDate(d.date),
+      Spend: d.spend || 0,
+      Revenue: d.revenue || 0,
+    })),
+    xAxis: { key: 'date', type: 'category' },
+    yAxis: {},
+    series: [
+      { name: 'Spend', type: 'bar', color: '#EF4444' },
+      { name: 'Revenue', type: 'bar', color: '#10B981' },
     ],
-  };
+  }
 });
 
 function formatDate(date) {
