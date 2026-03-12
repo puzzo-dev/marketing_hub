@@ -164,7 +164,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Breadcrumbs, Button, FormControl, Switch, FeatherIcon, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, FeatherIcon, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
 const router = useRouter()
@@ -210,38 +211,34 @@ const accountOptions = computed(() =>
 onMounted(async () => {
   // Load platforms
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name', 'max_character_limit'], limit_page_length: 50 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name', 'max_character_limit'], limit_page_length: 50
     })
-    platforms.value = res.message || []
+    platforms.value = data || []
   } catch (e) { /* ignore */ }
 
   // Load post types
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Post Type', fields: ['name'], limit_page_length: 50 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Post Type', fields: ['name'], limit_page_length: 50
     })
-    postTypes.value = res.message || []
+    postTypes.value = data || []
   } catch (e) { /* ignore */ }
 
   // Load campaigns
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Marketing Campaign', filters: { status: ['in', ['Draft', 'Active']] }, fields: ['name', 'campaign_name'], limit_page_length: 100 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Marketing Campaign', filters: { status: ['in', ['Draft', 'Active']] }, fields: ['name', 'campaign_name'], limit_page_length: 100
     })
-    campaigns.value = res.message || []
+    campaigns.value = data || []
   } catch (e) { /* ignore */ }
 
   // Load ad accounts
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Ad Account', fields: ['name', 'account_name'], limit_page_length: 50 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Ad Account', fields: ['name', 'account_name'], limit_page_length: 50
     })
-    accounts.value = res.message || []
+    accounts.value = data || []
   } catch (e) { /* ignore */ }
 })
 
@@ -307,13 +304,10 @@ async function createPost(status) {
       enable_sharing: form.value.enable_sharing ? 1 : 0,
     }
 
-    const res = await window.frappe.call({
-      method: 'frappe.client.insert',
-      args: { doc }
-    })
+    const newDoc = await call('frappe.client.insert', { doc })
 
     toast({ title: 'Success', text: `Post ${status === 'Scheduled' ? 'scheduled' : 'saved as draft'}`, icon: 'check', iconClasses: 'text-ink-green-3' })
-    router.push(`/marketing/social/${res.message.name}`)
+    router.push(`/marketing/social/${newDoc.name}`)
   } catch (error) {
     toast({ title: 'Error', text: error.message || 'Failed to create post', icon: 'x', iconClasses: 'text-ink-red-3' })
   } finally {

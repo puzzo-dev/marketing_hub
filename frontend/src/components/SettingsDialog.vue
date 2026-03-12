@@ -140,7 +140,8 @@
 
 <script setup>
 import { ref, computed, watch, h } from 'vue'
-import { Dialog, Button, FormControl, Switch, toast } from 'frappe-ui'
+import { Dialog, Button, FormControl, Switch, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import IconSettings from '~icons/lucide/settings'
 import IconMegaphone from '~icons/lucide/megaphone'
 import IconBarChart from '~icons/lucide/bar-chart-2'
@@ -225,12 +226,10 @@ watch(show, async (val) => {
 
 async function loadSettings() {
   try {
-    const doc = await window.frappe.call({
-      method: 'frappe.client.get_value',
-      args: { doctype: 'Marketing Hub Settings', fieldname: settingsFields },
+    const vals = await call('frappe.client.get_value', {
+      doctype: 'Marketing Hub Settings', fieldname: settingsFields,
     })
-    if (doc.message) {
-      const vals = doc.message
+    if (vals) {
       for (const key of checkFields) vals[key] = !!vals[key]
       settings.value = { ...settings.value, ...vals }
     }
@@ -241,11 +240,10 @@ async function loadSettings() {
 
 async function loadCompanies() {
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Company', fields: ['name'], limit_page_length: 50 },
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Company', fields: ['name'], limit_page_length: 50,
     })
-    companies.value = res.message || []
+    companies.value = data || []
   } catch (e) { /* ignore */ }
 }
 
@@ -258,9 +256,8 @@ async function saveSettings() {
         ? settings.value[key] ? 1 : 0
         : settings.value[key]
     }
-    await window.frappe.call({
-      method: 'frappe.client.set_value',
-      args: { doctype: 'Marketing Hub Settings', name: 'Marketing Hub Settings', fieldname },
+    await call('frappe.client.set_value', {
+      doctype: 'Marketing Hub Settings', name: 'Marketing Hub Settings', fieldname,
     })
     toast({ title: 'Settings saved', icon: 'check', iconClasses: 'text-green-600' })
   } catch (e) {

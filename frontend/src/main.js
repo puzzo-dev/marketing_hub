@@ -58,6 +58,13 @@ if (import.meta.env.DEV) {
     for (let key in values) {
       window[key] = values[key];
     }
+    // Ensure boot.user.roles is populated for dev mode
+    if (values.user_roles) {
+      window.frappe = window.frappe || {};
+      window.frappe.boot = window.frappe.boot || {};
+      window.frappe.boot.user = window.frappe.boot.user || {};
+      window.frappe.boot.user.roles = values.user_roles;
+    }
     app.mount("#app");
   });
 } else {

@@ -125,6 +125,7 @@
         title: editingSegment ? 'Edit Segment' : 'New Segment',
         size: 'xl',
       }"
+      :disableOutsideClickToClose="true"
     >
       <template #body-content>
         <div class="space-y-4">
@@ -289,7 +290,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Breadcrumbs, createResource, Button, FormControl, LoadingIndicator, Dialog, Dropdown, Badge, toast } from 'frappe-ui'
+import { Breadcrumbs, createResource, Button, FormControl, LoadingIndicator, Dialog, Dropdown, Badge, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
 import IconPlus from '~icons/lucide/plus'
@@ -392,14 +394,12 @@ async function testSegment(segment) {
   testingSegment.value = segment.name
 
   try {
-    const result = await window.frappe.call({
-      method: 'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.test_segment',
-      args: {
-        segment: segment.name,
-      },
-    })
+    const result = await call(
+      'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.test_segment',
+      { segment: segment.name }
+    )
 
-    testResults.value = result.message
+    testResults.value = result
     showTestDialog.value = true
   } catch (error) {
     toast({
@@ -426,15 +426,12 @@ async function previewSegment() {
 
   try {
     const filters = buildFilters()
-    const result = await window.frappe.call({
-      method: 'frappe.client.get_count',
-      args: {
-        doctype: segmentForm.value.doctype,
-        filters: filters,
-      },
+    const result = await call('frappe.client.get_count', {
+      doctype: segmentForm.value.doctype,
+      filters: filters,
     })
 
-    segmentPreview.value.count = result.message
+    segmentPreview.value.count = result
   } catch (error) {
     toast({
       title: 'Error',
@@ -473,19 +470,13 @@ async function saveSegment() {
     }
 
     if (editingSegment.value) {
-      await window.frappe.call({
-        method: 'frappe.client.set_value',
-        args: {
-          doctype: 'Marketing Segment',
-          name: editingSegment.value,
-          fieldname: doc,
-        },
+      await call('frappe.client.set_value', {
+        doctype: 'Marketing Segment',
+        name: editingSegment.value,
+        fieldname: doc,
       })
     } else {
-      await window.frappe.call({
-        method: 'frappe.client.insert',
-        args: { doc },
-      })
+      await call('frappe.client.insert', { doc })
     }
 
     toast({
@@ -577,14 +568,11 @@ async function duplicateSegment(segment) {
 
 async function toggleSegmentStatus(segment) {
   try {
-    await window.frappe.call({
-      method: 'frappe.client.set_value',
-      args: {
-        doctype: 'Marketing Segment',
-        name: segment.name,
-        fieldname: 'disabled',
-        value: segment.disabled ? 0 : 1,
-      },
+    await call('frappe.client.set_value', {
+      doctype: 'Marketing Segment',
+      name: segment.name,
+      fieldname: 'disabled',
+      value: segment.disabled ? 0 : 1,
     })
 
     toast({
@@ -611,12 +599,9 @@ async function deleteSegment(segment) {
   }
 
   try {
-    await window.frappe.call({
-      method: 'frappe.client.delete',
-      args: {
-        doctype: 'Marketing Segment',
-        name: segment.name,
-      },
+    await call('frappe.client.delete', {
+      doctype: 'Marketing Segment',
+      name: segment.name,
     })
 
     toast({

@@ -5,7 +5,7 @@
         <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Campaigns' }]" />
       </template>
       <template #right-header>
-        <Button @click="$router.push('/marketing/campaigns/new')" variant="solid" label="Create">
+        <Button @click="openCreateDialog" variant="solid" label="Create">
           <template #prefix>
             <IconPlus class="h-4 w-4" />
           </template>
@@ -115,7 +115,7 @@
           <span class="text-center text-sm text-ink-gray-6">
             {{ searchQuery || selectedStatus ? 'Try adjusting your search or filters' : 'Create your first marketing campaign to get started.' }}
           </span>
-          <Button v-if="!searchQuery && !selectedStatus" @click="$router.push('/marketing/campaigns/new')" variant="solid" label="Create Campaign">
+          <Button v-if="!searchQuery && !selectedStatus" @click="openCreateDialog" variant="solid" label="Create Campaign">
             <template #prefix>
               <IconPlus class="h-4 w-4" />
             </template>
@@ -128,25 +128,260 @@
         <LoadingIndicator class="h-6 w-6" />
       </div>
     </div>
+
+    <!-- Create Campaign Dialog -->
+    <Dialog
+      v-model="showCreateDialog"
+      :options="{ title: 'Create Campaign', size: '3xl' }"
+      :disableOutsideClickToClose="true"
+    >
+      <template #body-content>
+        <div class="space-y-5">
+          <!-- Basic Info -->
+          <div class="space-y-4">
+            <FormControl
+              v-model="form.campaign_name"
+              label="Campaign Name"
+              type="text"
+              placeholder="e.g. Summer Sale 2025"
+              :required="true"
+            />
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormControl
+                v-model="form.company"
+                label="Company"
+                type="autocomplete"
+                :options="companyOptions"
+                placeholder="Select company"
+                :required="true"
+              />
+              <FormControl
+                v-model="form.status"
+                label="Status"
+                type="select"
+                :options="[
+                  { label: 'Draft', value: 'Draft' },
+                  { label: 'Active', value: 'Active' },
+                ]"
+              />
+            </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-ink-gray-9">Description</label>
+              <textarea
+                v-model="form.description"
+                rows="3"
+                class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-outline-gray-4 focus:outline-none focus:ring-1 focus:ring-outline-gray-4"
+                placeholder="Describe your campaign objectives..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Schedule & Budget -->
+          <div>
+            <h3 class="mb-3 text-sm font-medium text-ink-gray-5">Schedule & Budget</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <FormControl v-model="form.start_date" label="Start Date" type="date" />
+              <FormControl v-model="form.end_date" label="End Date" type="date" />
+              <FormControl v-model="form.budget" label="Budget" type="number" placeholder="0.00" />
+            </div>
+          </div>
+
+          <!-- Channels -->
+          <div>
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-ink-gray-5">Channels</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-ink-gray-7">Omni Campaign</span>
+                <Switch v-model="form.is_omni_campaign" />
+              </div>
+            </div>
+            <div v-if="form.is_omni_campaign && networks.length" class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <label
+                v-for="net in networks" :key="net.name"
+                class="flex cursor-pointer items-center gap-2 rounded-md border border-outline-gray-1 p-2.5 transition-colors hover:bg-surface-gray-1"
+                :class="{'border-blue-400 bg-blue-50': selectedChannels.includes(net.name)}"
+              >
+                <input type="checkbox" :value="net.name" v-model="selectedChannels" class="h-4 w-4 rounded border-outline-gray-3" />
+                <span class="text-sm text-ink-gray-9">{{ net.network_name || net.name }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- CRM Link -->
+          <FormControl
+            v-model="form.email_campaign"
+            label="Linked Email Campaign (CRM)"
+            type="autocomplete"
+            :options="crmCampaignOptions"
+            placeholder="Link to ERPNext CRM Campaign"
+          />
+
+          <!-- Agency: Client & Project -->
+          <div v-if="configStore.isAgencyMode">
+            <h3 class="mb-3 flex items-center gap-1.5 text-sm font-medium text-ink-purple-3">
+              <IconBuilding class="h-3.5 w-3.5" /> Client & Project
+            </h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormControl
+                v-model="form.customer"
+                label="Client"
+                type="autocomplete"
+                :options="customerOptions"
+                placeholder="Select client"
+              />
+              <FormControl
+                v-model="form.project"
+                label="Project"
+                type="autocomplete"
+                :options="projectOptions"
+                placeholder="Link to ERPNext Project"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #actions="{ close }">
+        <div class="flex w-full justify-end gap-2">
+          <Button variant="ghost" @click="close">Cancel</Button>
+          <Button variant="solid" :loading="saving" @click="createCampaign">Create Campaign</Button>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { Breadcrumbs, FormControl, LoadingIndicator, createResource } from "frappe-ui";
-import { computed, ref, watch } from "vue";
+import { Breadcrumbs, FormControl, LoadingIndicator, createResource, Dialog, Button, Switch, call } from "frappe-ui";
+import { toast } from '@/utils/toast'
+import { computed, ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import { useConfigStore } from "@/stores/config";
 
 import IconPlus from '~icons/lucide/plus'
 import IconSearch from '~icons/lucide/search'
 import IconTarget from '~icons/lucide/target'
+import IconBuilding from '~icons/lucide/building'
 
+const router = useRouter()
 const configStore = useConfigStore()
 
 const searchQuery = ref("");
 const selectedStatus = ref("");
 const currentOffset = ref(0);
 const pageSize = 20;
+
+// Create dialog state
+const showCreateDialog = ref(false)
+const saving = ref(false)
+const form = ref({
+  campaign_name: '',
+  company: '',
+  status: 'Draft',
+  description: '',
+  start_date: '',
+  end_date: '',
+  budget: 0,
+  is_omni_campaign: true,
+  email_campaign: '',
+  customer: '',
+  project: '',
+})
+const selectedChannels = ref([])
+const networks = ref([])
+const companies = ref([])
+const crmCampaigns = ref([])
+const customers = ref([])
+const projects = ref([])
+
+const companyOptions = computed(() => companies.value.map(c => ({ label: c.name, value: c.name })))
+const crmCampaignOptions = computed(() => crmCampaigns.value.map(c => ({ label: c.name, value: c.name })))
+const customerOptions = computed(() => customers.value.map(c => ({ label: c.customer_name, value: c.name })))
+const projectOptions = computed(() => projects.value.map(p => ({ label: p.project_name, value: p.name })))
+
+watch(() => form.value.customer, (newVal) => {
+  if (configStore.isAgencyMode) loadProjects(newVal)
+})
+
+async function loadProjects(customer) {
+  try {
+    const data = await call('marketing_hub.api.agency.get_project_options', {
+      customer: customer || undefined
+    })
+    projects.value = data || []
+  } catch (e) { /* ignore */ }
+}
+
+async function openCreateDialog() {
+  showCreateDialog.value = true
+  // Reset form
+  form.value = {
+    campaign_name: '', company: '', status: 'Draft', description: '',
+    start_date: '', end_date: '', budget: 0, is_omni_campaign: true,
+    email_campaign: '', customer: '', project: '',
+  }
+  selectedChannels.value = []
+
+  // Load form data
+  try {
+    const [netData, compData, crmData] = await Promise.all([
+      call('frappe.client.get_list', { doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name'], limit_page_length: 50 }),
+      call('frappe.client.get_list', { doctype: 'Company', fields: ['name'], limit_page_length: 50 }),
+      call('frappe.client.get_list', { doctype: 'Campaign', fields: ['name'], limit_page_length: 100 }),
+    ])
+    networks.value = netData || []
+    companies.value = compData || []
+    if (companies.value.length === 1) form.value.company = companies.value[0].name
+    crmCampaigns.value = crmData || []
+  } catch (e) { /* ignore */ }
+
+  if (configStore.isAgencyMode) {
+    try {
+      const data = await call('marketing_hub.api.agency.get_customer_options', {})
+      customers.value = data || []
+    } catch (e) { /* ignore */ }
+    loadProjects(form.value.customer)
+  }
+}
+
+async function createCampaign() {
+  if (!form.value.campaign_name) {
+    toast({ title: 'Error', text: 'Campaign name is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  if (!form.value.company) {
+    toast({ title: 'Error', text: 'Company is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  saving.value = true
+  try {
+    const doc = {
+      doctype: 'Marketing Campaign',
+      campaign_name: form.value.campaign_name,
+      company: form.value.company,
+      status: form.value.status,
+      description: form.value.description,
+      start_date: form.value.start_date || undefined,
+      end_date: form.value.end_date || undefined,
+      budget: form.value.budget || 0,
+      is_omni_campaign: form.value.is_omni_campaign ? 1 : 0,
+      email_campaign: form.value.email_campaign || undefined,
+      customer: form.value.customer || undefined,
+      project: form.value.project || undefined,
+    }
+    if (form.value.is_omni_campaign && selectedChannels.value.length) {
+      doc.channels = selectedChannels.value.map(ch => ({ doctype: 'Marketing Campaign Channel', channel: ch }))
+    }
+    const newDoc = await call('frappe.client.insert', { doc })
+    toast({ title: 'Success', text: 'Campaign created successfully', icon: 'check', iconClasses: 'text-ink-green-3' })
+    showCreateDialog.value = false
+    router.push(`/marketing/campaigns/${newDoc.name}`)
+  } catch (error) {
+    toast({ title: 'Error', text: error.message || 'Failed to create campaign', icon: 'x', iconClasses: 'text-ink-red-3' })
+  } finally {
+    saving.value = false
+  }
+}
 
 const statusFilters = [
   { label: "All", value: "" },

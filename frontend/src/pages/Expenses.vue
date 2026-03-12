@@ -94,7 +94,7 @@
     </div>
 
     <!-- Add Expense Dialog -->
-    <Dialog v-model="showAddExpense" :options="{ title: 'Log New Expense', size: 'md' }">
+    <Dialog v-model="showAddExpense" :options="{ title: 'Log New Expense', size: 'md' }" :disableOutsideClickToClose="true">
       <template #body-content>
         <div class="space-y-4">
           <FormControl label="Title" v-model="newExpense.title" :required="true" placeholder="e.g. Facebook Ads Invoice #1024" />
@@ -132,8 +132,9 @@ import {
   Dialog,
   LoadingIndicator,
   AxisChart,
-  toast,
+  call,
 } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 
@@ -200,9 +201,8 @@ async function saveExpense() {
 
   creatingExpense.value = true
   try {
-    await window.frappe.call({
-      method: 'marketing_hub.api.expenses.create_expense',
-      args: { data: JSON.stringify(newExpense.value) },
+    await call('marketing_hub.api.expenses.create_expense', {
+      data: JSON.stringify(newExpense.value),
     })
 
     toast({

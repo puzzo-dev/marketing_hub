@@ -157,7 +157,8 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Breadcrumbs, Button, FormControl, Switch, createResource, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, createResource, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { useConfigStore } from '@/stores/config'
 
@@ -210,20 +211,18 @@ watch(() => form.value.customer, (newVal) => {
 onMounted(async () => {
   // Load networks
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name'], limit_page_length: 50 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name'], limit_page_length: 50
     })
-    networks.value = res.message || []
+    networks.value = data || []
   } catch (e) { /* ignore */ }
 
   // Load companies
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Company', fields: ['name'], limit_page_length: 50 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Company', fields: ['name'], limit_page_length: 50
     })
-    companies.value = res.message || []
+    companies.value = data || []
     if (companies.value.length === 1) {
       form.value.company = companies.value[0].name
     }
@@ -231,21 +230,17 @@ onMounted(async () => {
 
   // Load CRM campaigns
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: { doctype: 'Campaign', fields: ['name'], limit_page_length: 100 }
+    const data = await call('frappe.client.get_list', {
+      doctype: 'Campaign', fields: ['name'], limit_page_length: 100
     })
-    crmCampaigns.value = res.message || []
+    crmCampaigns.value = data || []
   } catch (e) { /* ignore */ }
 
   // Load customers (agency mode)
   if (configStore.isAgencyMode) {
     try {
-      const res = await window.frappe.call({
-        method: 'marketing_hub.api.agency.get_customer_options',
-        args: {}
-      })
-      customers.value = res.message || []
+      const data = await call('marketing_hub.api.agency.get_customer_options', {})
+      customers.value = data || []
     } catch (e) { /* ignore */ }
 
     // Pre-fill customer from query param (e.g. from ClientDetail page)
@@ -259,11 +254,10 @@ onMounted(async () => {
 
 async function loadProjects(customer) {
   try {
-    const res = await window.frappe.call({
-      method: 'marketing_hub.api.agency.get_project_options',
-      args: { customer: customer || undefined }
+    const data = await call('marketing_hub.api.agency.get_project_options', {
+      customer: customer || undefined
     })
-    projects.value = res.message || []
+    projects.value = data || []
   } catch (e) { /* ignore */ }
 }
 
@@ -302,13 +296,10 @@ async function createCampaign() {
       }))
     }
 
-    const res = await window.frappe.call({
-      method: 'frappe.client.insert',
-      args: { doc }
-    })
+    const newDoc = await call('frappe.client.insert', { doc })
 
     toast({ title: 'Success', text: 'Campaign created successfully', icon: 'check', iconClasses: 'text-ink-green-3' })
-    router.push(`/marketing/campaigns/${res.message.name}`)
+    router.push(`/marketing/campaigns/${newDoc.name}`)
   } catch (error) {
     toast({ title: 'Error', text: error.message || 'Failed to create campaign', icon: 'x', iconClasses: 'text-ink-red-3' })
   } finally {

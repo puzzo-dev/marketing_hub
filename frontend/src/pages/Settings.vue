@@ -341,7 +341,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Breadcrumbs, Button, FormControl, Switch, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, FormControl, Switch, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { useConfigStore } from '@/stores/config'
 
@@ -417,15 +418,11 @@ const settings = ref({
 onMounted(async () => {
   // Load settings
   try {
-    const doc = await window.frappe.call({
-      method: "frappe.client.get_value",
-      args: {
-        doctype: "Marketing Hub Settings",
-        fieldname: settingsFields
-      }
+    const vals = await call('frappe.client.get_value', {
+      doctype: 'Marketing Hub Settings',
+      fieldname: settingsFields
     })
-    if (doc.message) {
-      const vals = doc.message
+    if (vals) {
       for (const key of checkFields) {
         vals[key] = !!vals[key]
       }
@@ -437,16 +434,13 @@ onMounted(async () => {
 
   // Load company defaults (child table)
   try {
-    const res = await window.frappe.call({
-      method: 'frappe.client.get_list',
-      args: {
-        doctype: 'Marketing Hub Company Settings',
-        fields: ['company', 'default_expense_account', 'default_cost_center', 'default_payable_account'],
-        parent: 'Marketing Hub Settings',
-        limit_page_length: 50
-      }
+    const list = await call('frappe.client.get_list', {
+      doctype: 'Marketing Hub Company Settings',
+      fields: ['company', 'default_expense_account', 'default_cost_center', 'default_payable_account'],
+      parent: 'Marketing Hub Settings',
+      limit_page_length: 50
     })
-    companySettings.value = res.message || []
+    companySettings.value = list || []
   } catch (e) { /* ignore */ }
 })
 
@@ -461,13 +455,10 @@ async function saveSettings() {
         fieldname[key] = settings.value[key]
       }
     }
-    await window.frappe.call({
-      method: "frappe.client.set_value",
-      args: {
-        doctype: "Marketing Hub Settings",
-        name: "Marketing Hub Settings",
-        fieldname
-      }
+    await call('frappe.client.set_value', {
+      doctype: 'Marketing Hub Settings',
+      name: 'Marketing Hub Settings',
+      fieldname
     })
     toast({ title: "Success", text: "Settings saved successfully", icon: "check", iconClasses: "text-green-600" })
     // Refresh config store so layout reacts to agency_mode changes

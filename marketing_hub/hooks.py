@@ -165,7 +165,10 @@ app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 # before_app_uninstall = "marketing_hub.utils.before_app_uninstall"
 # after_app_uninstall = "marketing_hub.utils.after_app_uninstall"
 
-after_migrate = "marketing_hub.install.setup_notifications"
+after_migrate = [
+    "marketing_hub.install.setup_file_folder",
+    "marketing_hub.install.setup_notifications",
+]
 
 # Desk Notifications
 # ------------------

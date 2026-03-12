@@ -27,6 +27,9 @@
       socketio_port: "{{ socketio_port }}",
       csrf_token: window.csrf_token,
       sitename: "{{ sitename }}",
+      user: {
+        roles: {{ user_roles | tojson }},
+      },
     };
     window.frappe.session = {
       user: "{{ frappe.session.user }}",

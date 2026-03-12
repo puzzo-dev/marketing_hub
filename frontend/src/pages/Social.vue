@@ -5,7 +5,7 @@
         <Breadcrumbs :items="[{ label: 'Marketing Hub' }, { label: 'Social Media' }]" />
       </template>
       <template #right-header>
-        <Button @click="createNewPost" variant="solid" label="Create Post">
+        <Button @click="openCreateDialog" variant="solid" label="Create Post">
           <template #prefix>
             <IconPlus class="h-4 w-4" />
           </template>
@@ -86,13 +86,18 @@
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="postsResource.loading" class="flex items-center justify-center py-12">
+        <LoadingIndicator class="h-6 w-6" />
+      </div>
+
       <!-- Empty State -->
-      <div v-else class="relative flex h-full w-full justify-center">
+      <div v-else-if="!filteredPosts.length" class="relative flex h-full w-full justify-center">
         <div class="absolute left-1/2 flex w-4/12 -translate-x-1/2 flex-col items-center gap-3" style="top: 35%">
           <IconShare2 class="h-7 w-7 text-ink-gray-5" />
           <span class="text-base font-medium text-ink-gray-8">No social posts yet</span>
           <span class="text-center text-sm text-ink-gray-6">Create your first post to start engaging with your audience</span>
-          <Button @click="createNewPost" variant="solid" label="Create Post">
+          <Button @click="openCreateDialog" variant="solid" label="Create Post">
             <template #prefix>
               <IconPlus class="h-4 w-4" />
             </template>
@@ -100,11 +105,150 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Social Post Dialog -->
+    <Dialog
+      v-model="showCreateDialog"
+      :options="{ title: 'Create Social Post', size: '3xl' }"
+      :disableOutsideClickToClose="true"
+    >
+      <template #body-content>
+        <div class="space-y-5">
+          <!-- Post Title -->
+          <FormControl
+            v-model="form.post_title"
+            label="Post Title"
+            type="text"
+            placeholder="Give your post a title"
+            :required="true"
+          />
+
+          <!-- Content -->
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-ink-gray-9">Content <span class="text-red-500">*</span></label>
+            <textarea
+              v-model="form.content"
+              rows="5"
+              class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-outline-gray-4 focus:outline-none focus:ring-1 focus:ring-outline-gray-4"
+              placeholder="Write your post content..."
+              @input="updateCharCount"
+            ></textarea>
+            <div class="mt-1 flex justify-between text-xs text-ink-gray-5">
+              <span v-if="maxChars">{{ charCount }}/{{ maxChars }} characters</span>
+              <span v-else>{{ charCount }} characters</span>
+              <span v-if="maxChars && charCount > maxChars" class="text-ink-red-3">Exceeds limit</span>
+            </div>
+          </div>
+
+          <!-- Platform & Type -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormControl
+              v-model="form.platform"
+              label="Platform"
+              type="autocomplete"
+              :options="platformOptions"
+              placeholder="Select platform"
+              :required="true"
+              @change="onPlatformChange"
+            />
+            <FormControl
+              v-model="form.post_type"
+              label="Post Type"
+              type="autocomplete"
+              :options="postTypeOptions"
+              placeholder="Select type"
+              :required="true"
+            />
+          </div>
+
+          <!-- Campaign & Account -->
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormControl
+              v-model="form.campaign"
+              label="Campaign"
+              type="autocomplete"
+              :options="campaignOptions"
+              placeholder="Link to campaign (optional)"
+            />
+            <FormControl
+              v-model="form.account"
+              label="Account"
+              type="autocomplete"
+              :options="accountOptions"
+              placeholder="Select ad account"
+            />
+          </div>
+
+          <!-- Media Upload (Frappe file upload) -->
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-ink-gray-9">Media Attachment</label>
+            <div class="rounded-lg border-2 border-dashed border-outline-gray-3 p-5 text-center">
+              <div v-if="form.media_attachment" class="flex items-center justify-between rounded-md bg-surface-gray-1 p-3">
+                <div class="flex items-center gap-2">
+                  <FeatherIcon :name="form.media_type === 'Video' ? 'video' : 'image'" class="h-5 w-5 text-ink-gray-5" />
+                  <span class="text-sm text-ink-gray-7">{{ uploadedFileName }}</span>
+                </div>
+                <Button variant="ghost" size="sm" @click="removeMedia">
+                  <FeatherIcon name="x" class="h-4 w-4" />
+                </Button>
+              </div>
+              <div v-else-if="uploading" class="py-2">
+                <LoadingIndicator class="mx-auto h-5 w-5" />
+                <p class="mt-1 text-sm text-ink-gray-6">Uploading...</p>
+              </div>
+              <div v-else>
+                <FeatherIcon name="image" class="mx-auto h-8 w-8 text-ink-gray-4" />
+                <p class="mt-1 text-sm text-ink-gray-6">Attach an image or video</p>
+                <Button variant="outline" size="sm" class="mt-2" @click="$refs.fileInputSocial.click()">Choose File</Button>
+                <input ref="fileInputSocial" type="file" class="hidden" accept="image/*,video/*" @change="handleFileUpload" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <FormControl
+            v-model="form.scheduled_time"
+            label="Schedule Date & Time"
+            type="datetime-local"
+          />
+
+          <!-- Targeting -->
+          <div>
+            <h3 class="mb-3 text-sm font-medium text-ink-gray-5">Targeting & Tags</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <FormControl v-model="form.hashtags" label="Hashtags" type="text" placeholder="#marketing, #digital" />
+              <FormControl v-model="form.mentions" label="Mentions" type="text" placeholder="@username1" />
+              <FormControl v-model="form.target_audience" label="Target Audience" type="text" placeholder="Age 25-45" />
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-ink-gray-9">Comments</span>
+              <Switch v-model="form.enable_comments" />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-ink-gray-9">Sharing</span>
+              <Switch v-model="form.enable_sharing" />
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #actions="{ close }">
+        <div class="flex w-full justify-end gap-2">
+          <Button variant="ghost" @click="close">Cancel</Button>
+          <Button variant="subtle" :loading="savingPost" @click="createPost('Draft')">Save as Draft</Button>
+          <Button variant="solid" :loading="savingPost" @click="createPost('Scheduled')" :disabled="!form.scheduled_time">Schedule</Button>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { Breadcrumbs, createResource, LoadingIndicator } from "frappe-ui";
+import { Breadcrumbs, createResource, LoadingIndicator, Dialog, Button, FormControl, Switch, FeatherIcon, call } from "frappe-ui";
+import { toast } from '@/utils/toast'
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import LayoutHeader from "@/components/LayoutHeader.vue";
@@ -180,7 +324,169 @@ function editPost(name) {
   router.push('/marketing/social/' + name);
 }
 
-function createNewPost() {
-  router.push('/marketing/social/new');
+// === Create Post Dialog ===
+const showCreateDialog = ref(false)
+const savingPost = ref(false)
+const uploading = ref(false)
+const uploadedFileName = ref('')
+const charCount = ref(0)
+const maxChars = ref(0)
+
+const form = ref({
+  post_title: '',
+  content: '',
+  platform: '',
+  post_type: '',
+  campaign: '',
+  account: '',
+  scheduled_time: '',
+  media_attachment: null,
+  media_type: '',
+  hashtags: '',
+  mentions: '',
+  target_audience: '',
+  enable_comments: true,
+  enable_sharing: true,
+})
+
+const platforms = ref([])
+const postTypes = ref([])
+const dialogCampaigns = ref([])
+const accounts = ref([])
+
+const platformOptions = computed(() => platforms.value.map(p => ({ label: p.network_name || p.name, value: p.name })))
+const postTypeOptions = computed(() => postTypes.value.map(p => ({ label: p.name, value: p.name })))
+const campaignOptions = computed(() => dialogCampaigns.value.map(c => ({ label: c.campaign_name || c.name, value: c.name })))
+const accountOptions = computed(() => accounts.value.map(a => ({ label: a.account_name || a.name, value: a.name })))
+
+function onPlatformChange() {
+  const platform = platforms.value.find(p => p.name === form.value.platform)
+  maxChars.value = platform?.max_character_limit || 0
+}
+
+function updateCharCount() {
+  charCount.value = (form.value.content || '').length
+}
+
+async function openCreateDialog() {
+  showCreateDialog.value = true
+  form.value = {
+    post_title: '', content: '', platform: '', post_type: '', campaign: '',
+    account: '', scheduled_time: '', media_attachment: null, media_type: '',
+    hashtags: '', mentions: '', target_audience: '',
+    enable_comments: true, enable_sharing: true,
+  }
+  charCount.value = 0
+  maxChars.value = 0
+  uploadedFileName.value = ''
+
+  try {
+    const [platData, typeData, campData, acctData] = await Promise.all([
+      call('frappe.client.get_list', { doctype: 'Social Media Network', filters: { is_active: 1 }, fields: ['name', 'network_name', 'max_character_limit'], limit_page_length: 50 }),
+      call('frappe.client.get_list', { doctype: 'Post Type', fields: ['name'], limit_page_length: 50 }),
+      call('frappe.client.get_list', { doctype: 'Marketing Campaign', filters: { status: ['in', ['Draft', 'Active']] }, fields: ['name', 'campaign_name'], limit_page_length: 100 }),
+      call('frappe.client.get_list', { doctype: 'Ad Account', fields: ['name', 'account_name'], limit_page_length: 50 }),
+    ])
+    platforms.value = platData || []
+    postTypes.value = typeData || []
+    dialogCampaigns.value = campData || []
+    accounts.value = acctData || []
+  } catch (e) { /* ignore */ }
+}
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  uploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('is_private', '0')
+    formData.append('folder', 'Home/Marketing Hub')
+
+    const response = await fetch('/api/method/upload_file', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Frappe-CSRF-Token': window.csrf_token },
+    })
+    const result = await response.json()
+
+    if (result.message) {
+      form.value.media_attachment = result.message.file_url
+      uploadedFileName.value = result.message.file_name || file.name
+      if (file.type.startsWith('video/')) {
+        form.value.media_type = 'Video'
+      } else if (file.type.startsWith('image/')) {
+        form.value.media_type = 'Image'
+      }
+      toast({ title: 'Uploaded', text: 'File uploaded successfully', icon: 'check', iconClasses: 'text-ink-green-3' })
+    }
+  } catch (error) {
+    toast({ title: 'Error', text: 'Failed to upload file', icon: 'x', iconClasses: 'text-ink-red-3' })
+  } finally {
+    uploading.value = false
+  }
+}
+
+function removeMedia() {
+  form.value.media_attachment = null
+  form.value.media_type = ''
+  uploadedFileName.value = ''
+}
+
+async function createPost(status) {
+  if (!form.value.post_title) {
+    toast({ title: 'Error', text: 'Post title is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  if (!form.value.content) {
+    toast({ title: 'Error', text: 'Post content is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  if (!form.value.platform) {
+    toast({ title: 'Error', text: 'Platform is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  if (!form.value.post_type) {
+    toast({ title: 'Error', text: 'Post type is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+  if (status === 'Scheduled' && !form.value.scheduled_time) {
+    toast({ title: 'Error', text: 'Schedule time is required', icon: 'x', iconClasses: 'text-ink-red-3' })
+    return
+  }
+
+  savingPost.value = true
+  try {
+    const doc = {
+      doctype: 'Social Post',
+      post_title: form.value.post_title,
+      content: form.value.content,
+      platform: form.value.platform,
+      post_type: form.value.post_type,
+      status: status,
+      campaign: form.value.campaign || undefined,
+      account: form.value.account || undefined,
+      scheduled_time: form.value.scheduled_time || undefined,
+      media_attachment: form.value.media_attachment || undefined,
+      media_type: form.value.media_type || undefined,
+      hashtags: form.value.hashtags || undefined,
+      mentions: form.value.mentions || undefined,
+      target_audience: form.value.target_audience || undefined,
+      enable_comments: form.value.enable_comments ? 1 : 0,
+      enable_sharing: form.value.enable_sharing ? 1 : 0,
+    }
+
+    const newDoc = await call('frappe.client.insert', { doc })
+    toast({ title: 'Success', text: `Post ${status === 'Scheduled' ? 'scheduled' : 'saved as draft'}`, icon: 'check', iconClasses: 'text-ink-green-3' })
+    showCreateDialog.value = false
+    postsResource.fetch()
+    router.push(`/marketing/social/${newDoc.name}`)
+  } catch (error) {
+    toast({ title: 'Error', text: error.message || 'Failed to create post', icon: 'x', iconClasses: 'text-ink-red-3' })
+  } finally {
+    savingPost.value = false
+  }
 }
 </script>

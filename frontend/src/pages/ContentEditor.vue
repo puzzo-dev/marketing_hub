@@ -41,19 +41,31 @@
           </div>
 
           <div v-else class="rounded-lg border-2 border-dashed border-outline-gray-3 p-10 text-center">
-            <div class="flex justify-center mb-4">
-              <FeatherIcon name="image" class="h-10 w-10 text-ink-gray-4" />
+            <div v-if="formData.file_url" class="flex items-center justify-between rounded-md bg-surface-gray-1 p-3">
+              <div class="flex items-center gap-2">
+                <FeatherIcon :name="formData.content_type === 'Video' ? 'video' : 'image'" class="h-5 w-5 text-ink-gray-5" />
+                <span class="text-sm text-ink-gray-7">{{ uploadedFileName || formData.file_url }}</span>
+              </div>
+              <Button variant="ghost" size="sm" @click="removeFile">
+                <FeatherIcon name="x" class="h-4 w-4" />
+              </Button>
             </div>
-            <p class="text-ink-gray-6 mb-4">Upload {{ formData.content_type }} Asset</p>
-            <Button variant="outline" @click="triggerUpload">Choose File</Button>
-            <input
-              ref="fileInput"
-              type="file"
-              class="hidden"
-              @change="handleFileSelect"
-            />
-            <div v-if="formData.file_url" class="mt-4 p-2 bg-surface-gray-1 rounded text-sm text-ink-gray-7">
-              Selected: {{ formData.file_url }}
+            <div v-else-if="fileUploading" class="py-4">
+              <LoadingIndicator class="mx-auto h-6 w-6" />
+              <p class="mt-2 text-sm text-ink-gray-6">Uploading...</p>
+            </div>
+            <div v-else>
+              <div class="flex justify-center mb-4">
+                <FeatherIcon name="image" class="h-10 w-10 text-ink-gray-4" />
+              </div>
+              <p class="text-ink-gray-6 mb-4">Upload {{ formData.content_type }} Asset</p>
+              <Button variant="outline" @click="triggerUpload">Choose File</Button>
+              <input
+                ref="fileInput"
+                type="file"
+                class="hidden"
+                @change="handleFileSelect"
+              />
             </div>
           </div>
         </div>
@@ -116,7 +128,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createResource, Breadcrumbs, Button, FormControl, FeatherIcon, toast } from 'frappe-ui'
+import { createResource, Breadcrumbs, Button, FormControl, FeatherIcon, LoadingIndicator, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
 const route = useRoute()
@@ -125,6 +138,8 @@ const fileInput = ref(null)
 
 const isNew = computed(() => !route.params.name)
 const saving = ref(false)
+const fileUploading = ref(false)
+const uploadedFileName = ref('')
 
 const formData = ref({
   asset_name: '',
@@ -142,6 +157,9 @@ const contentResource = createResource({
   onSuccess(data) {
     if (data.success && data.doc) {
       formData.value = { ...data.doc }
+      if (data.doc.file_url || data.doc.file_attachment) {
+        uploadedFileName.value = (data.doc.file_url || data.doc.file_attachment || '').split('/').pop()
+      }
     }
   }
 })
@@ -156,16 +174,39 @@ function triggerUpload() {
   fileInput.value.click()
 }
 
-function handleFileSelect(event) {
+async function handleFileSelect(event) {
   const file = event.target.files[0]
-  if (file) {
-    formData.value.file_url = file.name
-    toast({
-      title: 'File Selected',
-      text: 'File upload logic needed here',
-      icon: 'info'
+  if (!file) return
+
+  fileUploading.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('is_private', '0')
+    fd.append('folder', 'Home/Marketing Hub')
+
+    const response = await fetch('/api/method/upload_file', {
+      method: 'POST',
+      body: fd,
+      headers: { 'X-Frappe-CSRF-Token': window.csrf_token },
     })
+    const result = await response.json()
+
+    if (result.message) {
+      formData.value.file_url = result.message.file_url
+      uploadedFileName.value = result.message.file_name || file.name
+      toast({ title: 'Uploaded', text: 'File uploaded successfully', icon: 'check', iconClasses: 'text-ink-green-3' })
+    }
+  } catch (error) {
+    toast({ title: 'Error', text: 'Failed to upload file', icon: 'x', iconClasses: 'text-ink-red-3' })
+  } finally {
+    fileUploading.value = false
   }
+}
+
+function removeFile() {
+  formData.value.file_url = null
+  uploadedFileName.value = ''
 }
 
 async function saveContent() {
@@ -177,30 +218,30 @@ async function saveContent() {
   saving.value = true
   try {
     if (isNew.value) {
-      await window.frappe.call({
-        method: 'frappe.client.insert',
-        args: {
-          doc: {
-            doctype: 'Content Asset',
-            ...formData.value
-          }
+      await call('frappe.client.insert', {
+        doc: {
+          doctype: 'Content Asset',
+          asset_name: formData.value.asset_name,
+          content_type: formData.value.content_type,
+          content_text: formData.value.content_text,
+          campaign: formData.value.campaign,
+          status: formData.value.status,
+          file_attachment: formData.value.file_url || undefined,
         }
       })
       toast({ title: 'Success', text: 'Content created', icon: 'check', iconClasses: 'text-ink-green-3' })
       router.push({ name: 'Content' })
     } else {
-      await window.frappe.call({
-        method: 'frappe.client.set_value',
-        args: {
-          doctype: 'Content Asset',
-          name: route.params.name,
-          fieldname: {
-            asset_name: formData.value.asset_name,
-            content_type: formData.value.content_type,
-            content_text: formData.value.content_text,
-            campaign: formData.value.campaign,
-            status: formData.value.status
-          }
+      await call('frappe.client.set_value', {
+        doctype: 'Content Asset',
+        name: route.params.name,
+        fieldname: {
+          asset_name: formData.value.asset_name,
+          content_type: formData.value.content_type,
+          content_text: formData.value.content_text,
+          campaign: formData.value.campaign,
+          status: formData.value.status,
+          file_attachment: formData.value.file_url || undefined,
         }
       })
       toast({ title: 'Saved', text: 'Changes saved', icon: 'check', iconClasses: 'text-ink-green-3' })

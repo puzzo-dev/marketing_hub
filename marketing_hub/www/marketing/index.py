@@ -24,6 +24,7 @@ def get_context(context):
     context.user_image = frappe.db.get_value("User", frappe.session.user, "user_image") or ""
     context.socketio_port = frappe.conf.get("socketio_port", 9000)
     context.sitename = frappe.local.site
+    context.user_roles = frappe.get_roles(frappe.session.user)
 
     return context
 
@@ -92,6 +93,7 @@ def get_context_for_dev():
     return {
         "session": frappe.session,
         "installed_apps": get_apps_for_user(),
+        "user_roles": frappe.get_roles(frappe.session.user),
     }
 
 

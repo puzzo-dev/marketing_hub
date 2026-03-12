@@ -1,6 +1,18 @@
 import frappe
 from frappe import _
 
+def setup_file_folder():
+    """Create Marketing Hub folder in Frappe Files for uploaded assets."""
+    if not frappe.db.exists("File", {"file_name": "Marketing Hub", "is_folder": 1}):
+        folder = frappe.get_doc({
+            "doctype": "File",
+            "file_name": "Marketing Hub",
+            "is_folder": 1,
+            "folder": "Home"
+        })
+        folder.insert(ignore_permissions=True)
+        frappe.db.commit()
+
 def setup_notifications():
     """
     Create default Notification records for Marketing Hub events.

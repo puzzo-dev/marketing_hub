@@ -320,8 +320,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { createResource, createListResource, Button, FormControl, FeatherIcon, LoadingIndicator, Badge } from 'frappe-ui'
-import { toast } from 'frappe-ui'
+import { createResource, createListResource, Button, FormControl, FeatherIcon, LoadingIndicator, Badge, call } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 
 const router = useRouter()
 
@@ -518,13 +518,11 @@ async function refreshSegmentPreview() {
 
   segmentPreview.value.loading = true
   try {
-    const result = await window.frappe.call({
-      method: 'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.get_segment_count',
-      args: {
-        segment: formData.value.segment,
-      },
-    })
-    segmentPreview.value.data = result.message
+    const result = await call(
+      'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.get_segment_count',
+      { segment: formData.value.segment }
+    )
+    segmentPreview.value.data = result
   } catch (error) {
     console.error('Error loading segment preview:', error)
   } finally {
@@ -537,27 +535,24 @@ async function createBlast() {
 
   // Create Omni Blast doctype
   try {
-    const blastDoc = await window.frappe.call({
-      method: 'frappe.client.insert',
-      args: {
-        doc: {
-          doctype: 'Omni Blast',
-          campaign: formData.value.campaign,
-          blast_name: formData.value.activity_name,
-          segment: formData.value.segment,
-          subject: formData.value.subject,
-          message: formData.value.message,
-          channels: formData.value.channels.join('\n'),
-          scheduled_time: formData.value.scheduled_time || null,
-          status: formData.value.scheduled_time ? 'Scheduled' : 'Draft',
-        },
+    const blastDoc = await call('frappe.client.insert', {
+      doc: {
+        doctype: 'Omni Blast',
+        campaign: formData.value.campaign,
+        blast_name: formData.value.activity_name,
+        segment: formData.value.segment,
+        subject: formData.value.subject,
+        message: formData.value.message,
+        channels: formData.value.channels.join('\n'),
+        scheduled_time: formData.value.scheduled_time || null,
+        status: formData.value.scheduled_time ? 'Scheduled' : 'Draft',
       },
     })
 
     // If sending now, execute the blast
     if (!formData.value.scheduled_time) {
       await createBlastResource.submit({
-        campaign_activity: blastDoc.message.name,
+        campaign_activity: blastDoc.name,
       })
     } else {
       creating.value = false
@@ -602,19 +597,16 @@ function formatDateTime(dateTime) {
 // Load settings on mount to check enabled channels
 onMounted(async () => {
   try {
-    const settings = await window.frappe.call({
-      method: 'frappe.client.get_value',
-      args: {
-        doctype: 'Marketing Hub Settings',
-        filters: {},
-        fieldname: ['enable_email_blast', 'enable_sms_blast', 'enable_whatsapp_blast'],
-      },
+    const data = await call('frappe.client.get_value', {
+      doctype: 'Marketing Hub Settings',
+      filters: {},
+      fieldname: ['enable_email_blast', 'enable_sms_blast', 'enable_whatsapp_blast'],
     })
 
-    if (settings.message) {
-      channels.value[0].enabled = settings.message.enable_email_blast === 1
-      channels.value[1].enabled = settings.message.enable_sms_blast === 1
-      channels.value[2].enabled = settings.message.enable_whatsapp_blast === 1
+    if (data) {
+      channels.value[0].enabled = data.enable_email_blast === 1
+      channels.value[1].enabled = data.enable_sms_blast === 1
+      channels.value[2].enabled = data.enable_whatsapp_blast === 1
 
       // Update disabled reasons
       if (!channels.value[0].enabled) channels.value[0].disabledReason = 'Disabled in settings'

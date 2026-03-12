@@ -370,7 +370,7 @@
     </div>
 
     <!-- Upload Dialog -->
-    <Dialog v-model="showUploadDialog" :options="{ title: 'Upload Asset', size: 'lg' }">
+    <Dialog v-model="showUploadDialog" :options="{ title: 'Upload Asset', size: 'lg' }" :disableOutsideClickToClose="true">
       <template #body-content>
         <div class="space-y-4">
           <!-- Drag and Drop Zone -->
@@ -449,6 +449,7 @@
     <Dialog
       v-model="showTemplateDialog"
       :options="{ title: 'Create Template', size: 'xl' }"
+      :disableOutsideClickToClose="true"
     >
       <template #body-content>
         <div class="space-y-4">
@@ -505,8 +506,8 @@ import {
   Dialog,
   LoadingIndicator,
   Tabs,
-  toast,
 } from 'frappe-ui'
+import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { debounce } from 'lodash'
 
@@ -639,7 +640,7 @@ async function uploadFiles() {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('is_private', 0)
-    formData.append('folder', 'Home')
+    formData.append('folder', 'Home/Marketing Hub')
 
     try {
       const response = await fetch('/api/method/upload_file', {

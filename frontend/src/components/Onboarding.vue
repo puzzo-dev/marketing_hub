@@ -300,7 +300,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Button, FormControl, Switch, Alert } from 'frappe-ui'
+import { Button, FormControl, Switch, Alert, call } from 'frappe-ui'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -428,15 +428,12 @@ onMounted(async () => {
 
 async function checkOnboardingStatus() {
   try {
-    const response = await window.frappe.call({
-      method: 'frappe.client.get_value',
-      args: {
-        doctype: 'User',
-        filters: { name: window.frappe.session.user },
-        fieldname: 'marketing_hub_onboarding_completed',
-      },
+    const data = await call('frappe.client.get_value', {
+      doctype: 'User',
+      filters: { name: window.frappe.session.user },
+      fieldname: 'marketing_hub_onboarding_completed',
     })
-    return response.message?.marketing_hub_onboarding_completed === 1
+    return data?.marketing_hub_onboarding_completed === 1
   } catch (error) {
     console.error('Error checking onboarding status:', error)
     return false
@@ -475,13 +472,10 @@ async function saveSettings() {
 
   saving.value = true
   try {
-    await window.frappe.call({
-      method: 'frappe.client.set_value',
-      args: {
-        doctype: 'Marketing Hub Settings',
-        name: 'Marketing Hub Settings',
-        fieldname: settings.value,
-      },
+    await call('frappe.client.set_value', {
+      doctype: 'Marketing Hub Settings',
+      name: 'Marketing Hub Settings',
+      fieldname: settings.value,
     })
   } catch (error) {
     console.error('Error saving settings:', error)
@@ -494,15 +488,12 @@ async function createDemoCampaign() {
   if (!demoData.value.campaign_name) return
 
   try {
-    await window.frappe.call({
-      method: 'frappe.client.insert',
-      args: {
-        doc: {
-          doctype: 'Marketing Campaign',
-          campaign_name: demoData.value.campaign_name,
-          description: demoData.value.campaign_description,
-          company: window.frappe.boot.sysdefaults?.company || '',
-        },
+    await call('frappe.client.insert', {
+      doc: {
+        doctype: 'Marketing Campaign',
+        campaign_name: demoData.value.campaign_name,
+        description: demoData.value.campaign_description,
+        company: window.frappe.boot.sysdefaults?.company || '',
       },
     })
   } catch (error) {
@@ -514,14 +505,11 @@ async function createDemoSegment() {
   if (!demoData.value.segment_name) return
 
   try {
-    await window.frappe.call({
-      method: 'frappe.client.insert',
-      args: {
-        doc: {
-          doctype: 'Marketing Segment',
-          segment_name: demoData.value.segment_name,
-          doctype_to_segment: demoData.value.segment_doctype,
-        },
+    await call('frappe.client.insert', {
+      doc: {
+        doctype: 'Marketing Segment',
+        segment_name: demoData.value.segment_name,
+        doctype_to_segment: demoData.value.segment_doctype,
       },
     })
   } catch (error) {
@@ -532,14 +520,11 @@ async function createDemoSegment() {
 async function completeOnboarding() {
   // Mark onboarding as completed
   try {
-    await window.frappe.call({
-      method: 'frappe.client.set_value',
-      args: {
-        doctype: 'User',
-        name: window.frappe.session.user,
-        fieldname: {
-          marketing_hub_onboarding_completed: 1,
-        },
+    await call('frappe.client.set_value', {
+      doctype: 'User',
+      name: window.frappe.session.user,
+      fieldname: {
+        marketing_hub_onboarding_completed: 1,
       },
     })
   } catch (error) {
