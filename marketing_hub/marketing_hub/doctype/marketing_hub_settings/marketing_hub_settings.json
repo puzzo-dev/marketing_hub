@@ -6,9 +6,8 @@
     "engine": "InnoDB",
     "field_order": [
         "general_settings_section",
-        "company",
-        "column_break_2",
         "agency_mode",
+        "column_break_2",
         "section_break_4",
         "default_campaign_naming_series",
         "default_lead_source",
@@ -20,7 +19,6 @@
         "section_break_12",
         "omni_channel_settings_section",
         "enable_email_blast",
-        "default_email_sender",
         "column_break_16",
         "enable_whatsapp_blast",
         "enable_sms_blast",
@@ -56,16 +54,13 @@
         "section_break_56",
         "accounting_settings_section",
         "enable_gl_entry",
-        "default_expense_account",
-        "column_break_59",
-        "default_cost_center",
         "validate_budget",
-        "section_break_61",
-        "default_payable_account",
+        "column_break_59",
         "enable_budget_alerts",
-        "column_break_64",
         "auto_reconcile_expenses",
         "expense_approval_required",
+        "company_settings_section",
+        "company_settings",
         "section_break_62",
         "notification_settings_section",
         "notify_campaign_completion",
@@ -76,22 +71,15 @@
     ],
     "fields": [
         {
-            "fieldname": "company",
-            "fieldtype": "Link",
-            "in_list_view": 1,
-            "label": "Company",
-            "options": "Company"
-        },
-        {
-            "fieldname": "column_break_2",
-            "fieldtype": "Column Break"
-        },
-        {
             "default": "0",
             "description": "Enable Agency Mode to manage multiple clients",
             "fieldname": "agency_mode",
             "fieldtype": "Check",
             "label": "Agency Mode"
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
         },
         {
             "fieldname": "section_break_4",
@@ -160,12 +148,6 @@
             "fieldname": "enable_email_blast",
             "fieldtype": "Check",
             "label": "Enable Email Blast"
-        },
-        {
-            "fieldname": "default_email_sender",
-            "fieldtype": "Link",
-            "label": "Default Email Sender",
-            "options": "Email Account"
         },
         {
             "fieldname": "column_break_16",
@@ -390,22 +372,6 @@
             "label": "Enable GL Entry"
         },
         {
-            "fieldname": "default_expense_account",
-            "fieldtype": "Link",
-            "label": "Default Marketing Expense Account",
-            "options": "Account"
-        },
-        {
-            "fieldname": "column_break_59",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "default_cost_center",
-            "fieldtype": "Link",
-            "label": "Default Cost Center",
-            "options": "Cost Center"
-        },
-        {
             "default": "1",
             "description": "Validate expenses against budget",
             "fieldname": "validate_budget",
@@ -413,15 +379,8 @@
             "label": "Validate Budget"
         },
         {
-            "fieldname": "section_break_61",
-            "fieldtype": "Section Break"
-        },
-        {
-            "description": "Default account for unpaid marketing expenses",
-            "fieldname": "default_payable_account",
-            "fieldtype": "Link",
-            "label": "Default Payable Account",
-            "options": "Account"
+            "fieldname": "column_break_59",
+            "fieldtype": "Column Break"
         },
         {
             "default": "1",
@@ -429,10 +388,6 @@
             "fieldname": "enable_budget_alerts",
             "fieldtype": "Check",
             "label": "Enable Budget Alerts"
-        },
-        {
-            "fieldname": "column_break_64",
-            "fieldtype": "Column Break"
         },
         {
             "default": "0",
@@ -447,6 +402,18 @@
             "fieldname": "expense_approval_required",
             "fieldtype": "Check",
             "label": "Expense Approval Required"
+        },
+        {
+            "fieldname": "company_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Company Defaults",
+            "description": "Configure default accounts per company. Each company in your system needs its own expense account, cost center, and payable account."
+        },
+        {
+            "fieldname": "company_settings",
+            "fieldtype": "Table",
+            "label": "Company Settings",
+            "options": "Marketing Hub Company Settings"
         },
         {
             "fieldname": "section_break_62",
@@ -492,7 +459,7 @@
     "index_web_pages_for_search": 1,
     "issingle": 1,
     "links": [],
-    "modified": "2026-03-10 22:58:00.000000",
+    "modified": "2026-03-11 23:00:00.000000",
     "modified_by": "Administrator",
     "module": "Marketing Hub",
     "name": "Marketing Hub Settings",

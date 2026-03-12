@@ -7,6 +7,13 @@ from frappe import _
 from frappe.utils.data import flt
 
 
+def _get_company(company=None):
+	"""Get the active company - explicit param, filter, or user default"""
+	if company:
+		return company
+	return frappe.defaults.get_user_default("Company")
+
+
 @frappe.whitelist()
 def get_campaign_list(filters=None, limit=20, offset=0):
 	"""Get campaign list with calculated metrics"""
@@ -21,6 +28,10 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			base_filters["status"] = filters["status"]
 		if filters.get("campaign_name"):
 			base_filters["campaign_name"] = ["like", f"%{filters['campaign_name']}%"]
+
+		company = _get_company(filters.get("company"))
+		if company:
+			base_filters["company"] = company
 
 		campaigns = frappe.get_all(
 			"Marketing Campaign",
@@ -149,7 +160,8 @@ def create_campaign(data):
 			"campaign_name": data.get("campaign_name"),
 			"description": data.get("description"),
 			"status": data.get("status", "Planning"),
-			"budget": data.get("budget", 0)
+			"budget": data.get("budget", 0),
+			"company": data.get("company") or _get_company(),
 		})
 
 		campaign.insert()

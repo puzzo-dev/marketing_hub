@@ -8,8 +8,29 @@ from frappe.utils import add_days, today, get_datetime, add_months
 from frappe.utils.data import flt
 
 
+def _get_company(company=None):
+	"""Get the active company - explicit param or user default"""
+	if company:
+		return company
+	return frappe.defaults.get_user_default("Company")
+
+
+def _campaign_company_condition(company, alias="c"):
+	"""Return SQL condition for company filtering on campaigns"""
+	if company:
+		return f"AND {alias}.company = %(company)s"
+	return ""
+
+
+def _analytics_company_join(company):
+	"""Return SQL join + condition to filter analytics by campaign company"""
+	if company:
+		return "JOIN `tabMarketing Campaign` mc ON mc.name = a.campaign AND mc.company = %(company)s"
+	return ""
+
+
 @frappe.whitelist()
-def get_dashboard_data():
+def get_dashboard_data(company=None):
 	"""
 	Get dashboard overview data
 	Returns: active campaigns, spend metrics, leads, ROI stats, and connectors status
@@ -17,66 +38,85 @@ def get_dashboard_data():
 	try:
 		today_date = today()
 		last_30_days = add_days(today_date, -30)
+		prev_period_start = add_days(last_30_days, -30)
+
+		company = _get_company(company)
+		params = {"company": company, "from_date": last_30_days, "prev_start": prev_period_start}
+
+		campaign_filters = {"status": "Active"}
+		if company:
+			campaign_filters["company"] = company
 
 		# Active campaigns count
-		active_campaigns = frappe.db.count("Marketing Campaign", {
-			"status": "Active"
-		})
+		active_campaigns = frappe.db.count("Marketing Campaign", campaign_filters)
+
+		company_join = _analytics_company_join(company)
 
 		# Total spend (last 30 days)
-		total_spend = frappe.db.get_value(
-			"Analytics Daily Log",
-			{"log_date": [">=", last_30_days]},
-			"sum(spend)"
-		) or 0.0
+		total_spend = frappe.db.sql("""
+			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(from_date)s
+		""".format(company_join=company_join), params)[0][0] or 0.0
 
 		# Previous period spend (for comparison)
-		prev_period_start = add_days(last_30_days, -30)
 		prev_period_spend = frappe.db.sql("""
-			SELECT SUM(spend) FROM `tabAnalytics Daily Log`
-			WHERE log_date >= %s AND log_date < %s
-		""", (prev_period_start, last_30_days))[0][0] or 0.0
+			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(prev_start)s AND a.log_date < %(from_date)s
+		""".format(company_join=company_join), params)[0][0] or 0.0
 
 		# Leads generated (last 30 days)
-		leads_generated = frappe.db.count("Lead", {
-			"creation": [">=", last_30_days],
-			"source": ["is", "set"]
-		})
+		lead_filters = {"creation": [">=", last_30_days], "source": ["is", "set"]}
+		if company:
+			lead_filters["company"] = company
 
-		# Previous period leads
+		leads_generated = frappe.db.count("Lead", lead_filters)
+
+		prev_lead_filters = {
+			"creation": [">=", prev_period_start],
+			"creation": ["<", last_30_days],
+			"source": ["is", "set"],
+		}
+		if company:
+			prev_lead_filters["company"] = company
+
 		prev_period_leads = frappe.db.sql("""
 			SELECT COUNT(*) FROM `tabLead`
-			WHERE creation >= %s AND creation < %s
+			WHERE creation >= %(prev_start)s AND creation < %(from_date)s
 			AND source IS NOT NULL AND source != ''
-		""", (prev_period_start, last_30_days))[0][0] or 0
+			{company_cond}
+		""".format(company_cond="AND company = %(company)s" if company else ""), params)[0][0] or 0
 
 		# Revenue (last 30 days) - from Analytics Daily Log
-		total_revenue = frappe.db.get_value(
-			"Analytics Daily Log",
-			{"log_date": [">=", last_30_days]},
-			"sum(revenue)"
-		) or 0.0
+		total_revenue = frappe.db.sql("""
+			SELECT SUM(a.revenue) FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(from_date)s
+		""".format(company_join=company_join), params)[0][0] or 0.0
 
 		# Calculate ROI
 		roi = ((total_revenue - total_spend) / total_spend * 100) if total_spend > 0 else 0
 
 		# Calculate average ROAS
-		avg_roas = frappe.db.get_value(
-			"Analytics Daily Log",
-			{"log_date": [">=", last_30_days], "roas": [">", 0]},
-			"avg(roas)"
-		) or 0.0
+		avg_roas = frappe.db.sql("""
+			SELECT AVG(a.roas) FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(from_date)s AND a.roas > 0
+		""".format(company_join=company_join), params)[0][0] or 0.0
 
 		# Recent activities
+		activity_filters = {"creation": [">=", add_days(today_date, -7)]}
 		recent_activities = frappe.get_all(
 			"Campaign Activity",
 			fields=["name", "subject", "status", "scheduled_date", "campaign"],
-			filters={"creation": [">=", add_days(today_date, -7)]},
+			filters=activity_filters,
 			order_by="creation desc",
 			limit=5
 		)
 
 		# Top performing campaigns (by ROAS)
+		company_cond = _campaign_company_condition(company)
 		top_campaigns = frappe.db.sql("""
 			SELECT
 				c.name as campaign_name,
@@ -87,11 +127,12 @@ def get_dashboard_data():
 			FROM `tabMarketing Campaign` c
 			LEFT JOIN `tabAnalytics Daily Log` a ON a.campaign = c.name
 			WHERE a.log_date >= %(from_date)s
+			{company_cond}
 			GROUP BY c.name
 			HAVING spend > 0
 			ORDER BY roas DESC
 			LIMIT 5
-		""", {"from_date": last_30_days}, as_dict=True)
+		""".format(company_cond=company_cond), params, as_dict=True)
 
 		# Calculate percentage changes
 		spend_change = _percentage_change(prev_period_spend, total_spend)
@@ -124,7 +165,7 @@ def get_dashboard_data():
 
 
 @frappe.whitelist()
-def get_analytics_data(from_date=None, to_date=None):
+def get_analytics_data(from_date=None, to_date=None, company=None):
 	"""
 	Get analytics metrics for charts
 	"""
@@ -134,21 +175,26 @@ def get_analytics_data(from_date=None, to_date=None):
 		if not to_date:
 			to_date = today()
 
+		company = _get_company(company)
+		company_join = _analytics_company_join(company)
+		params = {"from_date": from_date, "to_date": to_date, "company": company}
+
 		# Get daily metrics
 		daily_metrics = frappe.db.sql("""
 			SELECT
-				log_date as date,
-				SUM(impressions) as impressions,
-				SUM(clicks) as clicks,
-				SUM(spend) as spend,
-				SUM(conversions) as conversions,
-				SUM(revenue) as revenue,
-				AVG(roas) as roas
-			FROM `tabAnalytics Daily Log`
-			WHERE log_date >= %(from_date)s AND log_date <= %(to_date)s
-			GROUP BY log_date
-			ORDER BY log_date ASC
-		""", {"from_date": from_date, "to_date": to_date}, as_dict=True)
+				a.log_date as date,
+				SUM(a.impressions) as impressions,
+				SUM(a.clicks) as clicks,
+				SUM(a.spend) as spend,
+				SUM(a.conversions) as conversions,
+				SUM(a.revenue) as revenue,
+				AVG(a.roas) as roas
+			FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
+			GROUP BY a.log_date
+			ORDER BY a.log_date ASC
+		""".format(company_join=company_join), params, as_dict=True)
 
 		for metric in daily_metrics:
 			metric["ctr"] = (metric["clicks"] / metric["impressions"] * 100) if metric["impressions"] > 0 else 0
@@ -159,15 +205,16 @@ def get_analytics_data(from_date=None, to_date=None):
 		# Get channel breakdown
 		channel_breakdown = frappe.db.sql("""
 			SELECT
-				channel,
-				SUM(spend) as spend,
-				SUM(revenue) as revenue,
-				COUNT(DISTINCT campaign) as campaigns
-			FROM `tabAnalytics Daily Log`
-			WHERE log_date >= %(from_date)s AND log_date <= %(to_date)s
-			GROUP BY channel
+				a.channel,
+				SUM(a.spend) as spend,
+				SUM(a.revenue) as revenue,
+				COUNT(DISTINCT a.campaign) as campaigns
+			FROM `tabAnalytics Daily Log` a
+			{company_join}
+			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
+			GROUP BY a.channel
 			ORDER BY spend DESC
-		""", {"from_date": from_date, "to_date": to_date}, as_dict=True)
+		""".format(company_join=company_join), params, as_dict=True)
 
 		return {
 			"daily_metrics": daily_metrics,
