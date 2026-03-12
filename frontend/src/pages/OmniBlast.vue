@@ -1,314 +1,238 @@
 <template>
   <div class="flex h-full flex-col overflow-auto bg-surface-gray-1">
     <div class="flex-1 px-5 py-5 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-4xl">
+      <div class="mx-auto max-w-3xl">
         <!-- Header -->
-        <div class="mb-6">
-          <h1 class="text-2xl font-semibold text-ink-gray-9">Create Omni-Channel Blast</h1>
+        <div class="mb-5">
+          <h1 class="text-xl font-semibold text-ink-gray-9">Omni-Channel Blast</h1>
           <p class="mt-1 text-sm text-ink-gray-6">
-            Send multi-channel campaigns to your marketing segments
+            Reach your audience across multiple channels at once
           </p>
         </div>
 
-        <!-- Progress Steps -->
-        <div class="mb-8">
-          <div class="flex items-center justify-between">
-            <div
-              v-for="(step, index) in steps"
-              :key="step.id"
-              class="flex flex-1 items-center"
+        <!-- Compact Stepper -->
+        <div class="mb-6 flex items-center gap-1">
+          <template v-for="(step, index) in steps" :key="step.id">
+            <button
+              @click="goToStep(index)"
+              class="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+              :class="[
+                currentStep === index
+                  ? 'bg-surface-white text-ink-gray-9 shadow-sm ring-1 ring-outline-gray-2'
+                  : currentStep > index
+                    ? 'text-ink-gray-7 hover:text-ink-gray-9'
+                    : 'text-ink-gray-5',
+              ]"
+              :disabled="index > furthestStep"
             >
-              <div class="flex items-center">
-                <div
-                  :class="[
-                    'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors',
-                    currentStep >= index
-                      ? 'border-primary-500 bg-primary-500 text-white'
-                      : 'border-outline-gray-3 bg-surface-cards text-ink-gray-6',
-                  ]"
-                >
-                  <span class="text-sm font-semibold">{{ index + 1 }}</span>
-                </div>
-                <div class="ml-3">
-                  <p
-                    :class="[
-                      'text-sm font-medium',
-                      currentStep >= index ? 'text-ink-gray-9' : 'text-ink-gray-6',
-                    ]"
-                  >
-                    {{ step.title }}
-                  </p>
-                </div>
-              </div>
               <div
-                v-if="index < steps.length - 1"
+                class="flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold"
                 :class="[
-                  'mx-4 h-0.5 flex-1',
-                  currentStep > index ? 'bg-primary-500' : 'bg-outline-gray-3',
+                  currentStep > index
+                    ? 'bg-green-100 text-green-700'
+                    : currentStep === index
+                      ? 'bg-surface-gray-3 text-ink-gray-9'
+                      : 'bg-surface-gray-2 text-ink-gray-5',
                 ]"
-              ></div>
-            </div>
-          </div>
+              >
+                <IconCheck v-if="currentStep > index" class="h-3 w-3" />
+                <span v-else>{{ index + 1 }}</span>
+              </div>
+              {{ step.title }}
+            </button>
+            <IconChevronRight
+              v-if="index < steps.length - 1"
+              class="h-4 w-4 flex-shrink-0 text-ink-gray-4"
+            />
+          </template>
         </div>
 
         <!-- Form Container -->
         <div class="rounded-lg border border-outline-gray-1 bg-surface-cards shadow-sm">
-          <!-- Step 1: Campaign Selection -->
-          <div v-if="currentStep === 0" class="p-6">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Select Campaign</h2>
-            
-            <FormControl
-              label="Campaign"
-              v-model="formData.campaign"
-              :options="campaignOptions"
-              placeholder="Select a campaign"
-              :required="true"
-            />
-            
-            <FormControl
-              label="Activity Name"
-              v-model="formData.activity_name"
-              placeholder="e.g., Summer Sale Email Blast"
-              :required="true"
-              class="mt-4"
-            />
 
-            <FormControl
-              label="Scheduled Date & Time"
-              type="datetime-local"
-              v-model="formData.scheduled_time"
-              class="mt-4"
-            />
-          </div>
-
-          <!-- Step 2: Channel Selection -->
-          <div v-if="currentStep === 1" class="p-6">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Select Channels</h2>
-            <p class="mb-4 text-sm text-ink-gray-6">
-              Choose which channels to use for this blast
-            </p>
-
-            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <div
-                v-for="channel in channels"
-                :key="channel.value"
-                @click="toggleChannel(channel.value)"
-                :class="[
-                  'cursor-pointer rounded-lg border-2 p-4 text-center transition-all',
-                  formData.channels.includes(channel.value)
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-outline-gray-2 bg-surface-cards hover:border-outline-gray-3',
-                  !channel.enabled && 'cursor-not-allowed opacity-50',
-                ]"
-              >
-                <div class="mb-2 text-2xl">{{ channel.icon }}</div>
-                <div class="text-sm font-medium text-ink-gray-9">{{ channel.label }}</div>
-                <div v-if="!channel.enabled" class="mt-1 text-xs text-ink-red-3">
-                  {{ channel.disabledReason }}
-                </div>
-              </div>
-            </div>
-
-            <div v-if="formData.channels.length === 0" class="mt-4 rounded-md bg-surface-amber-1 p-3 border border-outline-amber-1">
-              <p class="text-sm text-ink-amber-3">Please select at least one channel</p>
-            </div>
-          </div>
-
-          <!-- Step 3: Segment Selection -->
-          <div v-if="currentStep === 2" class="p-6">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Select Audience Segment</h2>
-
-            <FormControl
-              label="Marketing Segment"
-              v-model="formData.segment"
-              :options="segmentOptions"
-              placeholder="Select a segment"
-              :required="true"
-            />
-
-            <div v-if="formData.segment && segmentPreview.loading" class="mt-4">
-              <LoadingIndicator class="h-6 w-6" />
-            </div>
-
-            <div
-              v-if="formData.segment && !segmentPreview.loading && segmentPreview.data"
-              class="mt-4 rounded-md bg-surface-gray-2 p-4 border border-outline-gray-2"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-ink-gray-9">Segment Preview</p>
-                  <p class="mt-1 text-xs text-ink-gray-6">
-                    {{ segmentPreview.data.count }} recipients will receive this blast
-                  </p>
-                </div>
-                <Button size="sm" variant="ghost" @click="refreshSegmentPreview">
-                  <template #prefix>
-                    <FeatherIcon name="refresh-cw" class="h-4 w-4" />
-                  </template>
-                  Refresh
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 4: Content & Message -->
-          <div v-if="currentStep === 3" class="p-6">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Compose Message</h2>
-
-            <FormControl
-              label="Subject / Title"
-              v-model="formData.subject"
-              placeholder="Message subject"
-              class="mb-4"
-            />
-
-            <div class="mb-4">
-              <label class="mb-2 block text-sm font-medium text-ink-gray-9">
-                Message Content
-              </label>
-              <textarea
-                v-model="formData.message"
-                rows="8"
-                class="w-full rounded-md border border-outline-gray-2 p-3 text-sm focus:border-primary-500 focus:outline-none"
-                placeholder="Enter your message here..."
-              ></textarea>
-              <p class="mt-1 text-xs text-ink-gray-6">
-                Character count: {{ formData.message?.length || 0 }}
-                <span v-if="formData.channels.includes('SMS')" class="text-amber-600">
-                  (SMS limit: 160 characters)
-                </span>
-              </p>
-            </div>
-
-            <FormControl
-              v-if="formData.channels.includes('Email')"
-              label="Email Template (Optional)"
-              v-model="formData.template"
-              :options="templateOptions"
-              placeholder="Select a template"
-              class="mb-4"
-            />
-
-            <div class="rounded-md bg-surface-gray-2 p-3 border border-outline-gray-2">
-              <p class="text-xs text-ink-gray-6">
-                <strong>Tip:</strong> Content will be automatically adapted for each channel.
-                SMS will be truncated to 160 characters, HTML will be stripped for plain text channels.
-              </p>
-            </div>
-          </div>
-
-          <!-- Step 5: Review & Send -->
-          <div v-if="currentStep === 4" class="p-6">
-            <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Review & Send</h2>
-
-            <div class="space-y-4">
-              <!-- Campaign Info -->
-              <div class="rounded-md border border-outline-gray-2 p-4">
-                <h3 class="mb-2 text-sm font-medium text-ink-gray-9">Campaign Details</h3>
-                <dl class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <dt class="text-ink-gray-6">Campaign:</dt>
-                    <dd class="font-medium text-ink-gray-9">{{ getCampaignName(formData.campaign) }}</dd>
-                  </div>
-                  <div class="flex justify-between">
-                    <dt class="text-ink-gray-6">Activity Name:</dt>
-                    <dd class="font-medium text-ink-gray-9">{{ formData.activity_name }}</dd>
-                  </div>
-                  <div v-if="formData.scheduled_time" class="flex justify-between">
-                    <dt class="text-ink-gray-6">Scheduled:</dt>
-                    <dd class="font-medium text-ink-gray-9">{{ formatDateTime(formData.scheduled_time) }}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <!-- Channels -->
-              <div class="rounded-md border border-outline-gray-2 p-4">
-                <h3 class="mb-2 text-sm font-medium text-ink-gray-9">Channels</h3>
-                <div class="flex flex-wrap gap-2">
-                  <Badge
-                    v-for="channel in formData.channels"
-                    :key="channel"
-                    :label="channel"
-                    variant="subtle"
-                    theme="blue"
+          <!-- Step 1: Setup (Campaign + Channels + Schedule) -->
+          <div v-if="currentStep === 0" class="space-y-6 p-6">
+            <div>
+              <h2 class="mb-4 text-base font-semibold text-ink-gray-9">Campaign & Schedule</h2>
+              <div class="space-y-4">
+                <FormControl
+                  label="Campaign"
+                  v-model="formData.campaign"
+                  :options="campaignOptions"
+                  placeholder="Select a campaign"
+                  :required="true"
+                />
+                <FormControl
+                  label="Blast Name"
+                  v-model="formData.activity_name"
+                  placeholder="e.g., Summer Sale Blast"
+                  :required="true"
+                />
+                <div class="grid grid-cols-2 gap-4">
+                  <FormControl
+                    label="Marketing Segment"
+                    v-model="formData.segment"
+                    :options="segmentOptions"
+                    placeholder="Select audience"
+                    :required="true"
+                  />
+                  <FormControl
+                    label="Schedule (optional)"
+                    type="datetime-local"
+                    v-model="formData.scheduled_time"
                   />
                 </div>
+                <!-- Segment count preview inline -->
+                <div v-if="segmentPreview.loading" class="flex items-center gap-2 text-sm text-ink-gray-6">
+                  <LoadingIndicator class="h-4 w-4" /> Counting recipients…
+                </div>
+                <div
+                  v-else-if="segmentPreview.data"
+                  class="flex items-center gap-2 rounded-md bg-surface-gray-2 px-3 py-2 text-sm"
+                >
+                  <IconUsers class="h-4 w-4 text-ink-gray-6" />
+                  <span class="text-ink-gray-8">
+                    <strong>{{ segmentPreview.data.count }}</strong> recipients in this segment
+                  </span>
+                </div>
               </div>
+            </div>
 
-              <!-- Audience -->
-              <div class="rounded-md border border-outline-gray-2 p-4">
-                <h3 class="mb-2 text-sm font-medium text-ink-gray-9">Audience</h3>
-                <dl class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <dt class="text-ink-gray-6">Segment:</dt>
-                    <dd class="font-medium text-ink-gray-9">{{ getSegmentName(formData.segment) }}</dd>
-                  </div>
-                  <div v-if="segmentPreview.data" class="flex justify-between">
-                    <dt class="text-ink-gray-6">Recipients:</dt>
-                    <dd class="font-medium text-ink-gray-9">{{ segmentPreview.data.count }}</dd>
-                  </div>
-                </dl>
+            <div class="border-t border-outline-gray-2 pt-5">
+              <h2 class="mb-3 text-base font-semibold text-ink-gray-9">Channels</h2>
+              <p class="mb-4 text-sm text-ink-gray-6">Select which channels to blast on</p>
+              <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <button
+                  v-for="channel in channels"
+                  :key="channel.value"
+                  @click="toggleChannel(channel.value)"
+                  :disabled="!channel.enabled"
+                  :class="[
+                    'flex flex-col items-center gap-2 rounded-lg border-2 px-3 py-4 transition-all',
+                    formData.channels.includes(channel.value)
+                      ? 'border-primary-500 bg-blue-50/50'
+                      : 'border-outline-gray-2 bg-surface-cards hover:border-outline-gray-3',
+                    !channel.enabled && 'cursor-not-allowed opacity-40',
+                  ]"
+                >
+                  <component :is="channel.icon" class="h-5 w-5" :class="formData.channels.includes(channel.value) ? 'text-primary-600' : 'text-ink-gray-6'" />
+                  <span class="text-sm font-medium" :class="formData.channels.includes(channel.value) ? 'text-primary-700' : 'text-ink-gray-8'">{{ channel.label }}</span>
+                  <span v-if="!channel.enabled" class="text-[11px] text-ink-red-3">Not configured</span>
+                </button>
               </div>
-
-              <!-- Message Preview -->
-              <div class="rounded-md border border-outline-gray-2 p-4">
-                <h3 class="mb-2 text-sm font-medium text-ink-gray-9">Message Preview</h3>
-                <dl class="space-y-2 text-sm">
-                  <div>
-                    <dt class="text-ink-gray-6">Subject:</dt>
-                    <dd class="mt-1 font-medium text-ink-gray-9">{{ formData.subject }}</dd>
-                  </div>
-                  <div>
-                    <dt class="text-ink-gray-6">Content:</dt>
-                    <dd class="mt-1 text-ink-gray-9">{{ formData.message?.substring(0, 200) }}{{ formData.message?.length > 200 ? '...' : '' }}</dd>
-                  </div>
-                </dl>
+              <div v-if="formData.channels.length === 0" class="mt-3 rounded-md bg-surface-amber-1 px-3 py-2 text-sm text-ink-amber-3">
+                Select at least one channel
               </div>
             </div>
           </div>
 
-          <!-- Navigation Buttons -->
-          <div class="flex items-center justify-between border-t border-outline-gray-2 p-6">
+          <!-- Step 2: Content & Message -->
+          <div v-if="currentStep === 1" class="p-6">
+            <h2 class="mb-4 text-base font-semibold text-ink-gray-9">Compose Message</h2>
+
+            <div class="space-y-4">
+              <FormControl
+                label="Subject"
+                v-model="formData.subject"
+                placeholder="Message subject line"
+                :required="true"
+              />
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-ink-gray-8">
+                  Message Content
+                </label>
+                <textarea
+                  v-model="formData.message"
+                  rows="8"
+                  class="w-full rounded-lg border border-outline-gray-2 bg-surface-cards p-3 text-sm text-ink-gray-9 placeholder:text-ink-gray-5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                  placeholder="Write your message here…"
+                ></textarea>
+                <div class="mt-1 flex items-center justify-between text-xs text-ink-gray-5">
+                  <span>{{ formData.message?.length || 0 }} characters</span>
+                  <span
+                    v-if="formData.channels.includes('SMS') && (formData.message?.length || 0) > 160"
+                    class="text-ink-amber-3"
+                  >SMS messages over 160 chars will be split</span>
+                </div>
+              </div>
+
+              <FormControl
+                v-if="formData.channels.includes('Email')"
+                label="Email Template (optional)"
+                v-model="formData.template"
+                :options="templateOptions"
+                placeholder="Select a template"
+              />
+            </div>
+          </div>
+
+          <!-- Step 3: Review & Send -->
+          <div v-if="currentStep === 2" class="p-6">
+            <h2 class="mb-4 text-base font-semibold text-ink-gray-9">Review & Send</h2>
+
+            <div class="space-y-3">
+              <div class="rounded-lg bg-surface-gray-2 p-4">
+                <div class="grid grid-cols-2 gap-y-3 text-sm">
+                  <div class="text-ink-gray-6">Campaign</div>
+                  <div class="font-medium text-ink-gray-9">{{ getCampaignName(formData.campaign) }}</div>
+                  <div class="text-ink-gray-6">Blast Name</div>
+                  <div class="font-medium text-ink-gray-9">{{ formData.activity_name }}</div>
+                  <div class="text-ink-gray-6">Audience</div>
+                  <div class="font-medium text-ink-gray-9">
+                    {{ getSegmentName(formData.segment) }}
+                    <span v-if="segmentPreview.data" class="text-ink-gray-6">({{ segmentPreview.data.count }})</span>
+                  </div>
+                  <div class="text-ink-gray-6">Channels</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <Badge
+                      v-for="channel in formData.channels"
+                      :key="channel"
+                      :label="channel"
+                      variant="subtle"
+                      theme="blue"
+                      size="sm"
+                    />
+                  </div>
+                  <div v-if="formData.scheduled_time" class="text-ink-gray-6">Scheduled</div>
+                  <div v-if="formData.scheduled_time" class="font-medium text-ink-gray-9">{{ formatDateTime(formData.scheduled_time) }}</div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-outline-gray-2 p-4">
+                <div class="mb-2 text-sm font-medium text-ink-gray-8">Message Preview</div>
+                <div class="text-sm font-medium text-ink-gray-9">{{ formData.subject }}</div>
+                <div class="mt-2 whitespace-pre-wrap text-sm text-ink-gray-7">{{ formData.message?.substring(0, 300) }}{{ (formData.message?.length || 0) > 300 ? '…' : '' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="flex items-center justify-between border-t border-outline-gray-2 px-6 py-4">
             <Button
               v-if="currentStep > 0"
               variant="ghost"
               @click="previousStep"
-            >
-              <template #prefix>
-                <FeatherIcon name="chevron-left" class="h-4 w-4" />
-              </template>
-              Back
-            </Button>
-            <div v-else></div>
+              label="Back"
+            />
+            <div v-else />
 
-            <div class="flex space-x-3">
-              <Button
-                variant="ghost"
-                @click="cancel"
-              >
-                Cancel
-              </Button>
+            <div class="flex gap-2">
+              <Button variant="ghost" @click="cancel" label="Cancel" />
               <Button
                 v-if="currentStep < steps.length - 1"
                 @click="nextStep"
                 :disabled="!canProceed"
-              >
-                Next
-                <template #suffix>
-                  <FeatherIcon name="chevron-right" class="h-4 w-4" />
-                </template>
-              </Button>
+                variant="solid"
+                label="Continue"
+              />
               <Button
                 v-else
                 @click="createBlast"
                 :loading="creating"
                 variant="solid"
-              >
-                <template #prefix>
-                  <FeatherIcon name="send" class="h-4 w-4" />
-                </template>
-                {{ formData.scheduled_time ? 'Schedule Blast' : 'Send Now' }}
-              </Button>
+                :label="formData.scheduled_time ? 'Schedule Blast' : 'Send Now'"
+              />
             </div>
           </div>
         </div>
@@ -318,25 +242,31 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
-import { createResource, createListResource, Button, FormControl, FeatherIcon, LoadingIndicator, Badge, call } from 'frappe-ui'
+import { createResource, createListResource, Button, FormControl, LoadingIndicator, Badge, call } from 'frappe-ui'
 import { toast } from '@/utils/toast'
+
+import IconMail from '~icons/lucide/mail'
+import IconMessageSquare from '~icons/lucide/message-square'
+import IconSmartphone from '~icons/lucide/smartphone'
+import IconBell from '~icons/lucide/bell'
+import IconCheck from '~icons/lucide/check'
+import IconChevronRight from '~icons/lucide/chevron-right'
+import IconUsers from '~icons/lucide/users'
 
 const router = useRouter()
 
 const steps = [
-  { id: 'campaign', title: 'Campaign' },
-  { id: 'channels', title: 'Channels' },
-  { id: 'segment', title: 'Audience' },
+  { id: 'setup', title: 'Setup' },
   { id: 'content', title: 'Content' },
   { id: 'review', title: 'Review' },
 ]
 
 const currentStep = ref(0)
+const furthestStep = ref(0)
 const creating = ref(false)
 
-// Form data
 const formData = ref({
   campaign: '',
   activity_name: '',
@@ -348,12 +278,11 @@ const formData = ref({
   template: '',
 })
 
-// Available channels — seeded with defaults, then overridden from Social Media Network DocType
 const channels = ref([
-  { value: 'Email', label: 'Email', icon: '📧', enabled: true },
-  { value: 'SMS', label: 'SMS', icon: '💬', enabled: true },
-  { value: 'WhatsApp', label: 'WhatsApp', icon: '📱', enabled: true },
-  { value: 'Push Notification', label: 'Push', icon: '🔔', enabled: false, disabledReason: 'Not configured' },
+  { value: 'Email', label: 'Email', icon: markRaw(IconMail), enabled: true },
+  { value: 'SMS', label: 'SMS', icon: markRaw(IconMessageSquare), enabled: true },
+  { value: 'WhatsApp', label: 'WhatsApp', icon: markRaw(IconSmartphone), enabled: true },
+  { value: 'Push Notification', label: 'Push', icon: markRaw(IconBell), enabled: false },
 ])
 
 // Fetch available networks from Social Media Network DocType
@@ -365,23 +294,21 @@ const networksResource = createListResource({
   onSuccess(data) {
     if (data && data.length) {
       const iconMap = {
-        Email: '📧', SMS: '💬', WhatsApp: '📱',
-        Facebook: '📘', Instagram: '📷', Twitter: '🐦',
-        LinkedIn: '💼', YouTube: '📺', TikTok: '🎵',
-        Pinterest: '📌', Telegram: '✈️',
+        Email: markRaw(IconMail),
+        SMS: markRaw(IconMessageSquare),
+        WhatsApp: markRaw(IconSmartphone),
       }
       channels.value = data.map(n => ({
         value: n.platform_name || n.name,
         label: n.platform_name || n.name,
-        icon: iconMap[n.platform_name] || '📡',
-        enabled: n.enabled !== 0,
-        disabledReason: n.enabled === 0 ? 'Disabled in settings' : '',
+        icon: iconMap[n.platform_name] || markRaw(IconBell),
+        enabled: Number(n.enabled) !== 0,
+        disabledReason: Number(n.enabled) === 0 ? 'Disabled in settings' : '',
       }))
     }
   },
 })
 
-// API Resources
 const campaignsResource = createResource({
   url: 'frappe.client.get_list',
   params: {
@@ -415,107 +342,75 @@ const templatesResource = createResource({
   auto: true,
 })
 
-const segmentPreview = ref({
-  loading: false,
-  data: null,
-})
+const segmentPreview = ref({ loading: false, data: null })
 
 const createBlastResource = createResource({
   url: 'marketing_hub.utils.omni_blast.execute_blast',
-  onSuccess(data) {
+  onSuccess() {
     creating.value = false
-    toast({
-      title: 'Success',
-      text: 'Blast created successfully!',
-      icon: 'check',
-      iconClasses: 'text-green-600',
-    })
+    toast({ title: 'Success', text: 'Blast created successfully!', icon: 'check', iconClasses: 'text-green-600' })
     router.push('/marketing/campaigns')
   },
   onError(error) {
     creating.value = false
-    toast({
-      title: 'Error',
-      text: error.message || 'Failed to create blast',
-      icon: 'x',
-      iconClasses: 'text-red-600',
-    })
+    toast({ title: 'Error', text: error.message || 'Failed to create blast', icon: 'x', iconClasses: 'text-red-600' })
   },
 })
 
-// Computed properties
-const campaignOptions = computed(() => {
-  if (!campaignsResource.data) return []
-  return campaignsResource.data.map(c => ({
-    label: c.campaign_name,
-    value: c.name,
-  }))
-})
+const campaignOptions = computed(() =>
+  (campaignsResource.data || []).map(c => ({ label: c.campaign_name, value: c.name }))
+)
 
-const segmentOptions = computed(() => {
-  if (!segmentsResource.data) return []
-  return segmentsResource.data.map(s => ({
-    label: s.segment_name,
-    value: s.name,
-  }))
-})
+const segmentOptions = computed(() =>
+  (segmentsResource.data || []).map(s => ({ label: s.segment_name, value: s.name }))
+)
 
-const templateOptions = computed(() => {
-  if (!templatesResource.data) return []
-  return templatesResource.data.map(t => ({
-    label: t.template_name,
-    value: t.name,
-  }))
-})
+const templateOptions = computed(() =>
+  (templatesResource.data || []).map(t => ({ label: t.template_name, value: t.name }))
+)
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
     case 0:
-      return formData.value.campaign && formData.value.activity_name
+      return formData.value.campaign && formData.value.activity_name && formData.value.segment && formData.value.channels.length > 0
     case 1:
-      return formData.value.channels.length > 0
-    case 2:
-      return formData.value.segment
-    case 3:
       return formData.value.subject && formData.value.message
     default:
       return true
   }
 })
 
-// Methods
-function toggleChannel(channel) {
-  const channelConfig = channels.value.find(c => c.value === channel)
-  if (!channelConfig.enabled) return
+// Auto-load segment preview when segment changes
+watch(() => formData.value.segment, (val) => {
+  if (val) refreshSegmentPreview()
+  else segmentPreview.value.data = null
+})
 
-  const index = formData.value.channels.indexOf(channel)
-  if (index > -1) {
-    formData.value.channels.splice(index, 1)
-  } else {
-    formData.value.channels.push(channel)
-  }
+function toggleChannel(channel) {
+  const config = channels.value.find(c => c.value === channel)
+  if (!config?.enabled) return
+  const idx = formData.value.channels.indexOf(channel)
+  if (idx > -1) formData.value.channels.splice(idx, 1)
+  else formData.value.channels.push(channel)
+}
+
+function goToStep(index) {
+  if (index <= furthestStep.value) currentStep.value = index
 }
 
 function nextStep() {
   if (canProceed.value && currentStep.value < steps.length - 1) {
     currentStep.value++
-    
-    // Load segment preview when entering segment step
-    if (currentStep.value === 2 && formData.value.segment) {
-      refreshSegmentPreview()
-    }
+    if (currentStep.value > furthestStep.value) furthestStep.value = currentStep.value
   }
 }
 
 function previousStep() {
-  if (currentStep.value > 0) {
-    currentStep.value--
-  }
+  if (currentStep.value > 0) currentStep.value--
 }
 
 async function refreshSegmentPreview() {
   if (!formData.value.segment) return
-
   segmentPreview.value.loading = true
   try {
     const result = await call(
@@ -532,8 +427,6 @@ async function refreshSegmentPreview() {
 
 async function createBlast() {
   creating.value = true
-
-  // Create Omni Blast doctype
   try {
     const blastDoc = await call('frappe.client.insert', {
       doc: {
@@ -549,29 +442,16 @@ async function createBlast() {
       },
     })
 
-    // If sending now, execute the blast
     if (!formData.value.scheduled_time) {
-      await createBlastResource.submit({
-        campaign_activity: blastDoc.name,
-      })
+      await createBlastResource.submit({ campaign_activity: blastDoc.name })
     } else {
       creating.value = false
-      toast({
-        title: 'Success',
-        text: 'Blast scheduled successfully!',
-        icon: 'check',
-        iconClasses: 'text-green-600',
-      })
+      toast({ title: 'Success', text: 'Blast scheduled successfully!', icon: 'check', iconClasses: 'text-green-600' })
       router.push('/marketing/campaigns')
     }
   } catch (error) {
     creating.value = false
-    toast({
-      title: 'Error',
-      text: error.message || 'Failed to create blast',
-      icon: 'x',
-      iconClasses: 'text-red-600',
-    })
+    toast({ title: 'Error', text: error.message || 'Failed to create blast', icon: 'x', iconClasses: 'text-red-600' })
   }
 }
 
@@ -579,22 +459,19 @@ function cancel() {
   router.push('/marketing/campaigns')
 }
 
-function getCampaignName(campaignId) {
-  const campaign = campaignsResource.data?.find(c => c.name === campaignId)
-  return campaign?.campaign_name || campaignId
+function getCampaignName(id) {
+  return campaignsResource.data?.find(c => c.name === id)?.campaign_name || id
 }
 
-function getSegmentName(segmentId) {
-  const segment = segmentsResource.data?.find(s => s.name === segmentId)
-  return segment?.segment_name || segmentId
+function getSegmentName(id) {
+  return segmentsResource.data?.find(s => s.name === id)?.segment_name || id
 }
 
-function formatDateTime(dateTime) {
-  if (!dateTime) return ''
-  return new Date(dateTime).toLocaleString()
+function formatDateTime(dt) {
+  return dt ? new Date(dt).toLocaleString() : ''
 }
 
-// Load settings on mount to check enabled channels
+// Check enabled channels from settings
 onMounted(async () => {
   try {
     const data = await call('frappe.client.get_value', {
@@ -604,14 +481,9 @@ onMounted(async () => {
     })
 
     if (data) {
-      channels.value[0].enabled = data.enable_email_blast === 1
-      channels.value[1].enabled = data.enable_sms_blast === 1
-      channels.value[2].enabled = data.enable_whatsapp_blast === 1
-
-      // Update disabled reasons
-      if (!channels.value[0].enabled) channels.value[0].disabledReason = 'Disabled in settings'
-      if (!channels.value[1].enabled) channels.value[1].disabledReason = 'Disabled in settings'
-      if (!channels.value[2].enabled) channels.value[2].disabledReason = 'Disabled in settings'
+      channels.value[0].enabled = Number(data.enable_email_blast) === 1
+      channels.value[1].enabled = Number(data.enable_sms_blast) === 1
+      channels.value[2].enabled = Number(data.enable_whatsapp_blast) === 1
     }
   } catch (error) {
     console.error('Error loading settings:', error)

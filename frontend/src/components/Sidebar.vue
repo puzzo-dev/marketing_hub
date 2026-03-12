@@ -110,7 +110,6 @@ import IconBarChart3 from '~icons/lucide/bar-chart-2'
 import IconSend from '~icons/lucide/send'
 import IconUsers from '~icons/lucide/users'
 import IconFileText from '~icons/lucide/file-text'
-import IconSettings from '~icons/lucide/settings'
 import IconPanelLeftOpen from '~icons/lucide/panel-left-open'
 import IconPanelLeftClose from '~icons/lucide/panel-left-close'
 import IconWallet from '~icons/lucide/wallet'
@@ -158,13 +157,6 @@ const sidebarSections = computed(() => {
       ],
     })
   }
-
-  sections.push({
-    label: 'System',
-    items: [
-      { label: 'Settings', icon: IconSettings, to: '/marketing/settings', isActive: isActiveRoute('/marketing/settings') },
-    ],
-  })
 
   return sections
 })
