@@ -424,7 +424,7 @@ onMounted(async () => {
     })
     if (vals) {
       for (const key of checkFields) {
-        vals[key] = !!vals[key]
+        vals[key] = Number(vals[key]) === 1
       }
       settings.value = { ...settings.value, ...vals }
     }

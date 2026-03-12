@@ -230,7 +230,7 @@ async function loadSettings() {
       doctype: 'Marketing Hub Settings', fieldname: settingsFields,
     })
     if (vals) {
-      for (const key of checkFields) vals[key] = !!vals[key]
+      for (const key of checkFields) vals[key] = Number(vals[key]) === 1
       settings.value = { ...settings.value, ...vals }
     }
   } catch (e) {
