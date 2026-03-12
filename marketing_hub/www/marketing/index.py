@@ -26,6 +26,10 @@ def get_context(context):
     context.sitename = frappe.local.site
     context.user_roles = frappe.get_roles(frappe.session.user)
 
+    # Splash image: use website settings or fall back to Frappe logo
+    context.splash_image = (frappe.db.get_single_value("Website Settings", "splash_image")
+        or "/assets/frappe/images/frappe-framework-logo.png")
+
     return context
 
 

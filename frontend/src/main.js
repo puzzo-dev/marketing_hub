@@ -66,9 +66,9 @@ if (import.meta.env.DEV) {
       window.frappe.boot.user.roles = values.user_roles;
     }
     app.mount("#app");
-    document.getElementById('splash')?.remove();
+    document.querySelector('.splash')?.remove();
   });
 } else {
   app.mount("#app");
-  document.getElementById('splash')?.remove();
+  document.querySelector('.splash')?.remove();
 }
