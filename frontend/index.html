@@ -7,6 +7,20 @@
     <link rel="icon" type="image/svg+xml" href="/assets/marketing_hub/desk/favicon.svg" />
   </head>
   <body>
+    <div id="splash" class="centered splash">
+      <img src="/assets/marketing_hub/frontend/favicon.svg" style="max-width: 100px; max-height: 100px;" />
+    </div>
+    <style>
+      .centered.splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        z-index: 9999;
+      }
+    </style>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

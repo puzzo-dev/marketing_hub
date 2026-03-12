@@ -6,14 +6,12 @@
       <AgentLayout v-if="configStore.isAgencyMode && !userStore.isAdmin" />
       <AdminLayout v-else />
     </div>
-    <div v-else class="flex h-screen items-center justify-center">
-      <LoadingIndicator />
-    </div>
+    <div v-else class="flex h-screen items-center justify-center"></div>
   </FrappeUIProvider>
 </template>
 
 <script setup>
-import { FrappeUIProvider, LoadingIndicator } from "frappe-ui";
+import { FrappeUIProvider } from "frappe-ui";
 import { useUserStore } from "@/stores/user";
 import { useConfigStore } from "@/stores/config";
 import AdminLayout from "@/layouts/AdminLayout.vue";
