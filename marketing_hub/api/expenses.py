@@ -8,6 +8,13 @@ from frappe.utils import today, get_datetime, add_months
 from frappe.utils.data import flt
 
 
+def _get_company(company=None):
+	"""Get the active company - explicit param or user default"""
+	if company:
+		return company
+	return frappe.defaults.get_user_default("Company")
+
+
 @frappe.whitelist()
 def get_expense_list(filters=None, limit=20, offset=0):
 	"""Get marketing expenses list"""
@@ -18,6 +25,9 @@ def get_expense_list(filters=None, limit=20, offset=0):
 
 		filters = filters or {}
 		base_filters = {}
+		company = _get_company(filters.get("company"))
+		if company:
+			base_filters["company"] = company
 		if filters.get("campaign"):
 			base_filters["campaign"] = filters["campaign"]
 		if filters.get("expense_type"):
@@ -52,22 +62,35 @@ def get_expense_list(filters=None, limit=20, offset=0):
 
 
 @frappe.whitelist()
-def get_budget_overview():
+def get_budget_overview(company=None):
 	"""Get budget vs actuals overview"""
 	try:
 		from frappe.utils import get_first_day, get_last_day
 
+		company = _get_company(company)
+		campaign_cond = "AND company = %(company)s" if company else ""
+		expense_cond = "AND company = %(company)s" if company else ""
+		analytics_join = (
+			"JOIN `tabMarketing Campaign` mc ON mc.name = a.campaign AND mc.company = %(company)s"
+			if company else ""
+		)
+		params = {"company": company}
+
 		total_budget = frappe.db.sql("""
-			SELECT SUM(budget) FROM `tabMarketing Campaign` WHERE status != 'Completed'
-		""")[0][0] or 0.0
+			SELECT SUM(budget) FROM `tabMarketing Campaign`
+			WHERE status != 'Completed' {campaign_cond}
+		""".format(campaign_cond=campaign_cond), params)[0][0] or 0.0
 
 		ad_spend = frappe.db.sql("""
-			SELECT SUM(spend) FROM `tabAnalytics Daily Log`
-		""")[0][0] or 0.0
+			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
+			{analytics_join}
+			WHERE 1=1
+		""".format(analytics_join=analytics_join), params)[0][0] or 0.0
 
 		manual_spend = frappe.db.sql("""
-			SELECT SUM(amount) FROM `tabMarketing Expense` WHERE status = 'Approved'
-		""")[0][0] or 0.0
+			SELECT SUM(amount) FROM `tabMarketing Expense`
+			WHERE status = 'Approved' {expense_cond}
+		""".format(expense_cond=expense_cond), params)[0][0] or 0.0
 
 		total_spend = ad_spend + manual_spend
 
@@ -82,16 +105,19 @@ def get_budget_overview():
 			month_end = get_last_day(month_start)
 
 			trend_labels.append(get_datetime(month_start).strftime("%b %Y"))
+			month_params = {"company": company, "month_start": month_start, "month_end": month_end}
 
 			m_ad_spend = frappe.db.sql("""
-				SELECT SUM(spend) FROM `tabAnalytics Daily Log`
-				WHERE log_date BETWEEN %s AND %s
-			""", (month_start, month_end))[0][0] or 0.0
+				SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
+				{analytics_join}
+				WHERE a.log_date BETWEEN %(month_start)s AND %(month_end)s
+			""".format(analytics_join=analytics_join), month_params)[0][0] or 0.0
 
 			m_manual_spend = frappe.db.sql("""
 				SELECT SUM(amount) FROM `tabMarketing Expense`
-				WHERE expense_date BETWEEN %s AND %s AND status = 'Approved'
-			""", (month_start, month_end))[0][0] or 0.0
+				WHERE expense_date BETWEEN %(month_start)s AND %(month_end)s
+				AND status = 'Approved' {expense_cond}
+			""".format(expense_cond=expense_cond), month_params)[0][0] or 0.0
 
 			trend_actual.append(flt(m_ad_spend + m_manual_spend, 2))
 			trend_budget.append(flt(total_budget / 12, 2))
@@ -124,6 +150,7 @@ def create_expense(data):
 			"doctype": "Marketing Expense",
 			"expense_title": data.get("title"),
 			"campaign": data.get("campaign"),
+			"company": data.get("company") or _get_company(),
 			"amount": data.get("amount"),
 			"expense_date": data.get("date") or today(),
 			"expense_type": data.get("type"),

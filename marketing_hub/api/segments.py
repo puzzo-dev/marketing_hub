@@ -6,6 +6,13 @@ import frappe
 from frappe import _
 
 
+def _get_company(company=None):
+	"""Get the active company - explicit param or user default"""
+	if company:
+		return company
+	return frappe.defaults.get_user_default("Company")
+
+
 @frappe.whitelist()
 def get_segment_list(filters=None, limit=20, offset=0):
 	"""Get marketing segments list"""
@@ -16,6 +23,9 @@ def get_segment_list(filters=None, limit=20, offset=0):
 
 		filters = filters or {}
 		base_filters = {}
+		company = _get_company(filters.get("company"))
+		if company:
+			base_filters["company"] = company
 		if filters.get("search"):
 			base_filters["segment_name"] = ["like", f"%{filters['search']}%"]
 
@@ -62,6 +72,7 @@ def create_segment(data):
 		doc = frappe.get_doc({
 			"doctype": "Marketing Segment",
 			"segment_name": data.get("segment_name"),
+			"company": data.get("company") or _get_company(),
 			"base_doctype": data.get("base_doctype", "Lead"),
 			"description": data.get("description"),
 		})

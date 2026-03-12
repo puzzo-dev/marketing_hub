@@ -124,12 +124,13 @@ def get_default_cost_center(company):
 
 def get_default_payable_account(company):
 	"""Get default payable account for marketing expenses"""
-	
-	# Try Marketing Hub Settings first
+
+	# Try Marketing Hub Settings company-specific defaults first
 	settings = frappe.get_single("Marketing Hub Settings")
-	if hasattr(settings, "default_payable_account") and settings.default_payable_account:
-		return settings.default_payable_account
-	
+	row = settings.get_company_settings(company)
+	if row and row.default_payable_account:
+		return row.default_payable_account
+
 	# Try company default
 	payable_account = frappe.get_cached_value("Company", company, "default_payable_account")
 	
@@ -347,15 +348,15 @@ def make_marketing_gl_entry(
 
 	settings = get_marketing_hub_settings(company)
 	if not settings:
-		frappe.throw(_("Marketing Hub Settings not found for company {0}").format(company))
+		frappe.throw(_("Marketing Hub Settings not found"))
 
-	if not settings.enable_gl_entry:
+	if not settings.get("enable_gl_entry"):
 		return []
 
 	if not expense_account:
-		expense_account = settings.default_expense_account
+		expense_account = settings.get("default_expense_account")
 	if not cost_center:
-		cost_center = settings.default_cost_center
+		cost_center = settings.get("default_cost_center")
 	if not expense_account:
 		frappe.throw(_("Marketing Expense Account not set in Marketing Hub Settings"))
 
@@ -395,7 +396,7 @@ def make_marketing_gl_entry(
 			"remarks": remarks or f"Payment for marketing expense from {voucher_type}",
 		})
 
-	if settings.validate_budget and not cancel:
+	if settings.get("validate_budget") and not cancel:
 		validate_expense_against_budget(
 			{"account": expense_account, "cost_center": cost_center, "company": company},
 			{"posting_date": getdate(posting_date), "doctype": voucher_type},
@@ -408,9 +409,22 @@ def make_marketing_gl_entry(
 
 
 def get_marketing_hub_settings(company=None):
-	"""Get Marketing Hub Settings singleton"""
+	"""Get Marketing Hub Settings with per-company defaults merged in"""
 	try:
-		return frappe.get_single("Marketing Hub Settings")
+		settings = frappe.get_single("Marketing Hub Settings")
+		result = {
+			"enable_gl_entry": settings.enable_gl_entry,
+			"validate_budget": settings.validate_budget,
+			"enable_budget_alerts": getattr(settings, "enable_budget_alerts", 0),
+		}
+		if company:
+			row = settings.get_company_settings(company)
+			if row:
+				result["default_expense_account"] = row.default_expense_account
+				result["default_cost_center"] = row.default_cost_center
+				result["default_payable_account"] = row.default_payable_account
+				result["default_email_sender"] = row.default_email_sender
+		return result
 	except frappe.DoesNotExistError:
 		return None
 
@@ -419,13 +433,13 @@ def get_marketing_hub_settings(company=None):
 def get_marketing_expense_account(company):
 	"""Get default marketing expense account from settings"""
 	settings = get_marketing_hub_settings(company)
-	return settings.default_expense_account if settings else None
+	return settings.get("default_expense_account") if settings else None
 
 
 def get_marketing_cost_center(company):
 	"""Get default marketing cost center from settings"""
 	settings = get_marketing_hub_settings(company)
-	return settings.default_cost_center if settings else None
+	return settings.get("default_cost_center") if settings else None
 
 
 @frappe.whitelist()

@@ -36,15 +36,38 @@
           <!-- General Tab -->
           <template v-if="activeTab === 'general'">
             <div class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
-              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Company & Defaults</h2>
+              <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-ink-gray-9">Company Defaults</h2>
+                <Button variant="subtle" label="Configure in Desk" @click="openCompanySettings">
+                  <template #prefix>
+                    <IconExternalLink class="h-3.5 w-3.5" />
+                  </template>
+                </Button>
+              </div>
+              <div v-if="companySettings.length" class="space-y-3">
+                <div
+                  v-for="row in companySettings" :key="row.company"
+                  class="flex items-center justify-between rounded-md border border-outline-gray-2 px-4 py-3"
+                >
+                  <div>
+                    <div class="font-medium text-ink-gray-9">{{ row.company }}</div>
+                    <div class="mt-0.5 text-sm text-ink-gray-5">
+                      <span v-if="row.default_expense_account">Expense: {{ row.default_expense_account }}</span>
+                      <span v-if="row.default_cost_center" class="ml-3">Cost Center: {{ row.default_cost_center }}</span>
+                      <span v-if="!row.default_expense_account && !row.default_cost_center">No accounts configured</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="rounded-md bg-surface-gray-2 p-4 text-sm text-ink-gray-5">
+                No company defaults configured. Add company-specific accounting defaults in
+                <a href="/app/marketing-hub-settings" class="text-ink-blue-3 hover:underline">Marketing Hub Settings</a>.
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
+              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Lead Defaults</h2>
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormControl
-                  v-model="settings.company"
-                  label="Default Company"
-                  type="autocomplete"
-                  :options="companyOptions"
-                  placeholder="Select company"
-                />
                 <FormControl
                   v-model="settings.default_lead_source"
                   label="Default Lead Source"
@@ -266,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Breadcrumbs, Button, FormControl, Switch, toast } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
@@ -274,7 +297,7 @@ import IconExternalLink from '~icons/lucide/external-link'
 
 const saving = ref(false)
 const activeTab = ref('general')
-const companies = ref([])
+const companySettings = ref([])
 
 const tabs = [
   { key: 'general', label: 'General' },
@@ -284,13 +307,9 @@ const tabs = [
   { key: 'notifications', label: 'Notifications' },
 ]
 
-const companyOptions = computed(() =>
-  companies.value.map(c => ({ label: c.name, value: c.name }))
-)
-
 // All settings fields exposed in portal
 const settingsFields = [
-  'company', 'default_lead_source', 'enable_auto_attribution', 'enable_utm_tracking',
+  'default_lead_source', 'enable_auto_attribution', 'enable_utm_tracking',
   'session_timeout_days', 'attribution_window',
   'enable_email_blast', 'enable_sms_blast', 'enable_whatsapp_blast',
   'enable_auto_post', 'auto_post_interval_minutes', 'require_post_approval',
@@ -309,7 +328,6 @@ const checkFields = [
 ]
 
 const settings = ref({
-  company: '',
   default_lead_source: '',
   enable_auto_attribution: true,
   enable_utm_tracking: true,
@@ -355,13 +373,18 @@ onMounted(async () => {
     console.error("Error loading settings:", error)
   }
 
-  // Load companies
+  // Load company defaults (child table)
   try {
     const res = await window.frappe.call({
       method: 'frappe.client.get_list',
-      args: { doctype: 'Company', fields: ['name'], limit_page_length: 50 }
+      args: {
+        doctype: 'Marketing Hub Company Settings',
+        fields: ['company', 'default_expense_account', 'default_cost_center', 'default_payable_account'],
+        parent: 'Marketing Hub Settings',
+        limit_page_length: 50
+      }
     })
-    companies.value = res.message || []
+    companySettings.value = res.message || []
   } catch (e) { /* ignore */ }
 })
 
@@ -394,5 +417,9 @@ async function saveSettings() {
 
 function openFullSettings() {
   window.location.href = '/app/marketing-hub-settings'
+}
+
+function openCompanySettings() {
+  window.location.href = '/app/marketing-hub-settings#company-defaults'
 }
 </script>
