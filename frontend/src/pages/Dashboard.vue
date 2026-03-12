@@ -20,6 +20,92 @@
     <Onboarding :mode="userRole" />
 
     <div class="flex-1 p-5">
+      <!-- Agency Mode Overview -->
+      <template v-if="configStore.isAgencyMode">
+        <!-- Agency Stats Grid -->
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Active Clients" :value="agencyStats.active_clients" />
+          <StatCard label="Active Campaigns" :value="agencyStats.active_campaigns" />
+          <StatCard label="Open Projects" :value="agencyStats.open_projects" />
+          <StatCard label="Subscriptions" :value="agencyStats.active_subscriptions" />
+        </div>
+
+        <!-- Expiring Subscriptions Warning -->
+        <div v-if="agencyStats.expiring_soon?.length" class="mb-6 rounded-lg border border-outline-orange-1 bg-surface-orange-1 p-4">
+          <div class="mb-2 flex items-center gap-2">
+            <IconAlertTriangle class="h-4 w-4 text-ink-orange-3" />
+            <span class="text-sm font-semibold text-ink-orange-3">Expiring Subscriptions</span>
+          </div>
+          <div class="space-y-1">
+            <div v-for="sub in agencyStats.expiring_soon" :key="sub.name"
+              class="flex items-center justify-between text-sm"
+            >
+              <span class="text-ink-gray-9">{{ sub.client_name || sub.client }}</span>
+              <span class="text-ink-gray-5">{{ sub.package }} · Exp: {{ formatShortDate(sub.end_date) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Clients + Quick Actions -->
+        <div class="mb-6 grid gap-6 lg:grid-cols-3">
+          <div class="lg:col-span-2">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-base font-medium text-ink-gray-9">Top Clients</h3>
+              <Button @click="$router.push('/marketing/clients')" variant="subtle" label="View All" />
+            </div>
+            <div v-if="agencyStats.top_clients?.length" class="grid gap-4 sm:grid-cols-2">
+              <div v-for="client in agencyStats.top_clients" :key="client.client"
+                class="cursor-pointer rounded-lg border border-outline-gray-1 bg-surface-white p-4 shadow-sm transition-shadow hover:shadow"
+                @click="$router.push('/marketing/clients/' + encodeURIComponent(client.client))"
+              >
+                <h4 class="text-base font-medium text-ink-gray-9 line-clamp-1">{{ client.client_name }}</h4>
+                <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <div class="text-xs text-ink-gray-5">Campaigns</div>
+                    <div class="font-medium text-ink-gray-9">{{ client.campaigns || 0 }}</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-5">Spend</div>
+                    <div class="font-medium text-ink-gray-9">{{ formatCurrency(client.total_spend || 0) }}</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-5">Revenue</div>
+                    <div class="font-medium text-ink-gray-9">{{ formatCurrency(client.total_revenue || 0) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="relative flex h-40 w-full items-center justify-center">
+              <div class="flex flex-col items-center gap-3">
+                <IconBuilding class="h-7 w-7 text-ink-gray-5" />
+                <span class="text-base font-medium text-ink-gray-8">No clients with campaigns</span>
+                <Button @click="$router.push('/marketing/clients')" variant="solid" label="Manage Clients" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Agency Quick Actions -->
+          <div>
+            <h3 class="mb-3 text-base font-medium text-ink-gray-9">Quick Actions</h3>
+            <div class="space-y-2">
+              <router-link v-for="action in agencyQuickActions" :key="action.route" :to="action.route"
+                class="group flex items-center gap-3 rounded-lg border border-outline-gray-1 bg-surface-white px-4 py-3 transition-shadow hover:shadow"
+              >
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors" :class="action.bgClass">
+                  <component :is="action.icon" class="h-4.5 w-4.5" :class="action.iconClass" />
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-ink-gray-9">{{ action.label }}</h4>
+                  <p class="text-xs text-ink-gray-6">{{ action.description }}</p>
+                </div>
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Standard Mode (Operations) -->
+      <template v-else>
       <!-- Stats Grid -->
       <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -176,6 +262,7 @@
           </router-link>
         </div>
       </div>
+      </template>
     </div>
   </div>
 </template>
@@ -187,6 +274,7 @@ import LayoutHeader from "@/components/LayoutHeader.vue";
 import Onboarding from "@/components/Onboarding.vue";
 import StatCard from "@/components/StatCard.vue";
 import { useUserStore } from "@/stores/user";
+import { useConfigStore } from "@/stores/config";
 
 import IconRefreshCw from '~icons/lucide/refresh-cw'
 import IconTrendingUp from '~icons/lucide/trending-up'
@@ -204,8 +292,12 @@ import IconFileText from '~icons/lucide/file-text'
 import IconUsers from '~icons/lucide/users'
 import IconWallet from '~icons/lucide/wallet'
 import IconSettings from '~icons/lucide/settings'
+import IconBuilding from '~icons/lucide/building'
+import IconAlertTriangle from '~icons/lucide/alert-triangle'
+import IconFolderOpen from '~icons/lucide/folder-open'
 
 const userStore = useUserStore();
+const configStore = useConfigStore();
 const userRole = computed(() => userStore.role === 'Admin' ? 'admin' : 'agent');
 
 const lastUpdated = ref(null);
@@ -244,6 +336,33 @@ const stats = computed(() => {
 const campaigns = computed(() => dashboard.data?.top_campaigns || []);
 const activities = computed(() => dashboard.data?.recent_activities || []);
 
+// Agency mode data
+const agencyDashboard = createResource({
+  url: "marketing_hub.api.agency.get_agency_overview",
+  auto: true,
+});
+
+const agencyStats = computed(() => {
+  if (!agencyDashboard.data || agencyDashboard.data.mode === 'internal') return {
+    active_clients: 0, active_subscriptions: 0, active_campaigns: 0,
+    open_projects: 0, expiring_soon: [], top_clients: [],
+  };
+  return agencyDashboard.data;
+});
+
+const agencyQuickActions = [
+  { route: '/marketing/clients', label: 'Clients', description: 'Manage clients', icon: IconBuilding, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
+  { route: '/marketing/campaigns/new', label: 'New Campaign', description: 'Create for a client', icon: IconMegaphone, bgClass: 'bg-surface-blue-1 group-hover:bg-surface-blue-2', iconClass: 'text-ink-blue-3' },
+  { route: '/marketing/campaigns', label: 'All Campaigns', description: 'View all campaigns', icon: IconTarget, bgClass: 'bg-surface-green-1 group-hover:bg-surface-green-2', iconClass: 'text-ink-green-3' },
+  { route: '/marketing/expenses', label: 'Expenses', description: 'Track client spending', icon: IconWallet, bgClass: 'bg-surface-red-1 group-hover:bg-surface-red-2', iconClass: 'text-ink-red-3' },
+  { route: '/marketing/settings', label: 'Settings', description: 'Agency settings', icon: IconSettings, bgClass: 'bg-surface-gray-2 group-hover:bg-surface-gray-3', iconClass: 'text-ink-gray-5' },
+];
+
+function formatShortDate(date) {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 const quickActions = [
   { route: '/marketing/campaigns', label: 'Campaigns', description: 'Manage campaigns', icon: IconMegaphone, bgClass: 'bg-surface-blue-1 group-hover:bg-surface-blue-2', iconClass: 'text-ink-blue-3' },
   { route: '/marketing/blast/new', label: 'Omni Blast', description: 'Multi-channel blast', icon: IconSend, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
@@ -276,6 +395,7 @@ function openActivity(name) {
 
 function refreshDashboard() {
   dashboard.reload();
+  if (configStore.isAgencyMode) agencyDashboard.reload();
 }
 
 // Auto-refresh every 30 seconds

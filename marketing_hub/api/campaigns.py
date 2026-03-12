@@ -28,6 +28,8 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			base_filters["status"] = filters["status"]
 		if filters.get("campaign_name"):
 			base_filters["campaign_name"] = ["like", f"%{filters['campaign_name']}%"]
+		if filters.get("customer"):
+			base_filters["customer"] = filters["customer"]
 
 		company = _get_company(filters.get("company"))
 		if company:
@@ -37,7 +39,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			"Marketing Campaign",
 			fields=[
 				"name", "campaign_name", "description", "status",
-				"budget", "creation", "modified"
+				"budget", "creation", "modified", "customer", "project"
 			],
 			filters=base_filters,
 			order_by="modified desc",

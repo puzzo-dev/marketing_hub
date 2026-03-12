@@ -7,8 +7,8 @@ app_license = "mit"
 
 # Apps
 # ------------------
-
-required_apps = ["frappe_whatsapp"]
+# frappe_whatsapp is optional — checked at runtime in omni_blast.py
+required_apps = []
 
 add_to_apps_screen = [
     {

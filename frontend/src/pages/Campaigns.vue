@@ -55,6 +55,16 @@
 
           <p v-if="campaign.description" class="mb-3 text-sm text-ink-gray-6 line-clamp-2">{{ campaign.description }}</p>
 
+          <!-- Client tag (agency mode) -->
+          <div v-if="configStore.isAgencyMode && campaign.customer" class="mb-3 flex items-center gap-1.5">
+            <span class="inline-flex items-center rounded bg-surface-purple-1 px-2 py-0.5 text-xs font-medium text-ink-purple-3">
+              {{ campaign.customer }}
+            </span>
+            <span v-if="campaign.project" class="inline-flex items-center rounded bg-surface-gray-2 px-2 py-0.5 text-xs text-ink-gray-6">
+              {{ campaign.project }}
+            </span>
+          </div>
+
           <!-- Budget Bar -->
           <div v-if="campaign.budget" class="mb-3">
             <div class="mb-1 flex items-center justify-between text-xs text-ink-gray-5">
@@ -125,10 +135,13 @@
 import { Breadcrumbs, FormControl, LoadingIndicator, createResource } from "frappe-ui";
 import { computed, ref, watch } from "vue";
 import LayoutHeader from "@/components/LayoutHeader.vue";
+import { useConfigStore } from "@/stores/config";
 
 import IconPlus from '~icons/lucide/plus'
 import IconSearch from '~icons/lucide/search'
 import IconTarget from '~icons/lucide/target'
+
+const configStore = useConfigStore()
 
 const searchQuery = ref("");
 const selectedStatus = ref("");

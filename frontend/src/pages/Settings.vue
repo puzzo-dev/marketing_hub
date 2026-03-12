@@ -246,6 +246,57 @@
             </div>
           </template>
 
+          <!-- Agency Tab -->
+          <template v-if="activeTab === 'agency'">
+            <div class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
+              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Agency Mode</h2>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium text-ink-gray-9">Enable Agency Mode</div>
+                    <div class="text-sm text-ink-gray-6">Manage multiple clients with subscriptions and limits</div>
+                  </div>
+                  <Switch v-model="settings.agency_mode" />
+                </div>
+              </div>
+            </div>
+
+            <div v-if="settings.agency_mode" class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
+              <h2 class="mb-4 text-lg font-semibold text-ink-gray-9">Agency Settings</h2>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormControl
+                  v-model="settings.max_campaigns_per_client"
+                  label="Max Campaigns per Client"
+                  type="number"
+                  placeholder="10"
+                />
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="font-medium text-ink-gray-9">Client Portal</div>
+                      <div class="text-sm text-ink-gray-6">Enable client portal access</div>
+                    </div>
+                    <Switch v-model="settings.enable_client_portal" />
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="font-medium text-ink-gray-9">White Label</div>
+                      <div class="text-sm text-ink-gray-6">Enable white labeling for clients</div>
+                    </div>
+                    <Switch v-model="settings.enable_white_label" />
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="font-medium text-ink-gray-9">Client Approval Required</div>
+                      <div class="text-sm text-ink-gray-6">Require client approval before campaign execution</div>
+                    </div>
+                    <Switch v-model="settings.client_approval_required" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
           <!-- Notifications Tab -->
           <template v-if="activeTab === 'notifications'">
             <div class="rounded-lg border border-outline-gray-2 bg-surface-cards p-6">
@@ -292,8 +343,11 @@
 import { ref, onMounted } from 'vue'
 import { Breadcrumbs, Button, FormControl, Switch, toast } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { useConfigStore } from '@/stores/config'
 
 import IconExternalLink from '~icons/lucide/external-link'
+
+const configStore = useConfigStore()
 
 const saving = ref(false)
 const activeTab = ref('general')
@@ -305,6 +359,7 @@ const tabs = [
   { key: 'analytics', label: 'Analytics' },
   { key: 'content', label: 'Content' },
   { key: 'notifications', label: 'Notifications' },
+  { key: 'agency', label: 'Agency' },
 ]
 
 // All settings fields exposed in portal
@@ -316,6 +371,7 @@ const settingsFields = [
   'enable_analytics_sync', 'sync_frequency', 'track_conversions', 'google_ads_developer_token',
   'enable_content_library', 'enable_version_control', 'enable_brand_guidelines',
   'notify_campaign_completion', 'notify_blast_execution', 'notify_analytics_sync', 'notification_recipients',
+  'agency_mode', 'max_campaigns_per_client', 'enable_client_portal', 'enable_white_label', 'client_approval_required',
 ]
 
 const checkFields = [
@@ -325,6 +381,7 @@ const checkFields = [
   'enable_analytics_sync', 'track_conversions',
   'enable_content_library', 'enable_version_control', 'enable_brand_guidelines',
   'notify_campaign_completion', 'notify_blast_execution', 'notify_analytics_sync',
+  'agency_mode', 'enable_client_portal', 'enable_white_label', 'client_approval_required',
 ]
 
 const settings = ref({
@@ -350,6 +407,11 @@ const settings = ref({
   notify_blast_execution: true,
   notify_analytics_sync: false,
   notification_recipients: '',
+  agency_mode: false,
+  max_campaigns_per_client: 10,
+  enable_client_portal: false,
+  enable_white_label: false,
+  client_approval_required: true,
 })
 
 onMounted(async () => {
@@ -408,6 +470,8 @@ async function saveSettings() {
       }
     })
     toast({ title: "Success", text: "Settings saved successfully", icon: "check", iconClasses: "text-green-600" })
+    // Refresh config store so layout reacts to agency_mode changes
+    configStore.fetch()
   } catch (error) {
     toast({ title: "Error", text: "Failed to save settings", icon: "x", iconClasses: "text-red-600" })
   } finally {

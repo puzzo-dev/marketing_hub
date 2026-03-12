@@ -13,6 +13,8 @@
         "column_break_1",
         "email_campaign",
         "company",
+        "customer",
+        "project",
         "section_break_2",
         "start_date",
         "end_date",
@@ -69,6 +71,22 @@
             "label": "Company",
             "options": "Company",
             "reqd": 1
+        },
+        {
+            "fieldname": "customer",
+            "fieldtype": "Link",
+            "label": "Client",
+            "options": "Customer",
+            "description": "Agency mode: the client this campaign belongs to",
+            "depends_on": "eval:frappe.db.get_single_value('Marketing Hub Settings', 'agency_mode')"
+        },
+        {
+            "fieldname": "project",
+            "fieldtype": "Link",
+            "label": "Project",
+            "options": "Project",
+            "description": "Link to ERPNext Project for tracking",
+            "depends_on": "eval:frappe.db.get_single_value('Marketing Hub Settings', 'agency_mode')"
         },
         {
             "fieldname": "section_break_2",

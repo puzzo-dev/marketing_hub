@@ -124,6 +124,30 @@
               placeholder="Link to ERPNext CRM Campaign for email blasts"
             />
           </div>
+
+          <!-- Agency: Client & Project (only in agency mode) -->
+          <div v-if="configStore.isAgencyMode" class="rounded-lg border border-outline-purple-1 bg-surface-cards p-6">
+            <div class="mb-4 flex items-center gap-2">
+              <IconBuilding class="h-4 w-4 text-ink-purple-3" />
+              <h2 class="text-base font-medium text-ink-gray-9">Client & Project</h2>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormControl
+                v-model="form.customer"
+                label="Client"
+                type="autocomplete"
+                :options="customerOptions"
+                placeholder="Select client"
+              />
+              <FormControl
+                v-model="form.project"
+                label="Project"
+                type="autocomplete"
+                :options="projectOptions"
+                placeholder="Link to ERPNext Project"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -131,12 +155,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { Breadcrumbs, Button, FormControl, Switch, createResource, toast } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { useConfigStore } from '@/stores/config'
+
+import IconBuilding from '~icons/lucide/building'
 
 const router = useRouter()
+const route = useRoute()
+const configStore = useConfigStore()
 const saving = ref(false)
 
 const form = ref({
@@ -149,12 +178,16 @@ const form = ref({
   budget: 0,
   is_omni_campaign: true,
   email_campaign: '',
+  customer: '',
+  project: '',
 })
 
 const selectedChannels = ref([])
 const networks = ref([])
 const companies = ref([])
 const crmCampaigns = ref([])
+const customers = ref([])
+const projects = ref([])
 
 const companyOptions = computed(() =>
   companies.value.map(c => ({ label: c.name, value: c.name }))
@@ -162,6 +195,17 @@ const companyOptions = computed(() =>
 const crmCampaignOptions = computed(() =>
   crmCampaigns.value.map(c => ({ label: c.name, value: c.name }))
 )
+const customerOptions = computed(() =>
+  customers.value.map(c => ({ label: c.customer_name, value: c.name }))
+)
+const projectOptions = computed(() =>
+  projects.value.map(p => ({ label: p.project_name, value: p.name }))
+)
+
+// When customer changes, reload project options filtered by that customer
+watch(() => form.value.customer, (newVal) => {
+  if (configStore.isAgencyMode) loadProjects(newVal)
+})
 
 onMounted(async () => {
   // Load networks
@@ -193,7 +237,35 @@ onMounted(async () => {
     })
     crmCampaigns.value = res.message || []
   } catch (e) { /* ignore */ }
+
+  // Load customers (agency mode)
+  if (configStore.isAgencyMode) {
+    try {
+      const res = await window.frappe.call({
+        method: 'marketing_hub.api.agency.get_customer_options',
+        args: {}
+      })
+      customers.value = res.message || []
+    } catch (e) { /* ignore */ }
+
+    // Pre-fill customer from query param (e.g. from ClientDetail page)
+    if (route.query.customer) {
+      form.value.customer = route.query.customer
+    }
+
+    loadProjects(form.value.customer)
+  }
 })
+
+async function loadProjects(customer) {
+  try {
+    const res = await window.frappe.call({
+      method: 'marketing_hub.api.agency.get_project_options',
+      args: { customer: customer || undefined }
+    })
+    projects.value = res.message || []
+  } catch (e) { /* ignore */ }
+}
 
 async function createCampaign() {
   if (!form.value.campaign_name) {
@@ -218,6 +290,8 @@ async function createCampaign() {
       budget: form.value.budget || 0,
       is_omni_campaign: form.value.is_omni_campaign ? 1 : 0,
       email_campaign: form.value.email_campaign || undefined,
+      customer: form.value.customer || undefined,
+      project: form.value.project || undefined,
     }
 
     // Add channels as child table rows

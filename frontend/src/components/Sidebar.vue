@@ -8,6 +8,20 @@
       <UserMenu :isCollapsed="isCollapsed" @open-settings="showSettings = true" />
     </div>
 
+    <!-- Agency Mode Indicator -->
+    <div
+      v-if="configStore.isAgencyMode"
+      class="mx-2 mb-1 flex items-center gap-1.5 rounded-md px-2 py-1.5 transition-all duration-300 ease-in-out"
+      :class="isCollapsed ? 'justify-center bg-surface-orange-2' : 'bg-surface-orange-2'"
+      :title="isCollapsed ? 'Agency Mode' : undefined"
+    >
+      <IconBuilding class="size-3.5 flex-shrink-0 text-ink-orange-3" />
+      <span
+        v-if="!isCollapsed"
+        class="text-xs font-medium text-ink-orange-3"
+      >Agency Mode</span>
+    </div>
+
     <!-- Navigation -->
     <div class="flex-1 overflow-y-auto">
       <div class="flex flex-col">
@@ -85,6 +99,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useConfigStore } from '@/stores/config'
 import UserMenu from './UserMenu.vue'
 import SettingsDialog from './SettingsDialog.vue'
 
@@ -99,8 +114,10 @@ import IconSettings from '~icons/lucide/settings'
 import IconPanelLeftOpen from '~icons/lucide/panel-left-open'
 import IconPanelLeftClose from '~icons/lucide/panel-left-close'
 import IconWallet from '~icons/lucide/wallet'
+import IconBuilding from '~icons/lucide/building'
 
 const route = useRoute()
+const configStore = useConfigStore()
 
 const isCollapsed = ref(false)
 const showSettings = ref(false)
@@ -131,6 +148,16 @@ const sidebarSections = computed(() => {
       ],
     },
   ]
+
+  // Agency mode: add Clients section
+  if (configStore.isAgencyMode) {
+    sections.splice(1, 0, {
+      label: 'Agency',
+      items: [
+        { label: 'Clients', icon: IconBuilding, to: '/marketing/clients', isActive: isActiveRoute('/marketing/clients') },
+      ],
+    })
+  }
 
   sections.push({
     label: 'System',
