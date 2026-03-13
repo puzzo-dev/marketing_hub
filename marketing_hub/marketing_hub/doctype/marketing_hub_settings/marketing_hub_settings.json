@@ -8,6 +8,9 @@
         "general_settings_section",
         "agency_mode",
         "column_break_2",
+        "branding_section",
+        "brand_name",
+        "brand_logo",
         "section_break_4",
         "default_campaign_naming_series",
         "default_lead_source",
@@ -454,6 +457,23 @@
             "fieldname": "notification_recipients",
             "fieldtype": "Small Text",
             "label": "Notification Recipients"
+        },
+        {
+            "fieldname": "branding_section",
+            "fieldtype": "Section Break",
+            "label": "Branding"
+        },
+        {
+            "fieldname": "brand_name",
+            "fieldtype": "Data",
+            "label": "Brand Name",
+            "description": "Custom name shown in the portal sidebar"
+        },
+        {
+            "fieldname": "brand_logo",
+            "fieldtype": "Attach Image",
+            "label": "Brand Logo",
+            "description": "Custom logo for the portal sidebar. Leave empty to use default."
         }
     ],
     "index_web_pages_for_search": 1,
@@ -463,7 +483,6 @@
     "modified_by": "Administrator",
     "module": "Marketing Hub",
     "name": "Marketing Hub Settings",
-
     "owner": "Administrator",
     "permissions": [
         {

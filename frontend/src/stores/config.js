@@ -12,6 +12,8 @@ export const useConfigStore = defineStore('config', () => {
     const settings = ref({
         company: '',
         default_lead_source: '',
+        brand_name: '',
+        brand_logo: '',
         enable_auto_attribution: false,
         enable_utm_tracking: false,
         enable_email_blast: true,
@@ -29,7 +31,7 @@ export const useConfigStore = defineStore('config', () => {
     })
 
     const settingsFields = [
-        'company', 'default_lead_source',
+        'company', 'default_lead_source', 'brand_name', 'brand_logo',
         'enable_auto_attribution', 'enable_utm_tracking',
         'enable_email_blast', 'enable_sms_blast', 'enable_whatsapp_blast',
         'enable_auto_post', 'require_post_approval',
@@ -51,6 +53,8 @@ export const useConfigStore = defineStore('config', () => {
                     ...settings.value,
                     company: data.company || '',
                     default_lead_source: data.default_lead_source || '',
+                    brand_name: data.brand_name || '',
+                    brand_logo: data.brand_logo || '',
                     enable_auto_attribution: toBool(data.enable_auto_attribution),
                     enable_utm_tracking: toBool(data.enable_utm_tracking),
                     enable_email_blast: toBool(data.enable_email_blast),

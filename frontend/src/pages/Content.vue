@@ -115,7 +115,7 @@
             <div class="text-sm font-medium text-ink-gray-9">Statistics</div>
             <div class="text-xs text-ink-gray-6">
               <div>Total: {{ stats.total_assets }}</div>
-              <div v-if="stats.total_size">Size: {{ formatSize(stats.total_size) }}</div>
+              <div v-if="stats.total_size">Size: {{ formatFileSize(stats.total_size) }}</div>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@
                   <span v-if="asset.channel">{{ asset.channel }}</span>
                 </div>
                 <div class="mt-2 text-xs text-ink-gray-5">
-                  <div v-if="asset.file_size">{{ asset.file_size }}</div>
+                  <div v-if="asset.file_size">{{ formatFileSize(asset.file_size) }}</div>
                   <div>{{ formatDate(asset.modified) }}</div>
                 </div>
               </div>
@@ -246,7 +246,7 @@
                   <Badge :label="asset.status" :variant="getStatusVariant(asset.status)" />
                   <span v-if="asset.asset_type">{{ asset.asset_type }}</span>
                   <span v-if="asset.channel">{{ asset.channel }}</span>
-                  <span v-if="asset.file_size">{{ asset.file_size }}</span>
+                  <span v-if="asset.file_size">{{ formatFileSize(asset.file_size) }}</span>
                 </div>
               </div>
               <div class="text-sm text-ink-gray-5">
@@ -795,11 +795,6 @@ function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B'
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-}
-
-function formatSize(size) {
-  if (size < 1024) return size.toFixed(1) + ' KB'
-  return (size / 1024).toFixed(1) + ' MB'
 }
 
 // Watch tab changes

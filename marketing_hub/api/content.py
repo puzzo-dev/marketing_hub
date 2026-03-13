@@ -190,8 +190,19 @@ def delete_template(name):
 
 @frappe.whitelist()
 def upload_file(file, asset_name=None, asset_type=None, channel=None):
-	"""Handle file upload and create asset"""
+	"""Handle file upload and create a Content Asset linked to the Frappe File."""
+	from marketing_hub.marketing_hub.doctype.content_asset.content_asset import ContentAsset
+
+	# Ensure the Marketing Hub folder tree exists
+	ContentAsset.ensure_folder()
+
 	file_doc = frappe.get_doc("File", {"file_url": file})
+
+	# Move file into the Marketing Hub folder if not already there
+	target_folder = "Home/Marketing Hub"
+	if file_doc.folder != target_folder:
+		file_doc.folder = target_folder
+		file_doc.save(ignore_permissions=True)
 
 	asset = frappe.get_doc({
 		"doctype": "Content Asset",
@@ -199,8 +210,8 @@ def upload_file(file, asset_name=None, asset_type=None, channel=None):
 		"asset_type": asset_type or "Image",
 		"channel": channel,
 		"file_attachment": file,
-		"file_size": file_doc.file_size,
-		"status": "Draft"
+		"file_size": file_doc.file_size or 0,
+		"status": "Draft",
 	})
 
 	if file_doc.is_image():
@@ -265,7 +276,7 @@ def get_asset_stats():
 			GROUP BY status
 		""", as_dict=True),
 		"total_size": frappe.db.sql("""
-			SELECT SUM(CAST(REPLACE(REPLACE(file_size, 'KB', ''), 'MB', '') AS DECIMAL(10,2))) as total
+			SELECT COALESCE(SUM(file_size), 0) as total
 			FROM `tabContent Asset`
 			WHERE file_size IS NOT NULL
 		""")[0][0] or 0

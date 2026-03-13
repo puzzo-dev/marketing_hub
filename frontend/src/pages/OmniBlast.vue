@@ -288,30 +288,6 @@ const channels = ref([
   { value: 'Push Notification', label: 'Push', icon: markRaw(IconBell), enabled: false },
 ])
 
-// Fetch available networks from Social Media Network DocType
-const networksResource = createListResource({
-  doctype: 'Social Media Network',
-  fields: ['name', 'network_name', 'network_type', 'is_active'],
-  pageLength: 50,
-  auto: true,
-  onSuccess(data) {
-    if (data && data.length) {
-      const iconMap = {
-        Email: markRaw(IconMail),
-        SMS: markRaw(IconMessageSquare),
-        WhatsApp: markRaw(IconSmartphone),
-      }
-      channels.value = data.map(n => ({
-        value: n.network_name || n.name,
-        label: n.network_name || n.name,
-        icon: iconMap[n.network_name] || markRaw(IconBell),
-        enabled: Number(n.is_active) === 1,
-        disabledReason: Number(n.is_active) !== 1 ? 'Disabled in settings' : '',
-      }))
-    }
-  },
-})
-
 const campaignsResource = createResource({
   url: 'frappe.client.get_list',
   params: {

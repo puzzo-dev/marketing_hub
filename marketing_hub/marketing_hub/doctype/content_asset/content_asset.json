@@ -92,8 +92,9 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "File size in bytes, populated from Frappe File doctype",
    "fieldname": "file_size",
-   "fieldtype": "Data",
+   "fieldtype": "Int",
    "label": "File Size",
    "read_only": 1
   },

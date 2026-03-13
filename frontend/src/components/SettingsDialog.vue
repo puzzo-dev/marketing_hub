@@ -70,6 +70,28 @@
                 />
               </div>
             </SettingsCard>
+            <SettingsCard title="Branding">
+              <div class="space-y-4">
+                <FormControl
+                  v-model="settings.brand_name"
+                  label="Brand Name"
+                  type="text"
+                  placeholder="Marketing Hub"
+                />
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-ink-gray-8">Brand Logo</label>
+                  <p class="mb-2 text-xs text-ink-gray-5">Custom logo for the portal sidebar. Leave empty to use default.</p>
+                  <div class="flex items-center gap-4">
+                    <img v-if="settings.brand_logo" :src="settings.brand_logo" class="h-10 w-10 rounded object-cover" />
+                    <FormControl
+                      v-model="settings.brand_logo"
+                      type="text"
+                      placeholder="/assets/marketing_hub/images/logo.svg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
           </div>
 
           <!-- Channels -->
@@ -180,7 +202,8 @@ const companyOptions = computed(() =>
 )
 
 const settingsFields = [
-  'company', 'default_lead_source', 'enable_auto_attribution', 'enable_utm_tracking',
+  'company', 'default_lead_source', 'brand_name', 'brand_logo',
+  'enable_auto_attribution', 'enable_utm_tracking',
   'enable_email_blast', 'enable_sms_blast', 'enable_whatsapp_blast',
   'enable_auto_post', 'require_post_approval',
   'enable_analytics_sync', 'sync_frequency',
@@ -200,6 +223,8 @@ const checkFields = [
 const settings = ref({
   company: '',
   default_lead_source: '',
+  brand_name: '',
+  brand_logo: '',
   enable_auto_attribution: true,
   enable_utm_tracking: true,
   enable_email_blast: true,

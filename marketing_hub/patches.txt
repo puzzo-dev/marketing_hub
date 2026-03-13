@@ -16,3 +16,4 @@ marketing_hub.patches.v1_0.seed_post_types
 marketing_hub.patches.v1_0.seed_media_types
 marketing_hub.patches.v1_0.seed_blast_types
 marketing_hub.patches.v1_0.setup_marketing_chart_of_accounts
+marketing_hub.patches.v1_0.migrate_file_size_to_bytes
