@@ -506,6 +506,7 @@ import {
   Dialog,
   LoadingIndicator,
   Tabs,
+  FileUploadHandler,
 } from 'frappe-ui'
 import { toast } from '@/utils/toast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -637,27 +638,18 @@ async function uploadFiles() {
   uploading.value = true
 
   for (const file of uploadQueue.value) {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('is_private', 0)
-    formData.append('folder', 'Home/Marketing Hub')
-
     try {
-      const response = await fetch('/api/method/upload_file', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Frappe-CSRF-Token': window.csrf_token,
-        },
+      const uploader = new FileUploadHandler()
+      const uploadedFile = await uploader.upload(file, {
+        private: false,
+        folder: 'Home/Marketing Hub',
       })
 
-      const result = await response.json()
-
-      if (result.message) {
+      if (uploadedFile?.file_url) {
         await createResource({
           url: '/api/method/marketing_hub.api.content.upload_file',
           makeParams: () => ({
-            file: result.message.file_url,
+            file: uploadedFile.file_url,
             asset_name: file.name,
             asset_type: uploadData.asset_type,
             channel: uploadData.channel,

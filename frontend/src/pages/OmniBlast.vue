@@ -103,24 +103,27 @@
             <div class="border-t border-outline-gray-2 pt-5">
               <h2 class="mb-3 text-base font-semibold text-ink-gray-9">Channels</h2>
               <p class="mb-4 text-sm text-ink-gray-6">Select which channels to blast on</p>
-              <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <button
-                  v-for="channel in channels"
-                  :key="channel.value"
-                  @click="toggleChannel(channel.value)"
-                  :disabled="!channel.enabled"
-                  :class="[
-                    'flex flex-col items-center gap-2 rounded-lg border-2 px-3 py-4 transition-all',
-                    formData.channels.includes(channel.value)
-                      ? 'border-primary-500 bg-blue-50/50'
-                      : 'border-outline-gray-2 bg-surface-cards hover:border-outline-gray-3',
-                    !channel.enabled && 'cursor-not-allowed opacity-40',
-                  ]"
-                >
-                  <component :is="channel.icon" class="h-5 w-5" :class="formData.channels.includes(channel.value) ? 'text-primary-600' : 'text-ink-gray-6'" />
-                  <span class="text-sm font-medium" :class="formData.channels.includes(channel.value) ? 'text-primary-700' : 'text-ink-gray-8'">{{ channel.label }}</span>
-                  <span v-if="!channel.enabled" class="text-[11px] text-ink-red-3">Not configured</span>
-                </button>
+              <div v-for="(groupChannels, groupName) in channelGroups" :key="groupName" class="mb-4">
+                <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-gray-5">{{ groupName }}</h3>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <button
+                    v-for="channel in groupChannels"
+                    :key="channel.value"
+                    @click="toggleChannel(channel.value)"
+                    :disabled="!channel.enabled"
+                    :class="[
+                      'flex flex-col items-center gap-2 rounded-lg border-2 px-3 py-3 transition-all',
+                      formData.channels.includes(channel.value)
+                        ? 'border-primary-500 bg-blue-50/50'
+                        : 'border-outline-gray-2 bg-surface-cards hover:border-outline-gray-3',
+                      !channel.enabled && 'cursor-not-allowed opacity-40',
+                    ]"
+                  >
+                    <component :is="channel.icon" class="h-5 w-5" :class="formData.channels.includes(channel.value) ? 'text-primary-600' : 'text-ink-gray-6'" />
+                    <span class="text-xs font-medium" :class="formData.channels.includes(channel.value) ? 'text-primary-700' : 'text-ink-gray-8'">{{ channel.label }}</span>
+                    <span v-if="!channel.enabled" class="text-[11px] text-ink-red-3">Not configured</span>
+                  </button>
+                </div>
               </div>
               <div v-if="formData.channels.length === 0" class="mt-3 rounded-md bg-surface-amber-1 px-3 py-2 text-sm text-ink-amber-3">
                 Select at least one channel
@@ -257,6 +260,17 @@ import IconBell from '~icons/lucide/bell'
 import IconCheck from '~icons/lucide/check'
 import IconChevronRight from '~icons/lucide/chevron-right'
 import IconUsers from '~icons/lucide/users'
+import IconFacebook from '~icons/lucide/facebook'
+import IconInstagram from '~icons/lucide/instagram'
+import IconLinkedin from '~icons/lucide/linkedin'
+import IconTwitter from '~icons/lucide/twitter'
+import IconYoutube from '~icons/lucide/youtube'
+import IconTv from '~icons/lucide/tv'
+import IconCamera from '~icons/lucide/camera'
+import IconMegaphone from '~icons/lucide/megaphone'
+import IconSearch from '~icons/lucide/search'
+import IconMapPin from '~icons/lucide/map-pin'
+import IconGlobe from '~icons/lucide/globe'
 
 const router = useRouter()
 
@@ -281,12 +295,76 @@ const formData = ref({
   template: '',
 })
 
+// Icon map for known networks
+const networkIconMap = {
+  'Email': IconMail,
+  'SMS': IconMessageSquare,
+  'WhatsApp': IconSmartphone,
+  'Push Notification': IconBell,
+  'Facebook': IconFacebook,
+  'Instagram': IconInstagram,
+  'LinkedIn': IconLinkedin,
+  'Twitter/X': IconTwitter,
+  'TikTok': IconTv,
+  'YouTube': IconYoutube,
+  'Snapchat': IconCamera,
+  'Meta Ads': IconMegaphone,
+  'Google Ads': IconSearch,
+  'LinkedIn Ads': IconLinkedin,
+  'TikTok Ads': IconTv,
+  'Twitter/X Ads': IconTwitter,
+  'Out of Home (OOH)': IconMapPin,
+}
+
 const channels = ref([
-  { value: 'Email', label: 'Email', icon: markRaw(IconMail), enabled: true },
-  { value: 'SMS', label: 'SMS', icon: markRaw(IconMessageSquare), enabled: true },
-  { value: 'WhatsApp', label: 'WhatsApp', icon: markRaw(IconSmartphone), enabled: true },
-  { value: 'Push Notification', label: 'Push', icon: markRaw(IconBell), enabled: false },
+  { value: 'Email', label: 'Email', icon: markRaw(IconMail), enabled: true, group: 'Messaging' },
+  { value: 'SMS', label: 'SMS', icon: markRaw(IconMessageSquare), enabled: true, group: 'Messaging' },
+  { value: 'WhatsApp', label: 'WhatsApp', icon: markRaw(IconSmartphone), enabled: true, group: 'Messaging' },
+  { value: 'Push Notification', label: 'Push', icon: markRaw(IconBell), enabled: false, group: 'Messaging' },
 ])
+
+const channelGroups = computed(() => {
+  const groups = {}
+  for (const ch of channels.value) {
+    const g = ch.group || 'Other'
+    if (!groups[g]) groups[g] = []
+    groups[g].push(ch)
+  }
+  return groups
+})
+
+// Fetch all active Social Media Networks from backend
+const networksResource = createResource({
+  url: 'frappe.client.get_list',
+  params: {
+    doctype: 'Social Media Network',
+    fields: ['network_name', 'network_type', 'is_active'],
+    filters: { is_active: 1 },
+    limit_page_length: 0,
+    order_by: 'network_type asc, network_name asc',
+  },
+  auto: true,
+  onSuccess(data) {
+    if (!data?.length) return
+    // Names already in the hardcoded messaging list
+    const existing = new Set(channels.value.map(c => c.value))
+    const newChannels = []
+    for (const net of data) {
+      if (existing.has(net.network_name)) continue
+      newChannels.push({
+        value: net.network_name,
+        label: net.network_name,
+        icon: markRaw(networkIconMap[net.network_name] || IconGlobe),
+        enabled: true,
+        group: net.network_type === 'Advertising Platform' ? 'Advertising'
+             : net.network_type === 'Social Media' ? 'Social Media'
+             : net.network_type,
+      })
+    }
+    // Append social/ad networks AFTER messaging — no replacement
+    channels.value = [...channels.value, ...newChannels]
+  },
+})
 
 const campaignsResource = createResource({
   url: 'frappe.client.get_list',
@@ -304,7 +382,7 @@ const segmentsResource = createResource({
   params: {
     doctype: 'Marketing Segment',
     fields: ['name', 'segment_name'],
-    filters: { disabled: 0 },
+    filters: { status: 'Active' },
     limit_page_length: 100,
   },
   auto: true,
@@ -315,7 +393,7 @@ const templatesResource = createResource({
   params: {
     doctype: 'Marketing Template',
     fields: ['name', 'template_name'],
-    filters: { disabled: 0 },
+    filters: { status: ['!=', 'Archived'] },
     limit_page_length: 100,
   },
   auto: true,

@@ -214,7 +214,9 @@ def upload_file(file, asset_name=None, asset_type=None, channel=None):
 		"status": "Draft",
 	})
 
-	if file_doc.is_image():
+	if file_doc.file_name and file_doc.file_name.lower().rsplit('.', 1)[-1] in (
+		'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff'
+	):
 		asset.thumbnail = file
 
 	asset.insert()
