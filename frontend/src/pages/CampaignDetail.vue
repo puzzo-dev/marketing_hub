@@ -67,9 +67,17 @@
               >
                 <div>
                   <p class="text-sm font-medium text-ink-gray-9">{{ act.subject || act.name }}</p>
-                  <p class="mt-0.5 text-xs text-ink-gray-5">{{ act.channel || 'Multi-channel' }} · {{ act.scheduled_date || 'Not scheduled' }}</p>
+                  <p class="mt-0.5 text-xs text-ink-gray-5">
+                    {{ act.channels || act.channel || 'Multi-channel' }} · {{ act.scheduled_date || 'Not scheduled' }}
+                  </p>
                 </div>
-                <Badge :label="act.status || 'Draft'" variant="subtle" />
+                <div class="flex items-center gap-2">
+                  <Badge v-if="act.activity_type === 'Omni-Channel Blast'" variant="subtle" theme="orange" size="sm">
+                    <template #prefix><IconRadioTower class="h-3 w-3" /></template>
+                    Omni
+                  </Badge>
+                  <Badge :label="act.status || 'Draft'" variant="subtle" />
+                </div>
               </div>
             </div>
             <div v-else class="flex flex-col items-center gap-2 py-10">
@@ -126,9 +134,19 @@
                 <dt class="text-xs text-ink-gray-5">Company</dt>
                 <dd class="mt-0.5 text-sm text-ink-gray-9">{{ campaign.doc.company }}</dd>
               </div>
-              <div v-if="campaignChannels.length">
+              <div v-if="campaignChannels.length || isOmniCampaign">
                 <dt class="text-xs text-ink-gray-5">Channels</dt>
                 <dd class="mt-1.5 flex flex-wrap gap-1.5">
+                  <Badge
+                    v-if="isOmniCampaign"
+                    variant="subtle"
+                    theme="orange"
+                  >
+                    <template #prefix>
+                      <IconRadioTower class="h-3 w-3" />
+                    </template>
+                    Omni Blast
+                  </Badge>
                   <Badge
                     v-for="ch in campaignChannels"
                     :key="ch"
@@ -178,6 +196,7 @@ import IconExternalLink from '~icons/lucide/external-link'
 import IconActivity from '~icons/lucide/activity'
 import IconUsers from '~icons/lucide/users'
 import IconAlertCircle from '~icons/lucide/alert-circle'
+import IconRadioTower from '~icons/lucide/radio-tower'
 
 const route = useRoute();
 const campaignName = computed(() => route.params.name);
@@ -190,10 +209,10 @@ const campaign = createDocumentResource({
 // Get campaign activities
 const activities = createListResource({
   doctype: "Campaign Activity",
-  fields: ["name", "subject", "status", "channel", "scheduled_date"],
+  fields: ["name", "subject", "status", "channel", "channels", "activity_type", "scheduled_date"],
   filters: { campaign: campaignName.value },
   orderBy: "scheduled_date desc",
-  pageLength: 10,
+  pageLength: 50,
   auto: true,
 });
 
@@ -223,9 +242,18 @@ const metricsResource = createResource({
 
 const metrics = computed(() => campaignMetrics.value);
 
+const isOmniCampaign = computed(() => Number(campaign.doc?.is_omni_campaign) === 1)
+
 const campaignChannels = computed(() => {
-  const channels = campaign.doc?.channels || []
-  return channels.map(ch => ch.social_media_network).filter(Boolean)
+  // Channels from the campaign's Table MultiSelect
+  const docChannels = (campaign.doc?.channels || []).map(ch => ch.social_media_network).filter(Boolean)
+  // Channels parsed from campaign activities (comma-separated `channels` field)
+  const activityChannels = (activities.data || []).flatMap(act => {
+    if (!act.channels) return []
+    return act.channels.split(/[,\n]/).map(c => c.trim()).filter(Boolean)
+  })
+  // Merged & deduplicated
+  return [...new Set([...docChannels, ...activityChannels])]
 });
 
 const budgetPercent = computed(() => {
