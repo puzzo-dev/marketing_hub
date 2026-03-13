@@ -14,9 +14,9 @@ required_apps = []
 add_to_apps_screen = [
     {
         "name": "marketing_hub",
-        "logo": "/assets/marketing_hub/frontend/logo.svg",
+        "logo": "/assets/marketing_hub/images/logo.svg",
         "title": "Marketing Hub",
-        "route": "/app/marketing-hub",
+        "route": "/marketing",
         "has_permission": "marketing_hub.api.permission.has_app_permission"
     }
 ]
