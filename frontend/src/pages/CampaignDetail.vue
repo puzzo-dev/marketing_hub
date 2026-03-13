@@ -126,6 +126,18 @@
                 <dt class="text-xs text-ink-gray-5">Company</dt>
                 <dd class="mt-0.5 text-sm text-ink-gray-9">{{ campaign.doc.company }}</dd>
               </div>
+              <div v-if="campaignChannels.length">
+                <dt class="text-xs text-ink-gray-5">Channels</dt>
+                <dd class="mt-1.5 flex flex-wrap gap-1.5">
+                  <Badge
+                    v-for="ch in campaignChannels"
+                    :key="ch"
+                    :label="ch"
+                    variant="subtle"
+                    theme="blue"
+                  />
+                </dd>
+              </div>
             </dl>
           </div>
           <div class="rounded-lg border border-outline-gray-1 bg-surface-white p-5">
@@ -157,7 +169,7 @@
 </template>
 
 <script setup>
-import { Breadcrumbs, LoadingIndicator, createDocumentResource, createListResource, createResource } from "frappe-ui";
+import { Badge, Breadcrumbs, LoadingIndicator, createDocumentResource, createListResource, createResource } from "frappe-ui";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import LayoutHeader from "@/components/LayoutHeader.vue";
@@ -210,6 +222,11 @@ const metricsResource = createResource({
 });
 
 const metrics = computed(() => campaignMetrics.value);
+
+const campaignChannels = computed(() => {
+  const channels = campaign.doc?.channels || []
+  return channels.map(ch => ch.social_media_network).filter(Boolean)
+});
 
 const budgetPercent = computed(() => {
   if (!campaign.doc?.budget) return 0;
