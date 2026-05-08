@@ -11,15 +11,22 @@ class TrackingLink(Document):
 		if not self.created_by:
 			self.created_by = frappe.session.user
 
-	def _generate_short_code(self):
+	def insert(self, *args, **kwargs):
+		for attempt in range(5):
+			try:
+				if attempt > 0:
+					self.short_code = self._generate_short_code(retry=attempt)
+				frappe.db.savepoint("tracking_link_insert")
+				return super(TrackingLink, self).insert(*args, **kwargs)
+			except frappe.UniqueValidationError:
+				frappe.db.rollback(save_point="tracking_link_insert")
+				if attempt == 4:
+					raise
+
+	def _generate_short_code(self, retry=0):
 		"""Generate a unique short code for the link"""
-		raw = f"{self.destination_url}{time.time()}{frappe.session.user}"
-		hash_val = hashlib.sha256(raw.encode()).hexdigest()[:8]
-		# Ensure uniqueness
-		while frappe.db.exists("Tracking Link", {"short_code": hash_val}):
-			raw += "x"
-			hash_val = hashlib.sha256(raw.encode()).hexdigest()[:8]
-		return hash_val
+		raw = f"{self.destination_url}{time.time()}{frappe.session.user}{retry}"
+		return hashlib.sha256(raw.encode()).hexdigest()[:8]
 
 	def get_tracking_url(self):
 		"""Get the full tracking URL"""

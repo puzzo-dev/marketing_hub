@@ -302,9 +302,9 @@ scheduler_events = {
 # Automatically update python controller files with type annotations for this app.
 # export_python_type_annotations = True
 
-# default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
-# }
+default_log_clearing_doctypes = {
+	"Analytics Daily Log": 90  # days to retain logs
+}
 
 # Translation
 # ------------

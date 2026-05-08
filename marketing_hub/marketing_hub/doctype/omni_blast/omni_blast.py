@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 
@@ -42,13 +43,13 @@ class OmniBlast(Document):
 			settings = frappe.get_single("Marketing Hub Settings")
 			
 			if network.network_type == "SMS" and not settings.enable_sms_blast:
-				frappe.throw(f"SMS Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+				frappe.throw(_("SMS Blast is disabled in Marketing Hub Settings. Cannot post to {0}.").format(network_name))
 				
 			if network.network_type == "Messaging" and "WhatsApp" in network_name and not settings.enable_whatsapp_blast:
-				frappe.throw(f"WhatsApp Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+				frappe.throw(_("WhatsApp Blast is disabled in Marketing Hub Settings. Cannot post to {0}.").format(network_name))
 				
 			if network.network_type == "Email" and not settings.enable_email_blast:
-				frappe.throw(f"Email Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
+				frappe.throw(_("Email Blast is disabled in Marketing Hub Settings. Cannot post to {0}.").format(network_name))
 			
 			# Adapt content based on network type
 			adapted_content = self.content
@@ -85,12 +86,12 @@ class OmniBlast(Document):
 				
 			except Exception as e:
 				frappe.log_error(f"Failed to create social post for {network_name}: {str(e)}")
-				frappe.msgprint(f"Failed to create post for {network_name}: {str(e)}", indicator="orange")
+				frappe.msgprint(_("Failed to create post for {0}: {1}").format(network_name, str(e)), indicator="orange")
 		
 		# Store created posts as JSON links
 		self.created_posts = "\n".join(created_post_links)
 		self.save()
-		frappe.msgprint(f"Created {len(created_post_links)} social posts", indicator="green")
+		frappe.msgprint(_("Created {0} social posts").format(len(created_post_links)), indicator="green")
 
 	@frappe.whitelist()
 	def execute_blast(self):
@@ -113,7 +114,7 @@ class OmniBlast(Document):
 				timeout=600,
 				job_id=f"omni_blast_{self.name}"
 			)
-			frappe.msgprint(f"Publishing {len(post_list)} posts in background...")
+			frappe.msgprint(_("Publishing {0} posts in background...").format(len(post_list)))
 			return {"published": 0, "failed": 0, "status": "enqueued"}
 		
 		return _execute_blast_posts(self.name, post_list)
@@ -200,6 +201,6 @@ def _execute_blast_posts(blast_name, post_list):
 	result = {"published": published_count, "failed": failed_count}
 	
 	if not frappe.flags.in_test:
-		frappe.msgprint(f"Published {published_count} posts. Failed: {failed_count}")
+		frappe.msgprint(_("Published {0} posts. Failed: {1}").format(published_count, failed_count))
 	
 	return result

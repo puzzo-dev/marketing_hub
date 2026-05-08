@@ -3,6 +3,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime, add_to_date
 import requests
@@ -44,7 +45,7 @@ class AdAccount(Document):
 		)
 		
 		if not oauth_token:
-			frappe.throw(f"No active OAuth Bearer Token found for user {self.oauth_user}")
+			frappe.throw(_("No active OAuth Bearer Token found for user {0}").format(self.oauth_user))
 		
 		return frappe.get_doc("OAuth Bearer Token", oauth_token[0].name)
 	

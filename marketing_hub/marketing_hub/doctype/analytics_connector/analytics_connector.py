@@ -3,6 +3,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime, add_to_date, getdate
 import requests
@@ -17,11 +18,11 @@ class AnalyticsConnector(Document):
 		if self.ad_account:
 			ad_account = frappe.get_doc("Ad Account", self.ad_account)
 			if not ad_account.is_active:
-				frappe.throw(f"Ad Account {self.ad_account} is not active")
+				frappe.throw(_("Ad Account {0} is not active").format(self.ad_account))
 			
 			# Ensure platform matches
 			if ad_account.platform != self.platform:
-				frappe.throw(f"Platform mismatch: Connector is {self.platform} but Ad Account is {ad_account.platform}")
+				frappe.throw(_("Platform mismatch: Connector is {0} but Ad Account is {1}").format(self.platform, ad_account.platform))
 		
 		# Set next sync date
 		if not self.next_sync_date:
@@ -147,7 +148,7 @@ class AnalyticsConnector(Document):
 		else:
 			# Fallback: Check if there's a custom controller or hook
 			# For now, throw error if not implemented
-			frappe.throw(f"Sync handler '{method_name}' not implemented for platform: {self.platform}")
+			frappe.throw(_("Sync handler '{0}' not implemented for platform: {1}").format(method_name, self.platform))
 
 	def _sync_meta_ads_ads(self, ad_account): 
 		# Legacy naming fix or just route to _sync_meta_ads

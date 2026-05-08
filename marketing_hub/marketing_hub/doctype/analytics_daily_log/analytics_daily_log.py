@@ -3,6 +3,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 
@@ -59,4 +60,4 @@ class AnalyticsDailyLog(Document):
 		})
 		
 		if existing:
-			frappe.throw(f"Analytics log already exists for this date, connector, and campaign")
+			frappe.throw(_("Analytics log already exists for this date, connector, and campaign"))

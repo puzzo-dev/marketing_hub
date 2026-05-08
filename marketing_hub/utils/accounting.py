@@ -293,15 +293,17 @@ def check_budget_exceeded(doc):
 	
 	if total_with_current > flt(budget.budget):
 		budget_link = get_link_to_form("Marketing Campaign", doc.campaign)
-		frappe.msgprint(
-			_("Warning: This expense will cause Campaign {0} to exceed its budget of {1}. Total spent will be {2}").format(
-				budget_link,
-				frappe.utils.fmt_money(budget.budget, currency=doc.currency),
-				frappe.utils.fmt_money(total_with_current, currency=doc.currency)
-			),
-			indicator="orange",
-			alert=True
+		settings = frappe.get_single("Marketing Hub Settings")
+		msg = _("This expense will cause Campaign {0} to exceed its budget of {1}. Total spent will be {2}").format(
+			budget_link,
+			frappe.utils.fmt_money(budget.budget, currency=doc.currency),
+			frappe.utils.fmt_money(total_with_current, currency=doc.currency)
 		)
+		
+		if getattr(settings, "validate_budget", 0):
+			frappe.throw(msg, title=_("Budget Exceeded"))
+		else:
+			frappe.msgprint(msg, indicator="orange", alert=True)
 		return True
 	
 	return False

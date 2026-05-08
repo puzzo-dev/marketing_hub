@@ -88,7 +88,7 @@ def get_platform_adapter(network_doc, ad_account_doc=None):
 			
 		except Exception as e:
 			frappe.log_error(f"Failed to load custom adapter {network_doc.custom_adapter_class}: {str(e)}", "Adapter Factory")
-			frappe.msgprint(f"Custom adapter failed, falling back to generic adapter: {str(e)}", alert=True)
+			frappe.msgprint(_("Custom adapter failed, falling back to generic adapter: {0}").format(str(e)), alert=True)
 	
 	# Use GenericAdapter by default - reads all config from Social Media Network doctype
 	frappe.logger().info(f"Using GenericAdapter for {network_doc.network_name}")

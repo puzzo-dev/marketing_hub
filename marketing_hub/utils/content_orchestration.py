@@ -31,7 +31,7 @@ def create_campaign_content_for_channels(campaign, channels, template=None):
         })
 
         if existing:
-            frappe.msgprint(_(f"Content for {channel} already exists"))
+            frappe.msgprint(_("Content for {0} already exists").format(channel))
             continue
 
         # Find appropriate template for channel
@@ -56,7 +56,7 @@ def create_campaign_content_for_channels(campaign, channels, template=None):
 
         created_content.append(content.name)
 
-    frappe.msgprint(_(f"Created content for {len(created_content)} channels"))
+    frappe.msgprint(_("Created content for {0} channels").format(len(created_content)))
 
     return created_content
 
@@ -139,7 +139,7 @@ def adapt_content_to_specs(content, channel):
         if len(body) > specs["max_chars"]:
             adapted["body_text"] = body[:specs["max_chars"]-3] + "..."
             frappe.msgprint(
-                _(f"Body text truncated to {specs['max_chars']} characters for {channel}"),
+                _("Body text truncated to {0} characters for {1}").format(specs['max_chars'], channel),
                 indicator="orange"
             )
 

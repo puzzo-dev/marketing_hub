@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 import json
 
@@ -28,7 +29,7 @@ class AttributionModel(Document):
 				"name"
 			)
 			if existing_default:
-				frappe.throw(f"'{existing_default}' is already set as default. Please unset it first.")
+				frappe.throw(_("'{0}' is already set as default. Please unset it first.").format(existing_default))
 	
 	def before_save(self):
 		"""Generate model code if not provided"""
