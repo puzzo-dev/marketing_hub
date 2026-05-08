@@ -102,7 +102,7 @@
             "fieldname": "networks",
             "fieldtype": "Table MultiSelect",
             "label": "Target Networks",
-            "options": "Social Media Network",
+            "options": "Marketing Hub Social Platform",
             "reqd": 1,
             "description": "Select networks where this content will be posted (Social Media, OOH Ads, Email, SMS, etc.)"
         },

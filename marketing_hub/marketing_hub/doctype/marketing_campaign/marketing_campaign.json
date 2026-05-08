@@ -37,7 +37,7 @@
             "fieldname": "status",
             "fieldtype": "Select",
             "label": "Status",
-            "options": "Draft\nActive\nCompleted\nCancelled",
+            "options": "Draft\nPending\nApproved\nActive\nPaused\nCompleted\nCancelled",
             "default": "Draft",
             "reqd": 1
         },

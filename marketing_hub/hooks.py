@@ -221,7 +221,9 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    "daily": [],
+    "daily": [
+        "marketing_hub.utils.campaign_lifecycle.update_campaign_statuses"
+    ],
     "hourly": [
         "marketing_hub.utils.analytics_sync.sync_all_connectors"
     ],

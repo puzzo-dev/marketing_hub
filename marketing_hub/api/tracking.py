@@ -126,7 +126,10 @@ def get_tracking_link_detail(name):
 	}
 
 
+from frappe.rate_limiter import rate_limit
+
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=60, seconds=60, ip_based=True)
 def handle_redirect(short_code):
 	"""Handle tracking link redirect - increments click count"""
 	if not short_code:

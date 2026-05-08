@@ -52,58 +52,40 @@ def get_dashboard_data(company=None):
 
 		company_join = _analytics_company_join(company)
 
-		# Total spend (last 30 days)
-		total_spend = frappe.db.sql("""
-			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
+		# Analytics Aggregation (Spend, Revenue, ROAS)
+		analytics_data = frappe.db.sql("""
+			SELECT 
+				SUM(CASE WHEN a.log_date >= %(from_date)s THEN a.spend ELSE 0 END) as total_spend,
+				SUM(CASE WHEN a.log_date >= %(prev_start)s AND a.log_date < %(from_date)s THEN a.spend ELSE 0 END) as prev_period_spend,
+				SUM(CASE WHEN a.log_date >= %(from_date)s THEN a.revenue ELSE 0 END) as total_revenue,
+				AVG(CASE WHEN a.log_date >= %(from_date)s AND a.roas > 0 THEN a.roas ELSE NULL END) as avg_roas
+			FROM `tabAnalytics Daily Log` a
 			{company_join}
-			WHERE a.log_date >= %(from_date)s
-		""".format(company_join=company_join), params)[0][0] or 0.0
+			WHERE a.log_date >= %(prev_start)s
+		""".format(company_join=company_join), params, as_dict=True)
 
-		# Previous period spend (for comparison)
-		prev_period_spend = frappe.db.sql("""
-			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
-			{company_join}
-			WHERE a.log_date >= %(prev_start)s AND a.log_date < %(from_date)s
-		""".format(company_join=company_join), params)[0][0] or 0.0
+		total_spend = analytics_data[0].total_spend or 0.0 if analytics_data else 0.0
+		prev_period_spend = analytics_data[0].prev_period_spend or 0.0 if analytics_data else 0.0
+		total_revenue = analytics_data[0].total_revenue or 0.0 if analytics_data else 0.0
+		avg_roas = analytics_data[0].avg_roas or 0.0 if analytics_data else 0.0
 
-		# Leads generated (last 30 days)
-		lead_filters = {"creation": [">=", last_30_days], "source": ["is", "set"]}
-		if company:
-			lead_filters["company"] = company
-
-		leads_generated = frappe.db.count("Lead", lead_filters)
-
-		prev_lead_filters = {
-			"creation": [">=", prev_period_start],
-			"creation": ["<", last_30_days],
-			"source": ["is", "set"],
-		}
-		if company:
-			prev_lead_filters["company"] = company
-
-		prev_period_leads = frappe.db.sql("""
-			SELECT COUNT(*) FROM `tabLead`
-			WHERE creation >= %(prev_start)s AND creation < %(from_date)s
+		# Leads Aggregation
+		company_cond = "AND company = %(company)s" if company else ""
+		leads_data = frappe.db.sql("""
+			SELECT 
+				SUM(CASE WHEN creation >= %(from_date)s THEN 1 ELSE 0 END) as leads_generated,
+				SUM(CASE WHEN creation >= %(prev_start)s AND creation < %(from_date)s THEN 1 ELSE 0 END) as prev_period_leads
+			FROM `tabLead`
+			WHERE creation >= %(prev_start)s 
 			AND source IS NOT NULL AND source != ''
 			{company_cond}
-		""".format(company_cond="AND company = %(company)s" if company else ""), params)[0][0] or 0
+		""".format(company_cond=company_cond), params, as_dict=True)
 
-		# Revenue (last 30 days) - from Analytics Daily Log
-		total_revenue = frappe.db.sql("""
-			SELECT SUM(a.revenue) FROM `tabAnalytics Daily Log` a
-			{company_join}
-			WHERE a.log_date >= %(from_date)s
-		""".format(company_join=company_join), params)[0][0] or 0.0
+		leads_generated = leads_data[0].leads_generated or 0 if leads_data else 0
+		prev_period_leads = leads_data[0].prev_period_leads or 0 if leads_data else 0
 
 		# Calculate ROI
 		roi = ((total_revenue - total_spend) / total_spend * 100) if total_spend > 0 else 0
-
-		# Calculate average ROAS
-		avg_roas = frappe.db.sql("""
-			SELECT AVG(a.roas) FROM `tabAnalytics Daily Log` a
-			{company_join}
-			WHERE a.log_date >= %(from_date)s AND a.roas > 0
-		""".format(company_join=company_join), params)[0][0] or 0.0
 
 		# Recent activities
 		activity_filters = {"creation": [">=", add_days(today_date, -7)]}

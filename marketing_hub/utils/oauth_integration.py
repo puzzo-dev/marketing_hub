@@ -215,7 +215,10 @@ def initiate_oauth_flow(platform, company=None, redirect_uri=None):
 		return {"error": str(e)}
 
 
+from frappe.rate_limiter import rate_limit
+
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=10, seconds=60, ip_based=True)
 def oauth_callback(code, state):
 	"""Handle OAuth callback from platform"""
 	try:
