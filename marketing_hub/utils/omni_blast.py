@@ -74,7 +74,7 @@ def _execute_email_blast(activity):
 
     # Get segment recipients
     segment = frappe.get_doc("Marketing Segment", activity.segment)
-    recipients = _get_segment_recipients(segment)
+    recipients = _get_segment_recipients(segment, channel="Email")
 
     # Get template
     template = _get_template(activity.campaign, "Email")
@@ -122,7 +122,7 @@ def _execute_whatsapp_blast(activity):
         if not template:
             frappe.throw(_("WhatsApp template is required for WhatsApp blast"))
 
-        recipients = _get_segment_recipients(segment)
+        recipients = _get_segment_recipients(segment, channel="WhatsApp")
 
         # Create bulk WhatsApp message if available
         if frappe.db.exists("DocType", "Bulk WhatsApp Message"):
@@ -201,7 +201,7 @@ def _execute_sms_blast(activity):
         }
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
-    recipients = _get_segment_recipients(segment)
+    recipients = _get_segment_recipients(segment, channel="SMS")
 
     if not recipients:
         return {"status": "Error", "message": "No recipients found in segment", "count": 0}
@@ -256,7 +256,7 @@ def _execute_push_blast(activity):
         return {"status": "Error", "message": "No segment defined"}
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
-    recipients = _get_segment_recipients(segment)
+    recipients = _get_segment_recipients(segment, channel="Push Notification")
 
     # Stub implementation
     return {
@@ -266,8 +266,8 @@ def _execute_push_blast(activity):
     }
 
 
-def _get_segment_recipients(segment):
-    """Get list of recipients from segment"""
+def _get_segment_recipients(segment, channel=None):
+    """Get list of recipients from segment and filter out suppressed contacts"""
     recipients = []
 
     # Get from Customers if segment has customer filters
@@ -288,12 +288,35 @@ def _get_segment_recipients(segment):
         )
         recipients.extend(leads)
 
-    # Remove duplicates by email
+    # Get Suppression List for this channel
+    suppressed_contacts = set()
+    if frappe.db.exists("DocType", "Suppression List"):
+        filters = {}
+        if channel:
+            filters["channel"] = ["in", [channel, "All"]]
+        else:
+            filters["channel"] = "All"
+            
+        suppressions = frappe.get_all("Suppression List", filters=filters, fields=["contact_id"])
+        suppressed_contacts = {s.contact_id for s in suppressions}
+
+    # Remove duplicates and filter suppressed
     seen = set()
     unique_recipients = []
     for r in recipients:
-        if r.get("email") and r["email"] not in seen:
-            seen.add(r["email"])
+        email = r.get("email")
+        mobile = r.get("mobile_no") or r.get("mobile") or r.get("phone")
+        
+        # Check suppression
+        if (email and email in suppressed_contacts) or (mobile and mobile in suppressed_contacts):
+            continue
+            
+        if email and email not in seen:
+            seen.add(email)
+            unique_recipients.append(r)
+        elif not email and mobile and mobile not in seen:
+            # If no email but has mobile, deduplicate by mobile
+            seen.add(mobile)
             unique_recipients.append(r)
 
     return unique_recipients
