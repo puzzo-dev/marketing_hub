@@ -116,56 +116,67 @@ def create_crm_activity_from_campaign(campaign_name, lead_name, activity_type="E
 		return False
 
 
-def get_lead_engagement_score(lead_name):
-	"""Calculate lead engagement score based on CRM interactions"""
+def get_lead_engagement_score(lead_name, crm_lead=None):
+	"""Calculate lead engagement score based on CRM interactions and behavioral data"""
 	try:
-		if not frappe.db.exists("DocType", "CRM Lead"):
-			return 0
-
-		lead = frappe.get_doc("Lead", lead_name)
-		crm_lead = lead.crm_lead if hasattr(lead, "crm_lead") else None
-
-		if not crm_lead:
-			return 0
+		if not crm_lead and frappe.db.exists("DocType", "CRM Lead"):
+			crm_lead = frappe.db.get_value("Lead", lead_name, "crm_lead")
 
 		score = 0
 
-		# Count email opens
+		# Count email opens from standard Frappe Email Tracker
+		if frappe.db.exists("DocType", "Email Tracker"):
+			opens = frappe.db.count("Email Tracker", {
+				"reference_doctype": "Lead",
+				"reference_name": lead_name,
+				"status": "Opened"
+			})
+			score += opens * 5
+
+		# Count communications (emails sent/received)
 		email_count = frappe.db.count("Communication", {
-			"reference_doctype": "CRM Lead",
-			"reference_name": crm_lead,
-			"communication_type": "Communication",
-			"sent_or_received": "Sent"
+			"reference_doctype": "Lead",
+			"reference_name": lead_name,
+			"communication_type": "Communication"
 		})
-		score += email_count * 5
+		score += email_count * 2
 
-		# Count calls
-		if frappe.db.exists("DocType", "CRM Call Log"):
-			call_count = frappe.db.count("CRM Call Log", {
-				"lead": crm_lead
-			})
-			score += call_count * 10
+		if crm_lead:
+			# Count calls
+			if frappe.db.exists("DocType", "CRM Call Log"):
+				call_count = frappe.db.count("CRM Call Log", {"lead": crm_lead})
+				score += call_count * 10
 
-		# Count WhatsApp messages
-		if frappe.db.exists("DocType", "WhatsApp Message"):
-			wa_count = frappe.db.count("WhatsApp Message", {
-				"reference_doctype": "CRM Lead",
-				"reference_name": crm_lead,
-				"type": "Incoming"
-			})
-			score += wa_count * 8
+			# Count WhatsApp messages
+			if frappe.db.exists("DocType", "WhatsApp Message"):
+				wa_count = frappe.db.count("WhatsApp Message", {
+					"reference_doctype": "CRM Lead",
+					"reference_name": crm_lead,
+					"type": "Incoming"
+				})
+				score += wa_count * 8
 
-		# Count activities
-		if frappe.db.exists("DocType", "CRM Activities"):
-			activity_count = frappe.db.count("CRM Activities", {
-				"lead": crm_lead
-			})
-			score += activity_count * 3
+			# Count CRM Activities
+			if frappe.db.exists("DocType", "CRM Activities"):
+				activity_count = frappe.db.count("CRM Activities", {"lead": crm_lead})
+				score += activity_count * 5
 
 		return score
 	except Exception as e:
 		frappe.log_error(f"Engagement score error: {str(e)}", "Marketing Hub CRM Integration")
 		return 0
+
+def batch_update_engagement_scores():
+	"""Nightly job to calculate and cache engagement scores on Lead doctype"""
+	try:
+		# Get all leads (in batches if needed, but simple for now)
+		leads = frappe.get_all("Lead", fields=["name", "crm_lead"])
+		for lead in leads:
+			score = get_lead_engagement_score(lead.name, lead.crm_lead)
+			frappe.db.set_value("Lead", lead.name, "engagement_score", score, update_modified=False)
+		frappe.db.commit()
+	except Exception as e:
+		frappe.log_error(f"Batch engagement score error: {str(e)}", "Marketing Hub CRM Integration")
 
 
 @frappe.whitelist()
