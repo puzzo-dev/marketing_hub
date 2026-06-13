@@ -10,11 +10,7 @@ from frappe import _
 def get_social_posts(filters=None, limit=20, offset=0):
 	"""Get social posts with engagement metrics"""
 	try:
-		if filters and isinstance(filters, str):
-			import json
-			filters = json.loads(filters)
-
-		filters = filters or {}
+		filters = frappe.parse_json(filters) if filters else {}
 		base_filters = {}
 		if filters.get("status"):
 			base_filters["status"] = filters["status"]
@@ -79,9 +75,7 @@ def get_social_posts(filters=None, limit=20, offset=0):
 def create_social_post(data):
 	"""Create a new social post"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		post = frappe.get_doc({
 			"doctype": "Social Post",
@@ -95,7 +89,6 @@ def create_social_post(data):
 		})
 
 		post.insert()
-		frappe.db.commit()
 
 		return {"success": True, "post_name": post.name, "message": "Social post created successfully"}
 
@@ -108,9 +101,7 @@ def create_social_post(data):
 def update_social_post(name, data):
 	"""Update an existing social post"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		doc = frappe.get_doc("Social Post", name)
 		for field in ["post_title", "content", "platform", "post_type", "status",

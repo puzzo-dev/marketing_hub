@@ -6,23 +6,14 @@ import frappe
 from frappe import _
 from frappe.utils.data import flt
 
-
-def _get_company(company=None):
-	"""Get the active company - explicit param, filter, or user default"""
-	if company:
-		return company
-	return frappe.defaults.get_user_default("Company")
+from marketing_hub.utils import get_company as _get_company
 
 
 @frappe.whitelist()
 def get_campaign_list(filters=None, limit=20, offset=0):
 	"""Get campaign list with calculated metrics"""
 	try:
-		if filters and isinstance(filters, str):
-			import json
-			filters = json.loads(filters)
-
-		filters = filters or {}
+		filters = frappe.parse_json(filters) if filters else {}
 		base_filters = {}
 		if filters.get("status"):
 			base_filters["status"] = filters["status"]
@@ -134,9 +125,7 @@ def get_campaign_metrics(campaign):
 def update_campaign(name, data):
 	"""Update an existing marketing campaign"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		doc = frappe.get_doc("Marketing Campaign", name)
 		for field in ["campaign_name", "status", "description", "budget", "start_date", "end_date", "company", "is_omni_campaign"]:
@@ -153,9 +142,7 @@ def update_campaign(name, data):
 def create_campaign(data):
 	"""Create a new campaign"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		campaign = frappe.get_doc({
 			"doctype": "Marketing Campaign",
@@ -167,7 +154,6 @@ def create_campaign(data):
 		})
 
 		campaign.insert()
-		frappe.db.commit()
 
 		return {
 			"success": True,

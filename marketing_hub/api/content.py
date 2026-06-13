@@ -2,14 +2,29 @@
 Content Assets & Templates API
 """
 
+import re
+
 import frappe
 from frappe import _
 from frappe.utils import cint
+
+_VALID_ORDER_BY_RE = re.compile(
+	r"^[a-z_]+(\s+(asc|desc))?$",
+	re.IGNORECASE,
+)
+
+
+def _sanitize_order_by(order_by, default="modified desc"):
+	"""Validate order_by to prevent SQL injection."""
+	if not order_by or not _VALID_ORDER_BY_RE.match(order_by.strip()):
+		return default
+	return order_by.strip()
 
 
 @frappe.whitelist()
 def get_assets(filters=None, limit_start=0, limit_page_length=20, order_by="modified desc"):
 	"""Get list of content assets with filters"""
+	order_by = _sanitize_order_by(order_by)
 	filters = frappe.parse_json(filters) if filters else {}
 
 	conditions = []
@@ -62,7 +77,6 @@ def create_asset(data):
 	data = frappe.parse_json(data)
 	doc = frappe.get_doc({"doctype": "Content Asset", **data})
 	doc.insert()
-	frappe.db.commit()
 	return doc.as_dict()
 
 
@@ -73,7 +87,6 @@ def update_asset(name, data):
 	doc = frappe.get_doc("Content Asset", name)
 	doc.update(data)
 	doc.save()
-	frappe.db.commit()
 	return doc.as_dict()
 
 
@@ -81,7 +94,6 @@ def update_asset(name, data):
 def delete_asset(name):
 	"""Delete asset"""
 	frappe.delete_doc("Content Asset", name)
-	frappe.db.commit()
 	return {"message": "Asset deleted successfully"}
 
 
@@ -94,7 +106,6 @@ def bulk_update_assets(names, data):
 		doc = frappe.get_doc("Content Asset", name)
 		doc.update(data)
 		doc.save()
-	frappe.db.commit()
 	return {"message": f"Updated {len(names)} assets"}
 
 
@@ -111,6 +122,7 @@ def get_content_details(name):
 @frappe.whitelist()
 def get_templates(filters=None, limit_start=0, limit_page_length=20, order_by="modified desc"):
 	"""Get list of marketing templates"""
+	order_by = _sanitize_order_by(order_by)
 	filters = frappe.parse_json(filters) if filters else {}
 
 	conditions = []
@@ -165,7 +177,6 @@ def create_template(data):
 	data = frappe.parse_json(data)
 	doc = frappe.get_doc({"doctype": "Marketing Template", **data})
 	doc.insert()
-	frappe.db.commit()
 	return doc.as_dict()
 
 
@@ -176,7 +187,6 @@ def update_template(name, data):
 	doc = frappe.get_doc("Marketing Template", name)
 	doc.update(data)
 	doc.save()
-	frappe.db.commit()
 	return doc.as_dict()
 
 
@@ -184,7 +194,6 @@ def update_template(name, data):
 def delete_template(name):
 	"""Delete template"""
 	frappe.delete_doc("Marketing Template", name)
-	frappe.db.commit()
 	return {"message": "Template deleted successfully"}
 
 
@@ -207,7 +216,6 @@ def upload_file(file, asset_name=None, asset_type=None, channel=None):
 		asset.thumbnail = file
 
 	asset.insert()
-	frappe.db.commit()
 	return asset.as_dict()
 
 

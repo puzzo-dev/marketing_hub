@@ -4,7 +4,7 @@ Agency Mode API — Client management, project integration, agency dashboard
 
 import frappe
 from frappe import _
-from frappe.utils import today, add_months, add_days
+from frappe.utils import add_days, add_months, today
 from frappe.utils.data import flt
 
 
@@ -21,10 +21,7 @@ def get_clients(filters=None, limit=20, offset=0):
 	if not _is_agency_mode():
 		return {"clients": [], "has_more": False, "mode": "internal"}
 
-	if filters and isinstance(filters, str):
-		import json
-		filters = json.loads(filters)
-	filters = filters or {}
+	filters = frappe.parse_json(filters) if filters else {}
 
 	# Get customers that have subscriptions or campaigns linked
 	base_filters = {}
