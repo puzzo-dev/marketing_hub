@@ -2,10 +2,12 @@
 # Copyright (c) 2026, Puzzo and Contributors
 # License: MIT
 
-import frappe
 import unittest
-from unittest.mock import patch, MagicMock
-from marketing_hub.utils.attribution_engine import get_real_lead_source, get_lead_attribution_data
+from unittest.mock import MagicMock, patch
+
+import frappe
+
+from marketing_hub.utils.attribution_engine import get_lead_attribution_data, get_real_lead_source
 
 
 class TestAttributionEngine(unittest.TestCase):

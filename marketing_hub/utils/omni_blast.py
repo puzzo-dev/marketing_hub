@@ -4,7 +4,8 @@
 
 import frappe
 from frappe import _
-from frappe.utils import now_datetime, get_datetime
+from frappe.utils import get_datetime, now_datetime
+
 
 @frappe.whitelist()
 def execute_blast(campaign_activity):

@@ -21,16 +21,15 @@ For platform-specific behavior, create a custom adapter:
 - Set custom_adapter_class in Social Media Network
 """
 
+from marketing_hub.utils.social_adapters.base import BasePlatformAdapter
 from marketing_hub.utils.social_adapters.generic import (
+	AuthenticationError,
 	GenericAdapter,
 	PlatformAPIError,
 	RateLimitError,
-	AuthenticationError
 )
-
-from marketing_hub.utils.social_adapters.base import BasePlatformAdapter
-from marketing_hub.utils.social_adapters.meta import MetaAdapter
 from marketing_hub.utils.social_adapters.linkedin import LinkedInAdapter
+from marketing_hub.utils.social_adapters.meta import MetaAdapter
 from marketing_hub.utils.social_adapters.twitter import TwitterAdapter
 
 __all__ = [

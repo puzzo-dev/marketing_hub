@@ -2,10 +2,12 @@
 # Copyright (c) 2026, I-Varse Technologies and contributors
 # For license information, please see license.txt
 
-import frappe
-from frappe.model.document import Document
 import json
 import re
+
+import frappe
+from frappe.model.document import Document
+
 
 class MarketingTemplate(Document):
     def validate(self):

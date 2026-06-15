@@ -21,16 +21,17 @@ def get_campaign_permission_query_conditions(user):
 		return ""
 	
 	# Others see only campaigns they own or are assigned to
-	return f"""(
-		`tabMarketing Campaign`.owner = '{frappe.db.escape(user)}' 
+	escaped_user = frappe.db.escape(user, percent=False)
+	return """(
+		`tabMarketing Campaign`.owner = {user}
 		OR `tabMarketing Campaign`.name IN (
-			SELECT DISTINCT parent 
-			FROM `tabUser Permission` 
-			WHERE allow = 'Marketing Campaign' 
-			AND user = '{frappe.db.escape(user)}'
-			AND applicable_for IN ('', NULL, 'Marketing Hub')
+			SELECT DISTINCT parent
+			FROM `tabUser Permission`
+			WHERE allow = 'Marketing Campaign'
+			AND user = {user}
+			AND (applicable_for IN ('', 'Marketing Hub') OR applicable_for IS NULL)
 		)
-	)"""
+	)""".format(user=escaped_user)
 
 
 def has_campaign_permission(doc, ptype, user):
@@ -93,18 +94,19 @@ def get_campaign_activity_permission_query_conditions(user):
 		return ""
 	
 	# Others see activities from campaigns they can access
-	return f"""(
+	escaped_user = frappe.db.escape(user, percent=False)
+	return """(
 		`tabCampaign Activity`.campaign IN (
 			SELECT name FROM `tabMarketing Campaign`
-			WHERE owner = '{frappe.db.escape(user)}'
+			WHERE owner = {user}
 			OR name IN (
-				SELECT DISTINCT for_value 
-				FROM `tabUser Permission` 
-				WHERE allow = 'Marketing Campaign' 
-				AND user = '{frappe.db.escape(user)}'
+				SELECT DISTINCT for_value
+				FROM `tabUser Permission`
+				WHERE allow = 'Marketing Campaign'
+				AND user = {user}
 			)
 		)
-	)"""
+	)""".format(user=escaped_user)
 
 
 def has_campaign_activity_permission(doc, ptype, user):
@@ -137,53 +139,9 @@ def get_marketing_segment_permission_query_conditions(user):
 		return ""
 	
 	# Others see only their own
-	return f"`tabMarketing Segment`.owner = '{frappe.db.escape(user)}'"
+	escaped_user = frappe.db.escape(user, percent=False)
+	return "`tabMarketing Segment`.owner = {user}".format(user=escaped_user)
 
-
-def has_workspace_access(user=None):
-	"""Check if user has access to Marketing Hub workspace"""
-	if not user:
-		user = frappe.session.user
-	
-	# Define roles that have workspace access
-	allowed_roles = [
-		"System Manager",
-		"Sales Manager",
-		"Sales User",
-		"Marketing Manager",
-		"Marketing Executive",
-		"Marketing Analyst",
-		"HR Manager",
-		"HR User"
-	]
-	
-	user_roles = frappe.get_roles(user)
-	return any(role in allowed_roles for role in user_roles)
-
-
-def setup_workspace_visibility(login_manager=None):
-	"""Called on session creation to set workspace visibility"""
-	user = frappe.session.user
-	
-	if user == "Guest":
-		return
-	
-	# Check if user should see Marketing Hub workspace
-	has_access = has_workspace_access(user)
-	
-	try:
-		workspace = frappe.get_doc("Workspace", "Marketing Hub")
-		
-		# Update visibility (this won't work as expected - workspaces are role-based)
-		# Instead, we'll use role-based filtering in the workspace JSON
-		
-		# Log access for audit
-		if has_access:
-			frappe.logger().debug(f"User {user} has Marketing Hub workspace access")
-		else:
-			frappe.logger().debug(f"User {user} does not have Marketing Hub workspace access")
-	except frappe.DoesNotExistError:
-		frappe.logger().warning("Marketing Hub workspace not found")
 
 
 @frappe.whitelist()

@@ -4,6 +4,7 @@
 
 from frappe.model.document import Document
 
+
 class SocialMediaNetwork(Document):
 	def validate(self):
 		"""Validate Social Media Network"""

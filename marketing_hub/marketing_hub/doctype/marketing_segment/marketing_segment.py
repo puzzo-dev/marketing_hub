@@ -1,10 +1,11 @@
 # Copyright (c) 2026, Your Name and contributors
 # For license information, please see license.txt
 
-import frappe
 import json
-from frappe.model.document import Document
+
+import frappe
 from frappe import _
+from frappe.model.document import Document
 
 
 class MarketingSegment(Document):

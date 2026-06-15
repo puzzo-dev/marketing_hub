@@ -3,7 +3,6 @@ Social Posts API
 """
 
 import frappe
-from frappe import _
 
 
 @frappe.whitelist()

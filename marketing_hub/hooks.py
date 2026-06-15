@@ -8,8 +8,9 @@ app_license = "mit"
 
 # Apps
 # ------------------
+# erpnext is required for GL entries (Marketing Expense) and account lookups.
 # frappe_whatsapp is optional — checked at runtime in omni_blast.py
-required_apps = []
+required_apps = ["erpnext"]
 
 add_to_apps_screen = [
     {
@@ -271,26 +272,18 @@ scheduler_events = {
 # User Data Protection
 # --------------------
 
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
+user_data_fields = [
+    {
+        "doctype": "Tracking Link",
+        "filter_by": "owner",
+        "partial": 1,
+    },
+    {
+        "doctype": "Social Post",
+        "filter_by": "owner",
+        "partial": 1,
+    },
+]
 
 # Authentication and authorization
 # --------------------------------

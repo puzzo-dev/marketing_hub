@@ -8,7 +8,7 @@ Handles GL Entry creation for marketing expenses
 
 import frappe
 from frappe import _
-from frappe.utils import flt, nowdate, get_link_to_form
+from frappe.utils import flt, get_link_to_form, nowdate
 
 
 def make_gl_entries(doc, cancel=False):
@@ -126,7 +126,7 @@ def get_default_payable_account(company):
 	"""Get default payable account for marketing expenses"""
 
 	# Try Marketing Hub Settings company-specific defaults first
-	settings = frappe.get_single("Marketing Hub Settings")
+	settings = frappe.get_cached_doc("Marketing Hub Settings")
 	row = settings.get_company_settings(company)
 	if row and row.default_payable_account:
 		return row.default_payable_account
@@ -277,33 +277,44 @@ def get_marketing_expense_summary(filters=None):
 
 
 def check_budget_exceeded(doc):
-	"""Check if marketing expense exceeds budget"""
-	
+	"""Check if marketing expense exceeds budget.
+
+	Behaviour depends on Marketing Hub Settings → Budget Enforcement Mode:
+	  - "Warn" (default): shows an alert but allows submission.
+	  - "Block": throws and prevents submission.
+	"""
 	if not doc.campaign:
 		return False
-	
-	# Get campaign budget
-	budget = frappe.db.get_value("Marketing Campaign", doc.campaign, ["budget", "total_actual_cost"], as_dict=True)
-	
+
+	budget = frappe.db.get_value(
+		"Marketing Campaign", doc.campaign,
+		["budget", "total_actual_cost"], as_dict=True,
+	)
+
 	if not budget or not budget.budget:
 		return False
-	
-	# Calculate total spent including this expense
+
 	total_with_current = flt(budget.total_actual_cost) + flt(doc.amount)
-	
+
 	if total_with_current > flt(budget.budget):
 		budget_link = get_link_to_form("Marketing Campaign", doc.campaign)
-		frappe.msgprint(
-			_("Warning: This expense will cause Campaign {0} to exceed its budget of {1}. Total spent will be {2}").format(
-				budget_link,
-				frappe.utils.fmt_money(budget.budget, currency=doc.currency),
-				frappe.utils.fmt_money(total_with_current, currency=doc.currency)
-			),
-			indicator="orange",
-			alert=True
+		msg = _("This expense will cause Campaign {0} to exceed its budget of {1}. Total spent will be {2}").format(
+			budget_link,
+			frappe.utils.fmt_money(budget.budget, currency=doc.currency),
+			frappe.utils.fmt_money(total_with_current, currency=doc.currency),
 		)
+
+		settings = frappe.get_cached_doc("Marketing Hub Settings")
+		if settings.budget_enforcement_mode == "Block":
+			frappe.throw(msg, title=_("Budget Exceeded"))
+		else:
+			frappe.msgprint(
+				_("Warning: {0}").format(msg),
+				indicator="orange",
+				alert=True,
+			)
 		return True
-	
+
 	return False
 
 
@@ -343,8 +354,8 @@ def make_marketing_gl_entry(
 	"""
 	Create General Ledger entries for marketing expenses (standalone, no doc required).
 	"""
-	from erpnext.accounts.general_ledger import make_gl_entries as _make_gl_entries
 	from erpnext.accounts.doctype.budget.budget import validate_expense_against_budget
+	from erpnext.accounts.general_ledger import make_gl_entries as _make_gl_entries
 
 	settings = get_marketing_hub_settings(company)
 	if not settings:
@@ -411,7 +422,7 @@ def make_marketing_gl_entry(
 def get_marketing_hub_settings(company=None):
 	"""Get Marketing Hub Settings with per-company defaults merged in"""
 	try:
-		settings = frappe.get_single("Marketing Hub Settings")
+		settings = frappe.get_cached_doc("Marketing Hub Settings")
 		result = {
 			"enable_gl_entry": settings.enable_gl_entry,
 			"validate_budget": settings.validate_budget,

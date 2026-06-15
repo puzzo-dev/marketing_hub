@@ -4,10 +4,14 @@
 
 import frappe
 from frappe import _
-from frappe.utils import now_datetime, get_datetime
+from frappe.utils import get_datetime, now_datetime
+
 
 def publish_scheduled_posts():
     """Scheduler function to publish scheduled social posts"""
+    settings = frappe.get_cached_doc("Marketing Hub Settings")
+    if not settings.get("enable_auto_post"):
+        return
 
     # Get all posts scheduled for now or earlier that are still in Draft/Scheduled status
     due_posts = frappe.get_all(

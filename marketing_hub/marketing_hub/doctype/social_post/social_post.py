@@ -2,23 +2,57 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.model.document import Document
 from frappe import _
-from frappe.utils import now, get_datetime
+from frappe.model.document import Document
+from frappe.utils import get_datetime, now
+
+VALID_STATUS_TRANSITIONS = {
+	"Draft": {"Scheduled", "Publishing", "Published", "Cancelled"},
+	"Scheduled": {"Draft", "Publishing", "Published", "Cancelled"},
+	"Publishing": {"Published", "Failed", "Cancelled"},
+	"Published": {"Deleted"},
+	"Failed": {"Draft", "Scheduled", "Publishing"},
+	"Cancelled": {"Draft"},
+	"Deleted": set(),
+}
 
 
 class SocialPost(Document):
 	def validate(self):
 		"""Validate post data"""
+		self.validate_status_transition()
 		self.validate_content_length()
 		self.validate_scheduled_time()
 		self.calculate_engagement_rate()
 		self.validate_approval_permissions()
 
+	def validate_status_transition(self):
+		"""Enforce valid status transitions via state machine."""
+		if self.is_new():
+			return
+
+		old_status = self.get_doc_before_save()
+		if not old_status:
+			return
+
+		old_status = old_status.status or "Draft"
+		new_status = self.status or "Draft"
+
+		if old_status == new_status:
+			return
+
+		allowed = VALID_STATUS_TRANSITIONS.get(old_status, set())
+		if new_status not in allowed:
+			frappe.throw(
+				_("Cannot change status from {0} to {1}. Allowed: {2}").format(
+					old_status, new_status, ", ".join(sorted(allowed)) or "none"
+				)
+			)
+
 	def validate_approval_permissions(self):
 		"""Check if user is authorized to publish based on settings"""
 		if self.status in ["Scheduled", "Published"]:
-			settings = frappe.get_single("Marketing Hub Settings")
+			settings = frappe.get_cached_doc("Marketing Hub Settings")
 			if settings.require_post_approval:
 				if "Marketing Manager" not in frappe.get_roles() and "System Manager" not in frappe.get_roles():
 					frappe.throw(_("Post Request Approval is enabled. Only Marketing Managers can Schedule or Publish posts."))
@@ -86,35 +120,23 @@ class SocialPost(Document):
 
 @frappe.whitelist()
 def publish_post(post_name):
-	"""Publish a social media post"""
+	"""Publish a social media post via the canonical auto_post.publish_post."""
+	from marketing_hub.utils.auto_post import publish_post as _do_publish
+
 	doc = frappe.get_doc("Social Post", post_name)
+	frappe.has_permission("Social Post", "write", doc=doc, throw=True)
 
-	if doc.status != "Draft":
-		frappe.throw(_("Only draft posts can be published"))
-
-	# Integrate with Social Media Adapter
-	try:
-		from marketing_hub.utils.social_adapter import publish_to_platform
-		result = publish_to_platform(doc)
-		
-		if result.get("success"):
-			doc.status = "Published"
-			doc.published_time = now()
-			doc.post_id = result.get("id")
-			doc.save(ignore_permissions=True)
-			return {"success": True, "message": _("Post published successfully via Adapter")}
-		else:
-			frappe.throw(_("Publishing failed: {0}").format(result.get("error", "Unknown error")))
-			
-	except Exception as e:
-		frappe.log_error(f"Publishing Error: {str(e)}", "Social Post Publish")
-		frappe.throw(_("Failed during publishing process: {0}").format(str(e)))
+	result = _do_publish(doc)
+	success = result.get("success", False)
+	msg = _("Post published successfully") if success else result.get("error", _("Publishing failed"))
+	return {"success": success, "message": msg}
 
 
 @frappe.whitelist()
 def schedule_post(post_name, scheduled_time):
 	"""Schedule a post for future publishing"""
 	doc = frappe.get_doc("Social Post", post_name)
+	frappe.has_permission("Social Post", "write", doc=doc, throw=True)
 
 	scheduled_dt = get_datetime(scheduled_time)
 	now_dt = get_datetime(now())
@@ -124,7 +146,7 @@ def schedule_post(post_name, scheduled_time):
 
 	doc.scheduled_time = scheduled_time
 	doc.status = "Scheduled"
-	doc.save(ignore_permissions=True)
+	doc.save()
 
 	return {"success": True, "message": _("Post scheduled successfully")}
 
@@ -132,29 +154,26 @@ def schedule_post(post_name, scheduled_time):
 @frappe.whitelist()
 def update_metrics(post_name, metrics):
 	"""Update engagement metrics for a post"""
-	import json
-
 	doc = frappe.get_doc("Social Post", post_name)
+	frappe.has_permission("Social Post", "write", doc=doc, throw=True)
 
 	if isinstance(metrics, str):
-		metrics = json.loads(metrics)
+		metrics = frappe.parse_json(metrics)
 
-	# Update metrics
-	if "impressions" in metrics:
-		doc.impressions = metrics["impressions"]
-	if "reach" in metrics:
-		doc.reach = metrics["reach"]
-	if "clicks" in metrics:
-		doc.clicks = metrics["clicks"]
-	if "likes" in metrics:
-		doc.likes = metrics["likes"]
-	if "comments" in metrics:
-		doc.comments_count = metrics["comments"]
-	if "shares" in metrics:
-		doc.shares = metrics["shares"]
+	metric_fields = {
+		"impressions": "impressions",
+		"reach": "reach",
+		"clicks": "clicks",
+		"likes": "likes",
+		"comments": "comments_count",
+		"shares": "shares",
+	}
+	for key, field in metric_fields.items():
+		if key in metrics:
+			doc.set(field, metrics[key])
 
 	doc.calculate_engagement_rate()
-	doc.save(ignore_permissions=True)
+	doc.save()
 
 	return {"success": True, "engagement_rate": doc.engagement_rate}
 
@@ -180,27 +199,4 @@ def get_platform_best_time(platform):
 	return "Best times vary by audience - analyze your specific audience engagement data"
 
 
-def publish_scheduled_posts():
-	"""Background job to publish scheduled posts"""
-	settings = frappe.get_single("Marketing Hub Settings")
-	if not settings.enable_auto_post:
-		return
 
-	scheduled_posts = frappe.get_all(
-		"Social Post",
-		filters={
-			"status": "Scheduled",
-			"scheduled_time": ["<=", now()]
-		},
-		pluck="name"
-	)
-
-	for post_name in scheduled_posts:
-		try:
-			publish_post(post_name)
-			frappe.db.commit()
-		except Exception as e:
-			frappe.log_error(f"Error publishing scheduled post {post_name}: {str(e)}", "Social Post Publish Error")
-			# Mark as failed
-			frappe.db.set_value("Social Post", post_name, "status", "Failed")
-			frappe.db.commit()

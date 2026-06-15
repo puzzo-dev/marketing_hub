@@ -5,7 +5,6 @@ Content Assets & Templates API
 import re
 
 import frappe
-from frappe import _
 from frappe.utils import cint
 
 _VALID_ORDER_BY_RE = re.compile(
@@ -27,40 +26,41 @@ def get_assets(filters=None, limit_start=0, limit_page_length=20, order_by="modi
 	order_by = _sanitize_order_by(order_by)
 	filters = frappe.parse_json(filters) if filters else {}
 
-	conditions = []
-	values = {}
+	base_filters = {}
+	or_filters = {}
 
 	if filters.get("asset_type"):
-		conditions.append("asset_type = %(asset_type)s")
-		values["asset_type"] = filters["asset_type"]
+		base_filters["asset_type"] = filters["asset_type"]
 	if filters.get("channel"):
-		conditions.append("channel = %(channel)s")
-		values["channel"] = filters["channel"]
+		base_filters["channel"] = filters["channel"]
 	if filters.get("status"):
-		conditions.append("status = %(status)s")
-		values["status"] = filters["status"]
+		base_filters["status"] = filters["status"]
 	if filters.get("search"):
-		conditions.append("(asset_name LIKE %(search)s OR tags LIKE %(search)s OR description LIKE %(search)s)")
-		values["search"] = f"%{filters['search']}%"
+		search_term = f"%{filters['search']}%"
+		or_filters = {
+			"asset_name": ["like", search_term],
+			"tags": ["like", search_term],
+			"description": ["like", search_term],
+		}
 
-	where_clause = " AND ".join(conditions) if conditions else "1=1"
+	assets = frappe.get_all(
+		"Content Asset",
+		filters=base_filters,
+		or_filters=or_filters,
+		fields=[
+			"name", "asset_name", "asset_type", "channel", "status", "tags",
+			"file_attachment", "thumbnail", "file_size", "dimensions",
+			"usage_count", "modified", "owner",
+		],
+		order_by=order_by,
+		limit_start=cint(limit_start),
+		limit_page_length=cint(limit_page_length),
+	)
 
-	assets = frappe.db.sql(f"""
-		SELECT
-			name, asset_name, asset_type, channel, status, tags,
-			file_attachment, thumbnail, file_size, dimensions,
-			usage_count, modified, owner
-		FROM `tabContent Asset`
-		WHERE {where_clause}
-		ORDER BY {order_by}
-		LIMIT {cint(limit_start)}, {cint(limit_page_length)}
-	""", values, as_dict=True)
-
-	total_count = frappe.db.sql(f"""
-		SELECT COUNT(*) as count
-		FROM `tabContent Asset`
-		WHERE {where_clause}
-	""", values, as_dict=True)[0].count
+	total_count = len(frappe.get_all(
+		"Content Asset", filters=base_filters, or_filters=or_filters,
+		fields=["name"], limit_page_length=0,
+	))
 
 	return {"assets": assets, "total_count": total_count}
 
@@ -115,7 +115,7 @@ def get_content_details(name):
 	try:
 		doc = frappe.get_doc("Content Asset", name)
 		return {"success": True, "doc": doc}
-	except Exception as e:
+	except (frappe.DoesNotExistError, frappe.PermissionError) as e:
 		return {"success": False, "error": str(e)}
 
 
@@ -125,42 +125,42 @@ def get_templates(filters=None, limit_start=0, limit_page_length=20, order_by="m
 	order_by = _sanitize_order_by(order_by)
 	filters = frappe.parse_json(filters) if filters else {}
 
-	conditions = []
-	values = {}
+	base_filters = {}
+	or_filters = {}
 
 	if filters.get("channel"):
-		conditions.append("channel = %(channel)s")
-		values["channel"] = filters["channel"]
+		base_filters["channel"] = filters["channel"]
 	if filters.get("template_type"):
-		conditions.append("template_type = %(template_type)s")
-		values["template_type"] = filters["template_type"]
+		base_filters["template_type"] = filters["template_type"]
 	if filters.get("status"):
-		conditions.append("status = %(status)s")
-		values["status"] = filters["status"]
+		base_filters["status"] = filters["status"]
 	if filters.get("category"):
-		conditions.append("category = %(category)s")
-		values["category"] = filters["category"]
+		base_filters["category"] = filters["category"]
 	if filters.get("search"):
-		conditions.append("(template_name LIKE %(search)s OR category LIKE %(search)s OR subject LIKE %(search)s)")
-		values["search"] = f"%{filters['search']}%"
+		search_term = f"%{filters['search']}%"
+		or_filters = {
+			"template_name": ["like", search_term],
+			"category": ["like", search_term],
+			"subject": ["like", search_term],
+		}
 
-	where_clause = " AND ".join(conditions) if conditions else "1=1"
+	templates = frappe.get_all(
+		"Marketing Template",
+		filters=base_filters,
+		or_filters=or_filters,
+		fields=[
+			"name", "template_name", "channel", "template_type", "status", "category",
+			"subject", "headline", "primary_asset", "modified", "owner",
+		],
+		order_by=order_by,
+		limit_start=cint(limit_start),
+		limit_page_length=cint(limit_page_length),
+	)
 
-	templates = frappe.db.sql(f"""
-		SELECT
-			name, template_name, channel, template_type, status, category,
-			subject, headline, primary_asset, modified, owner
-		FROM `tabMarketing Template`
-		WHERE {where_clause}
-		ORDER BY {order_by}
-		LIMIT {cint(limit_start)}, {cint(limit_page_length)}
-	""", values, as_dict=True)
-
-	total_count = frappe.db.sql(f"""
-		SELECT COUNT(*) as count
-		FROM `tabMarketing Template`
-		WHERE {where_clause}
-	""", values, as_dict=True)[0].count
+	total_count = len(frappe.get_all(
+		"Marketing Template", filters=base_filters, or_filters=or_filters,
+		fields=["name"], limit_page_length=0,
+	))
 
 	return {"templates": templates, "total_count": total_count}
 
@@ -240,13 +240,14 @@ def get_channels():
 @frappe.whitelist()
 def get_template_categories():
 	"""Get list of template categories"""
-	categories = frappe.db.sql("""
-		SELECT DISTINCT category
-		FROM `tabMarketing Template`
-		WHERE category IS NOT NULL AND category != ''
-		ORDER BY category
-	""", as_dict=True)
-	return [c.category for c in categories]
+	return frappe.get_all(
+		"Marketing Template",
+		filters={"category": ["is", "set"]},
+		fields=["category"],
+		distinct=True,
+		order_by="category",
+		pluck="category",
+	)
 
 
 @frappe.whitelist()

@@ -4,7 +4,7 @@ Agency Mode API — Client management, project integration, agency dashboard
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, add_months, today
+from frappe.utils import add_days, today
 from frappe.utils.data import flt
 
 
@@ -139,7 +139,7 @@ def get_client_detail(client):
 				"social_post_limit": pkg.social_post_limit or 0,
 				"included_channels": (pkg.included_channels or "").split("\n"),
 			}
-		except Exception:
+		except frappe.DoesNotExistError:
 			pass
 
 	# Campaigns for this client

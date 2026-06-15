@@ -2,12 +2,13 @@
 # Copyright (c) 2026, I-Varse Technologies and contributors
 # For license information, please see license.txt
 
-import frappe
-from frappe.model.document import Document
-from frappe.utils import now_datetime, add_to_date, getdate
-import requests
 import json
 import time
+
+import frappe
+import requests
+from frappe.model.document import Document
+from frappe.utils import add_to_date, getdate, now_datetime
 
 
 class AnalyticsConnector(Document):

@@ -3,7 +3,6 @@ Segments API
 """
 
 import frappe
-from frappe import _
 
 from marketing_hub.utils import get_company as _get_company
 
@@ -37,7 +36,7 @@ def get_segment_list(filters=None, limit=20, offset=0):
 					seg["contact_count"] = frappe.db.count(doc.base_doctype, doc.get_segment_filters())
 				else:
 					seg["contact_count"] = 0
-			except Exception:
+			except (frappe.DoesNotExistError, frappe.PermissionError):
 				seg["filter_count"] = 0
 				seg["contact_count"] = 0
 

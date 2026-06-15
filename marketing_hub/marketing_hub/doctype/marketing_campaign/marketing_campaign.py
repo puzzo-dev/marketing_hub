@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 
+
 class MarketingCampaign(Document):
 	def validate(self):
 		self.validate_dates()

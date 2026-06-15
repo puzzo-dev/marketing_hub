@@ -7,11 +7,11 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
 from marketing_hub.utils.accounting import (
-	make_gl_entries,
-	validate_accounting_entries,
-	get_expense_account_from_category,
 	check_budget_exceeded,
-	update_campaign_spent_amount
+	get_expense_account_from_category,
+	make_gl_entries,
+	update_campaign_spent_amount,
+	validate_accounting_entries,
 )
 
 
@@ -71,7 +71,7 @@ class MarketingExpense(Document):
 @frappe.whitelist()
 def get_default_expense_account(company):
 	"""Get default marketing expense account"""
-	settings = frappe.get_single("Marketing Hub Settings")
+	settings = frappe.get_cached_doc("Marketing Hub Settings")
 	return settings.default_expense_account if settings else None
 
 

@@ -4,7 +4,6 @@ import re
 import frappe
 from frappe import _
 
-
 no_cache = 1
 
 

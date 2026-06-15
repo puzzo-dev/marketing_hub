@@ -5,23 +5,25 @@
 import frappe
 from frappe import _
 
+
 def get_real_lead_source(doc, method):
     """
-    Attribution engine to determine the real lead source
-    Priority:
-    1. Ad/UTM parameters (highest priority)
-    2. Campaign direct link
-    3. E-commerce session
-    4. Referral data
+    Attribution engine to determine the real lead source.
 
-    Integrates with CRM app if available
+    Only runs when UTM params or a campaign_name are present — skips
+    leads created without any marketing context to avoid unnecessary
+    DB lookups on every Lead insert.
     """
-    sources = []
-
     # 1. Check UTM parameters first (highest priority)
     utm_campaign = frappe.form_dict.get("utm_campaign") or doc.get("utm_campaign")
     utm_source = frappe.form_dict.get("utm_source") or doc.get("utm_source")
     utm_medium = frappe.form_dict.get("utm_medium") or doc.get("utm_medium")
+
+    # Short-circuit: nothing to attribute
+    if not utm_campaign and not doc.campaign_name:
+        return
+
+    sources = []
 
     if utm_campaign:
         # Store UTM data in lead

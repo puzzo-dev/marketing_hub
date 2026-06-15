@@ -15,12 +15,12 @@ from frappe.utils import now_datetime
 
 def sync_all_connectors():
 	"""
-	Scheduler function to sync analytics from all active connectors
+	Scheduler function to enqueue analytics sync for all active connectors
 	that are due for sync.
 
-	Called by Frappe scheduler (hooks.py → scheduler_events → "all").
-	Runs every minute, but only processes connectors whose next_sync_date
-	has passed.
+	Called by Frappe scheduler (hooks.py → scheduler_events → "hourly").
+	Each connector is enqueued as a separate background job to avoid
+	blocking the scheduler worker.
 	"""
 	connectors = frappe.get_all(
 		"Analytics Connector",
@@ -35,32 +35,26 @@ def sync_all_connectors():
 	if not connectors:
 		return
 
-	synced = 0
-	failed = 0
-
+	enqueued = 0
 	for connector_name in connectors:
-		try:
-			doc = frappe.get_doc("Analytics Connector", connector_name)
-			result = doc.sync_analytics()
+		job_id = f"analytics_sync_{connector_name}"
 
-			if result.get("status") == "Success":
-				synced += 1
-			else:
-				failed += 1
+		# Skip if a sync job is already running for this connector
+		if frappe.utils.background_jobs.is_job_enqueued(job_id):
+			continue
 
-			frappe.db.commit()
+		frappe.enqueue(
+			"marketing_hub.utils.analytics_sync._sync_single_connector",
+			connector_name=connector_name,
+			queue="default",
+			timeout=300,
+			job_id=job_id,
+		)
+		enqueued += 1
 
-		except Exception as e:
-			frappe.db.rollback()
-			failed += 1
-			frappe.log_error(
-				f"Analytics sync failed for connector {connector_name}: {str(e)}",
-				"Analytics Sync Scheduler"
-			)
-
-	if synced or failed:
+	if enqueued:
 		frappe.logger().info(
-			f"Analytics Sync: {synced} succeeded, {failed} failed out of {len(connectors)} connectors"
+			f"Analytics Sync: enqueued {enqueued} of {len(connectors)} connectors"
 		)
 
 

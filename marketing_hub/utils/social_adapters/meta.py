@@ -10,6 +10,7 @@ Handles Meta Graph API specifics:
 
 import frappe
 import requests
+
 from marketing_hub.utils.social_adapters.base import BasePlatformAdapter
 from marketing_hub.utils.social_adapters.generic import PlatformAPIError
 

@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import flt
 
+
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
@@ -30,7 +31,7 @@ def get_data(filters):
 		conditions += " AND a.campaign = %(campaign)s"
 		values["campaign"] = filters.get("campaign")
 
-	data = frappe.db.sql(f"""
+	data = frappe.db.sql("""
 		SELECT 
 			a.campaign,
 			a.channel,
@@ -42,7 +43,7 @@ def get_data(filters):
 		GROUP BY a.campaign, a.channel
 		HAVING spend > 0
 		ORDER BY roas DESC
-	""", values, as_dict=True)
+	""".format(conditions=conditions), values, as_dict=True)
 
 	for row in data:
 		# Fetch campaign target ROAS if available, else default to 2.0
@@ -55,7 +56,7 @@ def get_data(filters):
 			campaign_target = frappe.db.get_value("Marketing Campaign", row.campaign, "target_roas")
 			if campaign_target:
 				target_roas = flt(campaign_target)
-		except:
+		except Exception:
 			pass
 
 		row.roas_target = target_roas

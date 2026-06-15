@@ -95,9 +95,10 @@
             "fieldtype": "Select",
             "in_list_view": 1,
             "label": "Status",
-            "options": "Draft\nScheduled\nPublished\nFailed\nDeleted",
+            "options": "Draft\nScheduled\nPublishing\nPublished\nFailed\nCancelled\nDeleted",
             "default": "Draft",
-            "reqd": 1
+            "reqd": 1,
+            "search_index": 1
         },
         {
             "fieldname": "column_break_1",
@@ -106,7 +107,8 @@
         {
             "fieldname": "scheduled_time",
             "fieldtype": "Datetime",
-            "label": "Scheduled Time"
+            "label": "Scheduled Time",
+            "search_index": 1
         },
         {
             "fieldname": "published_time",
