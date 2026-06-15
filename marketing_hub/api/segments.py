@@ -5,23 +5,14 @@ Segments API
 import frappe
 from frappe import _
 
-
-def _get_company(company=None):
-	"""Get the active company - explicit param or user default"""
-	if company:
-		return company
-	return frappe.defaults.get_user_default("Company")
+from marketing_hub.utils import get_company as _get_company
 
 
 @frappe.whitelist()
 def get_segment_list(filters=None, limit=20, offset=0):
 	"""Get marketing segments list"""
 	try:
-		if filters and isinstance(filters, str):
-			import json
-			filters = json.loads(filters)
-
-		filters = filters or {}
+		filters = frappe.parse_json(filters) if filters else {}
 		base_filters = {}
 		company = _get_company(filters.get("company"))
 		if company:
@@ -65,9 +56,7 @@ def get_segment_list(filters=None, limit=20, offset=0):
 def create_segment(data):
 	"""Create a new marketing segment"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		doc = frappe.get_doc({
 			"doctype": "Marketing Segment",
@@ -96,9 +85,7 @@ def create_segment(data):
 def update_segment(name, data):
 	"""Update an existing marketing segment"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		doc = frappe.get_doc("Marketing Segment", name)
 		for field in ["segment_name", "base_doctype", "description"]:

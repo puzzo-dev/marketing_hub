@@ -171,6 +171,7 @@ def delete_post(post):
 def publish_post(post_name):
 	"""
 	Whitelist method to publish a post from UI.
+	Delegates to auto_post.publish_post for consistent status transitions.
 	
 	Args:
 		post_name: Name of Social Post document
@@ -178,8 +179,9 @@ def publish_post(post_name):
 	Returns:
 		dict: Publication result
 	"""
-	post = frappe.get_doc("Social Post", post_name)
-	return publish_to_platform(post)
+	from marketing_hub.utils.auto_post import publish_post as _publish_post
+
+	return _publish_post(post_name)
 
 
 @frappe.whitelist()
