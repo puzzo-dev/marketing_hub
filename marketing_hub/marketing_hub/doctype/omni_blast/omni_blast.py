@@ -160,6 +160,10 @@ def _execute_blast_posts(blast_name, post_list):
 			# Get the network to determine channel type
 			network = frappe.get_cached_doc("Social Media Network", social_post.platform)
 			
+			# Transition to Publishing first (state machine requires it)
+			social_post.status = "Publishing"
+			social_post.save()
+
 			# Non-social channels are handled elsewhere (Email/WhatsApp/SMS)
 			if network.network_type in ("Email", "Messaging", "SMS"):
 				social_post.status = "Published"
