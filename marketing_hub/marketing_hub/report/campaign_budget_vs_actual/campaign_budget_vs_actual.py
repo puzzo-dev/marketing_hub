@@ -92,7 +92,7 @@ def get_data(filters):
 	conditions = get_conditions(filters)
 	
 	# Get campaigns with budget
-	campaigns = frappe.db.sql(f"""
+	campaigns = frappe.db.sql("""
 		SELECT
 			name as campaign_name,
 			campaign_name as title,
@@ -101,7 +101,7 @@ def get_data(filters):
 		WHERE 1=1
 		{conditions}
 		ORDER BY name DESC
-	""", filters, as_dict=1)
+	""".format(conditions=conditions), filters, as_dict=1)
 	
 	for campaign in campaigns:
 		# Get budget from Campaign

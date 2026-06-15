@@ -27,7 +27,7 @@ def get_data(filters):
 		values["from_date"] = filters.get("from_date")
 		values["to_date"] = filters.get("to_date")
 
-	data = frappe.db.sql(f"""
+	data = frappe.db.sql("""
 		SELECT 
 			channel,
 			SUM(impressions) as impressions,
@@ -38,7 +38,7 @@ def get_data(filters):
 		WHERE 1=1 {conditions}
 		GROUP BY channel
 		ORDER BY conversions DESC
-	""", values, as_dict=True)
+	""".format(conditions=conditions), values, as_dict=True)
 
 	for row in data:
 		row.ctr = flt(row.clicks / row.impressions * 100, 2) if row.impressions > 0 else 0

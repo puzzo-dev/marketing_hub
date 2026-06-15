@@ -34,7 +34,7 @@ def get_data(filters):
         values["campaign"] = filters.get("campaign")
 
     # Get campaigns - Marketing Campaign
-    campaigns = frappe.db.sql(f"""
+    campaigns = frappe.db.sql("""
         SELECT
             c.name as campaign,
             (SELECT GROUP_CONCAT(social_media_network) FROM `tabMarketing Campaign Channel` WHERE parent=c.name) as channels_used,
@@ -43,7 +43,7 @@ def get_data(filters):
         WHERE c.docstatus < 2
         {conditions}
         ORDER BY c.creation DESC
-    """, values, as_dict=1)
+    """.format(conditions=conditions), values, as_dict=1)
 
     data = []
     for campaign in campaigns:
