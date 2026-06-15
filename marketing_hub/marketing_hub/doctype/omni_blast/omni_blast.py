@@ -33,13 +33,11 @@ class OmniBlast(Document):
 			frappe.throw("No networks selected")
 
 		created_post_links = []
+		settings = frappe.get_cached_doc("Marketing Hub Settings")
 
 		for network_name in network_list:
 			# Get network details
 			network = frappe.get_doc("Social Media Network", network_name)
-			
-			# Check settings for channel permissions
-			settings = frappe.get_single("Marketing Hub Settings")
 			
 			if network.network_type == "SMS" and not settings.enable_sms_blast:
 				frappe.throw(f"SMS Blast is disabled in Marketing Hub Settings. Cannot post to {network_name}.")
@@ -87,7 +85,8 @@ class OmniBlast(Document):
 				frappe.log_error(f"Failed to create social post for {network_name}: {str(e)}")
 				frappe.msgprint(f"Failed to create post for {network_name}: {str(e)}", indicator="orange")
 		
-		# Store created posts as JSON links
+		# Store created post names for quick reference (back-references
+		# via Social Post.omni_blast are the canonical source of truth)
 		self.created_posts = "\n".join(created_post_links)
 		self.save()
 		frappe.msgprint(f"Created {len(created_post_links)} social posts", indicator="green")
@@ -95,11 +94,14 @@ class OmniBlast(Document):
 	@frappe.whitelist()
 	def execute_blast(self):
 		"""Execute the blast by publishing all created posts via the social adapter."""
-		if not self.created_posts:
+		# Use canonical back-reference rather than the stale text field
+		post_list = frappe.get_all(
+			"Social Post",
+			filters={"omni_blast": self.name},
+			pluck="name",
+		)
+		if not post_list:
 			frappe.throw("No posts to publish. Generate posts first.")
-		
-		# Parse created posts (newline-separated list of post names)
-		post_list = [p.strip() for p in self.created_posts.split('\n') if p.strip()]
 		
 		# For large blasts (>5 posts), run in background
 		if len(post_list) > 5:

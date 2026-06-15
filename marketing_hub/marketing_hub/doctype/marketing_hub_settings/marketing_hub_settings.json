@@ -55,6 +55,7 @@
         "accounting_settings_section",
         "enable_gl_entry",
         "validate_budget",
+        "budget_enforcement_mode",
         "column_break_59",
         "enable_budget_alerts",
         "auto_reconcile_expenses",
@@ -377,6 +378,15 @@
             "fieldname": "validate_budget",
             "fieldtype": "Check",
             "label": "Validate Budget"
+        },
+        {
+            "default": "Warn",
+            "depends_on": "validate_budget",
+            "description": "Warn shows an alert but allows submission. Block prevents submission when budget is exceeded.",
+            "fieldname": "budget_enforcement_mode",
+            "fieldtype": "Select",
+            "label": "Budget Enforcement Mode",
+            "options": "Warn\nBlock"
         },
         {
             "fieldname": "column_break_59",

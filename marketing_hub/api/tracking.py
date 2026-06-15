@@ -2,13 +2,14 @@
 Tracking Links API - Create, manage, and track links with QR codes for OOH ads
 """
 
-import frappe
-from frappe import _
-from frappe.utils import now, get_url, cint
-import json
+import base64
 import hashlib
 import io
-import base64
+import json
+
+import frappe
+from frappe import _
+from frappe.utils import cint, get_url, now
 
 
 @frappe.whitelist()
@@ -132,6 +133,15 @@ def handle_redirect(short_code):
 	if not short_code:
 		frappe.throw(_("Invalid tracking link"), frappe.DoesNotExistError)
 
+	# Basic rate limiting: max 30 clicks per IP per minute
+	ip_address = frappe.local.request.remote_addr if frappe.local.request else ""
+	if ip_address:
+		cache_key = f"tracking_redirect:{ip_address}"
+		click_count = frappe.cache.get_value(cache_key) or 0
+		if click_count >= 30:
+			frappe.throw(_("Too many requests"), frappe.TooManyRequestsError)
+		frappe.cache.set_value(cache_key, click_count + 1, expires_in_sec=60)
+
 	link = frappe.db.get_value(
 		"Tracking Link",
 		{"short_code": short_code, "status": "Active"},
@@ -144,7 +154,6 @@ def handle_redirect(short_code):
 
 	# Get the doc and record click
 	doc = frappe.get_doc("Tracking Link", link.name)
-	ip_address = frappe.local.request.remote_addr if frappe.local.request else ""
 	user_agent = (frappe.local.request.headers.get("User-Agent", "") if frappe.local.request else "")[:500]
 	referrer = (frappe.local.request.headers.get("Referer", "") if frappe.local.request else "")[:500]
 

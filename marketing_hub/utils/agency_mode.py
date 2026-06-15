@@ -4,12 +4,13 @@
 
 import frappe
 from frappe import _
-from frappe.utils import today, add_months
+from frappe.utils import add_months, today
+
 
 def get_settings(company=None):
     """Get Marketing Hub Settings (single doctype)"""
     try:
-        return frappe.get_single("Marketing Hub Settings")
+        return frappe.get_cached_doc("Marketing Hub Settings")
     except Exception:
         return None
 

@@ -19,8 +19,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 	"""Get campaign list with calculated metrics"""
 	try:
 		if filters and isinstance(filters, str):
-			import json
-			filters = json.loads(filters)
+			filters = frappe.parse_json(filters)
 
 		filters = filters or {}
 		base_filters = {}
@@ -47,41 +46,65 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			start=offset
 		)
 
-		# Enrich with metrics from Analytics Daily Log
-		for campaign in campaigns:
-			metrics = frappe.db.sql("""
+		if campaigns:
+			campaign_names = [c.name for c in campaigns]
+			campaign_name_values = [c.campaign_name for c in campaigns]
+			placeholders = ", ".join(["%s"] * len(campaign_names))
+
+			# Single aggregation query instead of N+1
+			metrics_rows = frappe.db.sql("""
 				SELECT
-					SUM(spend) as spend,
-					SUM(revenue) as revenue,
-					SUM(impressions) as impressions,
-					SUM(clicks) as clicks,
-					SUM(conversions) as conversions,
-					AVG(roas) as roas
+					campaign,
+					COALESCE(SUM(spend), 0) as spend,
+					COALESCE(SUM(revenue), 0) as revenue,
+					COALESCE(SUM(impressions), 0) as impressions,
+					COALESCE(SUM(clicks), 0) as clicks,
+					COALESCE(SUM(conversions), 0) as conversions,
+					CASE WHEN COALESCE(SUM(spend), 0) > 0
+						THEN SUM(revenue) / SUM(spend)
+						ELSE 0
+					END as roas
 				FROM `tabAnalytics Daily Log`
-				WHERE campaign = %(campaign)s
-			""", {"campaign": campaign.name}, as_dict=True)
+				WHERE campaign IN ({placeholders})
+				GROUP BY campaign
+			""".format(placeholders=placeholders), tuple(campaign_names), as_dict=True)
+			metrics_map = {r.campaign: r for r in metrics_rows}
 
-			if metrics and metrics[0]:
-				campaign.update({
-					"spend": flt(metrics[0].spend or 0, 2),
-					"revenue": flt(metrics[0].revenue or 0, 2),
-					"impressions": metrics[0].impressions or 0,
-					"clicks": metrics[0].clicks or 0,
-					"conversions": metrics[0].conversions or 0,
-					"roas": flt(metrics[0].roas or 0, 2)
-				})
-			else:
-				campaign.update({
-					"spend": 0, "revenue": 0, "impressions": 0,
-					"clicks": 0, "conversions": 0, "roas": 0
-				})
+			# Single lead count query instead of N+1
+			lead_rows = frappe.db.sql("""
+				SELECT campaign_name, COUNT(*) as cnt
+				FROM `tabLead`
+				WHERE campaign_name IN ({placeholders})
+				GROUP BY campaign_name
+			""".format(placeholders=", ".join(["%s"] * len(campaign_name_values))),
+				tuple(campaign_name_values), as_dict=True)
+			leads_map = {r.campaign_name: r.cnt for r in lead_rows}
 
-			if campaign.budget:
-				campaign["budget_utilization"] = flt((campaign.spend / campaign.budget) * 100, 2)
-			else:
-				campaign["budget_utilization"] = 0
+			zero_metrics = {"spend": 0, "revenue": 0, "impressions": 0,
+							"clicks": 0, "conversions": 0, "roas": 0}
 
-			campaign["leads_count"] = frappe.db.count("Lead", {"campaign_name": campaign.campaign_name})
+			for campaign in campaigns:
+				m = metrics_map.get(campaign.name)
+				if m:
+					campaign.update({
+						"spend": flt(m.spend, 2),
+						"revenue": flt(m.revenue, 2),
+						"impressions": m.impressions or 0,
+						"clicks": m.clicks or 0,
+						"conversions": m.conversions or 0,
+						"roas": flt(m.roas, 2),
+					})
+				else:
+					campaign.update(zero_metrics)
+
+				if campaign.budget:
+					campaign["budget_utilization"] = flt(
+						(campaign.spend / campaign.budget) * 100, 2
+					)
+				else:
+					campaign["budget_utilization"] = 0
+
+				campaign["leads_count"] = leads_map.get(campaign.campaign_name, 0)
 
 		total_count = frappe.db.count("Marketing Campaign", base_filters)
 
@@ -135,8 +158,7 @@ def update_campaign(name, data):
 	"""Update an existing marketing campaign"""
 	try:
 		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+			data = frappe.parse_json(data)
 
 		doc = frappe.get_doc("Marketing Campaign", name)
 		for field in ["campaign_name", "status", "description", "budget", "start_date", "end_date", "company", "is_omni_campaign"]:
@@ -154,8 +176,7 @@ def create_campaign(data):
 	"""Create a new campaign"""
 	try:
 		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+			data = frappe.parse_json(data)
 
 		campaign = frappe.get_doc({
 			"doctype": "Marketing Campaign",
