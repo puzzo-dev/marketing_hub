@@ -7,6 +7,8 @@ from frappe import _
 from frappe.utils import add_days, cint, today
 from frappe.utils.data import flt
 
+from marketing_hub.utils import get_company as _get_company
+
 
 @frappe.whitelist()
 def get_leads_overview(company=None):
@@ -112,7 +114,3 @@ def get_leads_list(campaign=None, source=None, status=None, limit=50, offset=0):
 	}
 
 
-def _get_company(company=None):
-	if company:
-		return company
-	return frappe.defaults.get_user_default("Company")

@@ -5,18 +5,30 @@ Tracking Links API - Create, manage, and track links with QR codes for OOH ads
 import base64
 import hashlib
 import io
-import json
+import ipaddress
 
 import frappe
 from frappe import _
 from frappe.utils import cint, get_url, now
 
 
+def _anonymize_ip(ip_str):
+	"""Anonymize IP by zeroing the last octet (IPv4) or last 80 bits (IPv6)."""
+	if not ip_str:
+		return ""
+	try:
+		addr = ipaddress.ip_address(ip_str)
+		if isinstance(addr, ipaddress.IPv4Address):
+			return str(ipaddress.IPv4Network(f"{ip_str}/24", strict=False).network_address)
+		return str(ipaddress.IPv6Network(f"{ip_str}/48", strict=False).network_address)
+	except ValueError:
+		return ""
+
+
 @frappe.whitelist()
 def create_tracking_link(data):
 	"""Create a new tracking link with optional QR code generation"""
-	if isinstance(data, str):
-		data = json.loads(data)
+	data = frappe.parse_json(data)
 
 	link_name = data.get("link_name")
 	destination_url = data.get("destination_url")
@@ -154,6 +166,8 @@ def handle_redirect(short_code):
 
 	# Get the doc and record click
 	doc = frappe.get_doc("Tracking Link", link.name)
+	raw_ip = frappe.local.request.remote_addr if frappe.local.request else ""
+	ip_address = _anonymize_ip(raw_ip)
 	user_agent = (frappe.local.request.headers.get("User-Agent", "") if frappe.local.request else "")[:500]
 	referrer = (frappe.local.request.headers.get("Referer", "") if frappe.local.request else "")[:500]
 

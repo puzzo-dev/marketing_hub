@@ -7,12 +7,7 @@ from frappe import _
 from frappe.utils import add_days, add_months, get_datetime, today
 from frappe.utils.data import flt
 
-
-def _get_company(company=None):
-	"""Get the active company - explicit param or user default"""
-	if company:
-		return company
-	return frappe.defaults.get_user_default("Company")
+from marketing_hub.utils import get_company as _get_company
 
 
 def _campaign_company_condition(company, alias="c"):
@@ -72,14 +67,6 @@ def get_dashboard_data(company=None):
 			lead_filters["company"] = company
 
 		leads_generated = frappe.db.count("Lead", lead_filters)
-
-		prev_lead_filters = {
-			"creation": [">=", prev_period_start],
-			"creation": ["<", last_30_days],
-			"source": ["is", "set"],
-		}
-		if company:
-			prev_lead_filters["company"] = company
 
 		prev_period_leads = frappe.db.sql("""
 			SELECT COUNT(*) FROM `tabLead`

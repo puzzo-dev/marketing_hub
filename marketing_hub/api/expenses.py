@@ -7,23 +7,14 @@ from frappe import _
 from frappe.utils import add_months, get_datetime, today
 from frappe.utils.data import flt
 
-
-def _get_company(company=None):
-	"""Get the active company - explicit param or user default"""
-	if company:
-		return company
-	return frappe.defaults.get_user_default("Company")
+from marketing_hub.utils import get_company as _get_company
 
 
 @frappe.whitelist()
 def get_expense_list(filters=None, limit=20, offset=0):
 	"""Get marketing expenses list"""
 	try:
-		if filters and isinstance(filters, str):
-			import json
-			filters = json.loads(filters)
-
-		filters = filters or {}
+		filters = frappe.parse_json(filters) if filters else {}
 		base_filters = {}
 		company = _get_company(filters.get("company"))
 		if company:
@@ -142,9 +133,7 @@ def get_budget_overview(company=None):
 def create_expense(data):
 	"""Create a new marketing expense"""
 	try:
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
+		data = frappe.parse_json(data)
 
 		expense = frappe.get_doc({
 			"doctype": "Marketing Expense",
