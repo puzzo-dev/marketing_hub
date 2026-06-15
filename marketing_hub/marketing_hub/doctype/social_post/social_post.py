@@ -9,7 +9,7 @@ from frappe.utils import get_datetime, now
 VALID_STATUS_TRANSITIONS = {
 	"Draft": {"Scheduled", "Publishing", "Published", "Cancelled"},
 	"Scheduled": {"Draft", "Publishing", "Published", "Cancelled"},
-	"Publishing": {"Published", "Failed"},
+	"Publishing": {"Published", "Failed", "Cancelled"},
 	"Published": {"Deleted"},
 	"Failed": {"Draft", "Scheduled", "Publishing"},
 	"Cancelled": {"Draft"},

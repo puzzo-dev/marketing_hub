@@ -57,7 +57,10 @@ def get_assets(filters=None, limit_start=0, limit_page_length=20, order_by="modi
 		limit_page_length=cint(limit_page_length),
 	)
 
-	total_count = frappe.db.count("Content Asset", filters=base_filters, or_filters=or_filters)
+	total_count = len(frappe.get_all(
+		"Content Asset", filters=base_filters, or_filters=or_filters,
+		fields=["name"], limit_page_length=0,
+	))
 
 	return {"assets": assets, "total_count": total_count}
 
@@ -154,7 +157,10 @@ def get_templates(filters=None, limit_start=0, limit_page_length=20, order_by="m
 		limit_page_length=cint(limit_page_length),
 	)
 
-	total_count = frappe.db.count("Marketing Template", filters=base_filters, or_filters=or_filters)
+	total_count = len(frappe.get_all(
+		"Marketing Template", filters=base_filters, or_filters=or_filters,
+		fields=["name"], limit_page_length=0,
+	))
 
 	return {"templates": templates, "total_count": total_count}
 

@@ -11,7 +11,7 @@ from frappe.utils.data import flt
 def _is_agency_mode():
 	try:
 		return bool(frappe.db.get_single_value("Marketing Hub Settings", "agency_mode"))
-	except frappe.DoesNotExistError:
+	except Exception:
 		return False
 
 
