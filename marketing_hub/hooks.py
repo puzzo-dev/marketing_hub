@@ -274,12 +274,6 @@ scheduler_events = {
 
 user_data_fields = [
     {
-        "doctype": "Tracking Link Click",
-        "filter_by": "",
-        "redact_fields": ["ip_address", "user_agent", "referrer"],
-        "partial": 1,
-    },
-    {
         "doctype": "Tracking Link",
         "filter_by": "owner",
         "partial": 1,

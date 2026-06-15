@@ -4,14 +4,14 @@ Agency Mode API — Client management, project integration, agency dashboard
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, add_months, today
+from frappe.utils import add_days, today
 from frappe.utils.data import flt
 
 
 def _is_agency_mode():
 	try:
 		return bool(frappe.db.get_single_value("Marketing Hub Settings", "agency_mode"))
-	except Exception:
+	except frappe.DoesNotExistError:
 		return False
 
 
@@ -139,7 +139,7 @@ def get_client_detail(client):
 				"social_post_limit": pkg.social_post_limit or 0,
 				"included_channels": (pkg.included_channels or "").split("\n"),
 			}
-		except Exception:
+		except frappe.DoesNotExistError:
 			pass
 
 	# Campaigns for this client

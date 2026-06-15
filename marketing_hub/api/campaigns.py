@@ -149,16 +149,7 @@ def get_campaign_metrics(campaign):
 def update_campaign(name, data):
 	"""Update an existing marketing campaign"""
 	try:
-<<<<<<< HEAD
-		if isinstance(data, str):
-			data = frappe.parse_json(data)
-||||||| 4747116
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
-=======
 		data = frappe.parse_json(data)
->>>>>>> origin/main
 
 		doc = frappe.get_doc("Marketing Campaign", name)
 		for field in ["campaign_name", "status", "description", "budget", "start_date", "end_date", "company", "is_omni_campaign"]:
@@ -175,16 +166,7 @@ def update_campaign(name, data):
 def create_campaign(data):
 	"""Create a new campaign"""
 	try:
-<<<<<<< HEAD
-		if isinstance(data, str):
-			data = frappe.parse_json(data)
-||||||| 4747116
-		if isinstance(data, str):
-			import json
-			data = json.loads(data)
-=======
 		data = frappe.parse_json(data)
->>>>>>> origin/main
 
 		campaign = frappe.get_doc({
 			"doctype": "Marketing Campaign",

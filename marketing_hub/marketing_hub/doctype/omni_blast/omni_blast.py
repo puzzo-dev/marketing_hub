@@ -158,7 +158,7 @@ def _execute_blast_posts(blast_name, post_list):
 				continue
 			
 			# Get the network to determine channel type
-			network = frappe.get_cached_doc("Social Media Network", social_post.social_media_network)
+			network = frappe.get_cached_doc("Social Media Network", social_post.platform)
 			
 			# Non-social channels are handled elsewhere (Email/WhatsApp/SMS)
 			if network.network_type in ("Email", "Messaging", "SMS"):

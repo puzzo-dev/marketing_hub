@@ -127,7 +127,9 @@ def publish_post(post_name):
 	frappe.has_permission("Social Post", "write", doc=doc, throw=True)
 
 	result = _do_publish(doc)
-	return {"success": result.get("success", False), "message": _("Post published successfully")}
+	success = result.get("success", False)
+	msg = _("Post published successfully") if success else result.get("error", _("Publishing failed"))
+	return {"success": success, "message": msg}
 
 
 @frappe.whitelist()

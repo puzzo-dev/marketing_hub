@@ -29,7 +29,7 @@ def get_campaign_permission_query_conditions(user):
 			FROM `tabUser Permission`
 			WHERE allow = 'Marketing Campaign'
 			AND user = {user}
-			AND applicable_for IN ('', 'Marketing Hub')
+			AND (applicable_for IN ('', 'Marketing Hub') OR applicable_for IS NULL)
 		)
 	)""".format(user=escaped_user)
 
