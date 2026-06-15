@@ -2,9 +2,11 @@
 # Copyright (c) 2026, I-Varse Technologies and Contributors
 # License: MIT
 
-import frappe
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import frappe
+
 from marketing_hub.utils.omni_blast import _execute_sms_blast
 
 

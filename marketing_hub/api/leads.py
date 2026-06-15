@@ -4,7 +4,7 @@ Leads API - View and manage leads attributed to marketing campaigns
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, today, cint
+from frappe.utils import add_days, cint, today
 from frappe.utils.data import flt
 
 

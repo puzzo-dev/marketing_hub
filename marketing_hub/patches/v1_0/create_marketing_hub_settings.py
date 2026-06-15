@@ -8,6 +8,7 @@ Migration script to create Marketing Hub Settings for all companies
 
 import frappe
 
+
 def execute():
 	"""Ensure Marketing Hub Settings has sensible defaults (single doctype)"""
 

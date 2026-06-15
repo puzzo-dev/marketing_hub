@@ -6,8 +6,9 @@ Abstract base class defining the interface for all platform-specific adapters.
 Platform adapters should extend this class and implement the abstract methods.
 """
 
-import frappe
 from abc import ABC, abstractmethod
+
+import frappe
 
 
 class BasePlatformAdapter(ABC):

@@ -7,8 +7,9 @@ Seed data for Attribution Models
 Creates standard attribution model records
 """
 
-import frappe
 import json
+
+import frappe
 
 
 def execute():

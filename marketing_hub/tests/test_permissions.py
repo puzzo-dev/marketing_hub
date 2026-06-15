@@ -2,14 +2,16 @@
 # Copyright (c) 2026, Puzzo and Contributors
 # License: MIT
 
-import frappe
 import unittest
+
+import frappe
+
 from marketing_hub.utils.permissions import (
-	get_campaign_permission_query_conditions,
-	has_campaign_permission,
 	get_campaign_activity_permission_query_conditions,
+	get_campaign_permission_query_conditions,
+	get_marketing_segment_permission_query_conditions,
 	has_campaign_activity_permission,
-	get_marketing_segment_permission_query_conditions
+	has_campaign_permission,
 )
 
 

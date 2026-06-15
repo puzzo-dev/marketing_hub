@@ -8,6 +8,7 @@ Test runner configuration for Marketing Hub
 
 import frappe
 
+
 def run_tests():
 	"""Run all Marketing Hub tests"""
 	frappe.init(site="erpnext.local")
@@ -15,11 +16,12 @@ def run_tests():
 	
 	# Run tests
 	import unittest
+
 	from marketing_hub.tests import (
+		test_analytics_sync,
 		test_attribution_engine,
 		test_content_orchestration,
 		test_permissions,
-		test_analytics_sync
 	)
 	
 	loader = unittest.TestLoader()

@@ -4,7 +4,7 @@ Dashboard & Analytics API
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, today, get_datetime, add_months
+from frappe.utils import add_days, add_months, get_datetime, today
 from frappe.utils.data import flt
 
 

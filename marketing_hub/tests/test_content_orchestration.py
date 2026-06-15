@@ -2,13 +2,15 @@
 # Copyright (c) 2026, Puzzo and Contributors
 # License: MIT
 
-import frappe
 import unittest
+
+import frappe
+
 from marketing_hub.utils.content_orchestration import (
-	create_campaign_content_for_channels,
 	adapt_content_for_channel,
+	create_campaign_content_for_channels,
+	get_channel_best_practices,
 	get_content_recommendations,
-	get_channel_best_practices
 )
 
 

@@ -1,7 +1,8 @@
-import frappe
-from frappe.model.document import Document
 import hashlib
 import time
+
+import frappe
+from frappe.model.document import Document
 
 
 class TrackingLink(Document):
@@ -28,7 +29,7 @@ class TrackingLink(Document):
 
 	def get_destination_with_utm(self):
 		"""Build destination URL with UTM parameters appended"""
-		from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+		from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 		parsed = urlparse(self.destination_url)
 		params = parse_qs(parsed.query)

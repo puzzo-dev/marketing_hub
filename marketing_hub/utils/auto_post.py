@@ -4,7 +4,8 @@
 
 import frappe
 from frappe import _
-from frappe.utils import now_datetime, get_datetime
+from frappe.utils import get_datetime, now_datetime
+
 
 def publish_scheduled_posts():
     """Scheduler function to publish scheduled social posts"""

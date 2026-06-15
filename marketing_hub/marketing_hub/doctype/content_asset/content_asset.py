@@ -2,9 +2,11 @@
 # Copyright (c) 2026, I-Varse Technologies and contributors
 # For license information, please see license.txt
 
+import os
+
 import frappe
 from frappe.model.document import Document
-import os
+
 
 class ContentAsset(Document):
     def before_save(self):

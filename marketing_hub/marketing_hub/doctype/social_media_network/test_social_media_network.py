@@ -2,8 +2,10 @@
 # Copyright (c) 2026, I-Varse Technologies and Contributors
 # See license.txt
 
-import frappe
 import unittest
+
+import frappe
+
 
 class TestSocialMediaNetwork(unittest.TestCase):
 	def test_network_creation(self):

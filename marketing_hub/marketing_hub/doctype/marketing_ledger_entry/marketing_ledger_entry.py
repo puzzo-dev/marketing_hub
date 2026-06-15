@@ -4,5 +4,6 @@
 
 from frappe.model.document import Document
 
+
 class MarketingLedgerEntry(Document):
 	pass

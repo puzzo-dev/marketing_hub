@@ -2,14 +2,13 @@
 # Copyright (c) 2026, Puzzo and Contributors
 # License: MIT
 
-import frappe
 import unittest
-from unittest.mock import patch, MagicMock
 from datetime import datetime
-from marketing_hub.utils.analytics_sync import (
-	sync_daily_analytics,
-	calculate_roas
-)
+from unittest.mock import MagicMock, patch
+
+import frappe
+
+from marketing_hub.utils.analytics_sync import calculate_roas, sync_daily_analytics
 
 
 class TestAnalyticsSync(unittest.TestCase):

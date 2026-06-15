@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 
+
 def setup_file_folder():
     """Create Marketing Hub folder in Frappe Files for uploaded assets."""
     if not frappe.db.exists("File", {"file_name": "Marketing Hub", "is_folder": 1}):

@@ -5,6 +5,7 @@
 import frappe
 from frappe.model.document import Document
 
+
 class CampaignContent(Document):
     def validate(self):
         # Auto-populate UTM parameters

@@ -3,7 +3,9 @@
 # See license.txt
 
 import unittest
+
 import frappe
+
 
 class TestMarketingHubSettings(unittest.TestCase):
 	def setUp(self):

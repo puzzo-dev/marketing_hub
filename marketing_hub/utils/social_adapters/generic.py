@@ -6,10 +6,10 @@ Configuration-driven adapter that reads ALL settings from Social Media Network d
 No hardcoded platform logic - add new platforms by just creating doctype records!
 """
 
-import frappe
-import requests
 import json
 
+import frappe
+import requests
 
 # ============ CUSTOM EXCEPTIONS ============
 

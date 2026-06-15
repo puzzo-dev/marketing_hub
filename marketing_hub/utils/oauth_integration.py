@@ -3,10 +3,11 @@ OAuth Integration for Marketing Hub
 Leverages Frappe's Social Login Key for platform authentication
 """
 
-import frappe
-from frappe import _
-import requests
 import json
+
+import frappe
+import requests
+from frappe import _
 
 
 def get_platform_credentials(platform, company=None):
@@ -55,7 +56,7 @@ def get_ad_account_credentials(platform, company=None):
 
 		# Check if token needs refresh
 		if account.get("token_expiry"):
-			from frappe.utils import now_datetime, get_datetime
+			from frappe.utils import get_datetime, now_datetime
 			if get_datetime(account.token_expiry) <= now_datetime():
 				# Token expired, try to refresh
 				refreshed = refresh_access_token(account.name)

@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import nowdate, getdate, add_to_date, formatdate
+from frappe.utils import add_to_date, formatdate, getdate, nowdate
 from frappe.utils.dashboard import cache_source
 from frappe.utils.dateutils import get_from_date_from_timespan, get_period_ending
 

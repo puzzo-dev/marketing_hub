@@ -5,6 +5,7 @@
 import frappe
 from frappe import _
 
+
 @frappe.whitelist()
 def create_campaign_content_for_channels(campaign, channels, template=None):
     """
