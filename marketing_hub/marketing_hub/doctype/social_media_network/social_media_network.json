@@ -120,6 +120,13 @@
    "description": "How to authenticate with the API"
   },
   {
+   "fieldname": "connected_app",
+   "fieldtype": "Link",
+   "label": "Connected App",
+   "options": "Connected App",
+   "description": "Frappe Connected App that handles OAuth for this platform"
+  },
+  {
    "fieldname": "api_version",
    "fieldtype": "Data",
    "label": "API Version",

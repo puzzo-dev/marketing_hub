@@ -1,0 +1,199 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:OOH-CAMP-{YYYY}-{#####}",
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "campaign_name",
+        "status",
+        "column_break_1",
+        "scheduled_datetime",
+        "display_dates_section",
+        "display_start_date",
+        "display_end_date",
+        "vendor_section",
+        "ooh_vendor",
+        "booking_reference",
+        "cost",
+        "creative_section",
+        "creative_brief",
+        "design_asset",
+        "specifications",
+        "locations_section",
+        "locations",
+        "results_section",
+        "results_json",
+        "error_log"
+    ],
+    "fields": [
+        {
+            "fieldname": "campaign_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Campaign Name",
+            "reqd": 1
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nRunning\nCompleted\nFailed\nPaused\nCancelled",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "scheduled_datetime",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date & Time"
+        },
+        {
+            "fieldname": "display_dates_section",
+            "fieldtype": "Section Break",
+            "label": "Display Dates"
+        },
+        {
+            "fieldname": "display_start_date",
+            "fieldtype": "Date",
+            "label": "Display Start Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "display_end_date",
+            "fieldtype": "Date",
+            "label": "Display End Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "vendor_section",
+            "fieldtype": "Section Break",
+            "label": "Vendor"
+        },
+        {
+            "fieldname": "ooh_vendor",
+            "fieldtype": "Link",
+            "label": "OOH Vendor",
+            "options": "OOH Vendor",
+            "reqd": 1
+        },
+        {
+            "fieldname": "booking_reference",
+            "fieldtype": "Data",
+            "label": "Booking Reference",
+            "description": "Vendor booking or contract number"
+        },
+        {
+            "fieldname": "cost",
+            "fieldtype": "Currency",
+            "label": "Campaign Cost",
+            "precision": 2
+        },
+        {
+            "fieldname": "creative_section",
+            "fieldtype": "Section Break",
+            "label": "Creative"
+        },
+        {
+            "fieldname": "creative_brief",
+            "fieldtype": "Text Editor",
+            "label": "Creative Brief",
+            "reqd": 1
+        },
+        {
+            "fieldname": "design_asset",
+            "fieldtype": "Attach",
+            "label": "Design Asset",
+            "description": "Uploaded design file for the vendor"
+        },
+        {
+            "fieldname": "specifications",
+            "fieldtype": "Small Text",
+            "label": "Specifications",
+            "description": "Dimensions, format, resolution requirements"
+        },
+        {
+            "fieldname": "locations_section",
+            "fieldtype": "Section Break",
+            "label": "Locations"
+        },
+        {
+            "fieldname": "locations",
+            "fieldtype": "Table",
+            "label": "Locations",
+            "options": "OOH Campaign Location"
+        },
+        {
+            "fieldname": "results_section",
+            "fieldtype": "Section Break",
+            "label": "Results"
+        },
+        {
+            "fieldname": "results_json",
+            "fieldtype": "Code",
+            "label": "Results",
+            "options": "JSON",
+            "read_only": 1
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "OOH Campaign",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

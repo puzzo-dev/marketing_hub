@@ -9,6 +9,8 @@ Scheduled job that syncs analytics data from all active connectors.
 Referenced in hooks.py → scheduler_events → "all".
 """
 
+import requests
+
 import frappe
 from frappe.utils import now_datetime
 
@@ -27,6 +29,7 @@ def sync_all_connectors():
 		filters={
 			"is_active": 1,
 			"sync_status": ["not in", ["Paused", "Error"]],
+			"sync_in_progress": 0,
 			"next_sync_date": ["<=", now_datetime()]
 		},
 		pluck="name"
@@ -50,7 +53,7 @@ def sync_all_connectors():
 
 			frappe.db.commit()
 
-		except Exception as e:
+		except (frappe.ValidationError, frappe.DoesNotExistError, requests.exceptions.RequestException) as e:
 			frappe.db.rollback()
 			failed += 1
 			frappe.log_error(
@@ -93,7 +96,7 @@ def _sync_single_connector(connector_name):
 		result = doc.sync_analytics()
 		frappe.db.commit()
 		return result
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError, requests.exceptions.RequestException) as e:
 		frappe.db.rollback()
 		frappe.log_error(
 			f"Background sync failed for {connector_name}: {str(e)}",

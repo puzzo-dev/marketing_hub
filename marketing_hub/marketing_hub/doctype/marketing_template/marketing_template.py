@@ -56,7 +56,7 @@ class MarketingTemplate(Document):
                         video_lines.append(f"{k.title()}: {v}")
                 self.video_specs = "\n".join(video_lines)
         
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.log_error(f"Error setting channel specifications: {str(e)}", "Marketing Template")
 
     def validate_content(self):
@@ -66,7 +66,7 @@ class MarketingTemplate(Document):
             text = re.sub(r'<[^>]+>', '', self.body_text or '')
             if len(text) > self.character_limit:
                 frappe.msgprint(
-                    f"Warning: Body text ({len(text)} chars) exceeds recommended limit ({self.character_limit} chars) for {self.channel}",
+                    _("Warning: Body text ({0} chars) exceeds recommended limit ({1} chars) for {2}").format(len(text), self.character_limit, self.channel),
                     indicator="orange"
                 )
 

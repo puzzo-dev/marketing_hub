@@ -1,0 +1,85 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "engine_type",
+        "engine_doc_type",
+        "engine_doc",
+        "column_break_1",
+        "status",
+        "scheduled_datetime",
+        "sync_with_omni_blast",
+        "results_json"
+    ],
+    "fields": [
+        {
+            "fieldname": "engine_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Engine Type",
+            "options": "Email Blast\nEmail Sequence\nWhatsApp\nSMS\nSocial Media\nMeta Ads\nOOH",
+            "reqd": 1
+        },
+        {
+            "fieldname": "engine_doc_type",
+            "fieldtype": "Link",
+            "label": "Engine DocType",
+            "options": "DocType",
+            "reqd": 1
+        },
+        {
+            "fieldname": "engine_doc",
+            "fieldtype": "Dynamic Link",
+            "in_list_view": 1,
+            "label": "Engine Document",
+            "options": "engine_doc_type"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nRunning\nCompleted\nFailed\nPaused\nCancelled"
+        },
+        {
+            "fieldname": "scheduled_datetime",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date & Time"
+        },
+        {
+            "default": "0",
+            "fieldname": "sync_with_omni_blast",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Sync with Omni Blast"
+        },
+        {
+            "fieldname": "results_json",
+            "fieldtype": "Code",
+            "label": "Results",
+            "options": "JSON",
+            "read_only": 1
+        }
+    ],
+    "istable": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Campaign Engine",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

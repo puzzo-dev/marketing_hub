@@ -68,7 +68,7 @@ class TrackingLink(Document):
 			if not existing:
 				self.unique_clicks = (self.unique_clicks or 0) + 1
 
-		self.save(ignore_permissions=True)
+		self.save()
 
 		# Log the click
 		frappe.get_doc({
@@ -76,4 +76,4 @@ class TrackingLink(Document):
 			"tracking_link": self.name,
 			"ip_address": ip_address or "",
 			"clicked_at": frappe.utils.now(),
-		}).insert(ignore_permissions=True)
+		}).insert()

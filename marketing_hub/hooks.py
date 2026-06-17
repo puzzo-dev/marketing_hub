@@ -210,10 +210,14 @@ has_permission = {
 
 doc_events = {
     "Lead": {
-        "before_insert": "marketing_hub.utils.attribution_engine.get_real_lead_source"
+        "before_insert": "marketing_hub.utils.attribution_engine.get_real_lead_source",
+        "before_save": "marketing_hub.utils.attribution_engine.get_real_lead_source"
     },
     "Campaign Activity": {
         "on_update": "marketing_hub.utils.omni_blast.execute_if_scheduled"
+    },
+    "Token Cache": {
+        "on_update": "marketing_hub.utils.oauth_hooks.on_token_cache_update"
     }
 }
 
@@ -222,7 +226,8 @@ doc_events = {
 
 scheduler_events = {
     "daily": [
-        "marketing_hub.utils.campaign_lifecycle.update_campaign_statuses"
+        "marketing_hub.utils.campaign_lifecycle.update_campaign_statuses",
+        "marketing_hub.utils.crm_integration.batch_update_engagement_scores"
     ],
     "hourly": [
         "marketing_hub.utils.analytics_sync.sync_all_connectors"

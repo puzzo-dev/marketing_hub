@@ -63,7 +63,7 @@
             <div v-if="activities.data?.length" class="divide-y divide-outline-gray-1">
               <div v-for="act in activities.data" :key="act.name"
                 class="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-surface-gray-2"
-                @click="window.location.href = '/app/campaign-activity/' + act.name"
+                @click="$router.push('/marketing/activities/' + act.name)"
               >
                 <div>
                   <p class="text-sm font-medium text-ink-gray-9">{{ act.subject || act.name }}</p>

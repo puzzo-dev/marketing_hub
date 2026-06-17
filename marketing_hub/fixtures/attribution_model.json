@@ -1,0 +1,67 @@
+[
+ {
+  "calculation_method": "First Touch",
+  "description": "<p>Attributes 100% of the conversion credit to the first touchpoint in the customer journey.</p><p><strong>Use when:</strong> You want to focus on top-of-funnel awareness campaigns.</p>",
+  "docstatus": 0,
+  "doctype": "Attribution Model",
+  "is_active": 1,
+  "is_default": 0,
+  "model_code": "first_touch",
+  "model_name": "First Touch",
+  "modified": "2026-01-24 20:39:10.206429",
+  "name": "First Touch",
+  "parameters": "{\"weight\": 1.0, \"position\": \"first\"}"
+ },
+ {
+  "calculation_method": "Last Touch",
+  "description": "<p>Attributes 100% of the conversion credit to the last touchpoint before conversion.</p><p><strong>Use when:</strong> You want to focus on bottom-of-funnel conversion campaigns.</p>",
+  "docstatus": 0,
+  "doctype": "Attribution Model",
+  "is_active": 1,
+  "is_default": 1,
+  "model_code": "last_touch",
+  "model_name": "Last Touch",
+  "modified": "2026-01-24 20:39:10.211926",
+  "name": "Last Touch",
+  "parameters": "{\"weight\": 1.0, \"position\": \"last\"}"
+ },
+ {
+  "calculation_method": "Linear",
+  "description": "<p>Distributes conversion credit equally across all touchpoints in the customer journey.</p><p><strong>Use when:</strong> All touchpoints are considered equally important.</p>",
+  "docstatus": 0,
+  "doctype": "Attribution Model",
+  "is_active": 1,
+  "is_default": 0,
+  "model_code": "linear",
+  "model_name": "Linear",
+  "modified": "2026-01-24 20:39:10.217453",
+  "name": "Linear",
+  "parameters": "{\"distribution\": \"equal\"}"
+ },
+ {
+  "calculation_method": "Time Decay",
+  "description": "<p>Gives more credit to touchpoints closer to the conversion, with exponential decay.</p><p><strong>Use when:</strong> Recent interactions are more influential than earlier ones.</p>",
+  "docstatus": 0,
+  "doctype": "Attribution Model",
+  "is_active": 1,
+  "is_default": 0,
+  "model_code": "time_decay",
+  "model_name": "Time Decay",
+  "modified": "2026-01-24 20:39:10.221643",
+  "name": "Time Decay",
+  "parameters": "{\"decay_rate\": 0.5, \"half_life_days\": 7}"
+ },
+ {
+  "calculation_method": "Position Based",
+  "description": "<p>Gives 40% credit to first touch, 40% to last touch, and 20% distributed among middle touchpoints.</p><p><strong>Use when:</strong> Both awareness and conversion touchpoints are important.</p>",
+  "docstatus": 0,
+  "doctype": "Attribution Model",
+  "is_active": 1,
+  "is_default": 0,
+  "model_code": "position_based",
+  "model_name": "Position Based (U-Shaped)",
+  "modified": "2026-01-24 20:39:10.225618",
+  "name": "Position Based (U-Shaped)",
+  "parameters": "{\"first_touch_weight\": 0.4, \"last_touch_weight\": 0.4, \"middle_weight\": 0.2}"
+ }
+]

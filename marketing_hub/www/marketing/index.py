@@ -75,7 +75,7 @@ def get_apps_for_user():
                 try:
                     if not frappe.get_attr(has_permission)():
                         continue
-                except Exception:
+                except (frappe.ValidationError, frappe.DoesNotExistError, AttributeError):
                     continue
 
             all_apps.append({

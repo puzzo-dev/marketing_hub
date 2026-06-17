@@ -21,16 +21,16 @@ def get_campaign_permission_query_conditions(user):
 		return ""
 	
 	# Others see only campaigns they own or are assigned to
-	return f"""(
-		`tabMarketing Campaign`.owner = '{frappe.db.escape(user)}' 
-		OR `tabMarketing Campaign`.name IN (
-			SELECT DISTINCT parent 
-			FROM `tabUser Permission` 
-			WHERE allow = 'Marketing Campaign' 
-			AND user = '{frappe.db.escape(user)}'
-			AND applicable_for IN ('', NULL, 'Marketing Hub')
-		)
-	)"""
+	escaped_user = frappe.db.escape(user)
+	return (
+		"(`tabMarketing Campaign`.owner = " + escaped_user +
+		" OR `tabMarketing Campaign`.name IN ("
+		"SELECT DISTINCT parent FROM `tabUser Permission` "
+		"WHERE allow = 'Marketing Campaign' "
+		"AND user = " + escaped_user +
+		" AND applicable_for IN ('', NULL, 'Marketing Hub')"
+		"))"
+	)
 
 
 def has_campaign_permission(doc, ptype, user):
@@ -93,18 +93,17 @@ def get_campaign_activity_permission_query_conditions(user):
 		return ""
 	
 	# Others see activities from campaigns they can access
-	return f"""(
-		`tabCampaign Activity`.campaign IN (
-			SELECT name FROM `tabMarketing Campaign`
-			WHERE owner = '{frappe.db.escape(user)}'
-			OR name IN (
-				SELECT DISTINCT for_value 
-				FROM `tabUser Permission` 
-				WHERE allow = 'Marketing Campaign' 
-				AND user = '{frappe.db.escape(user)}'
-			)
-		)
-	)"""
+	escaped_user = frappe.db.escape(user)
+	return (
+		"(`tabCampaign Activity`.campaign IN ("
+		"SELECT name FROM `tabMarketing Campaign` "
+		"WHERE owner = " + escaped_user +
+		" OR name IN ("
+		"SELECT DISTINCT for_value FROM `tabUser Permission` "
+		"WHERE allow = 'Marketing Campaign' "
+		"AND user = " + escaped_user +
+		"))"
+	)
 
 
 def has_campaign_activity_permission(doc, ptype, user):
@@ -137,7 +136,7 @@ def get_marketing_segment_permission_query_conditions(user):
 		return ""
 	
 	# Others see only their own
-	return f"`tabMarketing Segment`.owner = '{frappe.db.escape(user)}'"
+	return "`tabMarketing Segment`.owner = " + frappe.db.escape(user)
 
 
 def has_workspace_access(user=None):
@@ -159,31 +158,6 @@ def has_workspace_access(user=None):
 	
 	user_roles = frappe.get_roles(user)
 	return any(role in allowed_roles for role in user_roles)
-
-
-def setup_workspace_visibility(login_manager=None):
-	"""Called on session creation to set workspace visibility"""
-	user = frappe.session.user
-	
-	if user == "Guest":
-		return
-	
-	# Check if user should see Marketing Hub workspace
-	has_access = has_workspace_access(user)
-	
-	try:
-		workspace = frappe.get_doc("Workspace", "Marketing Hub")
-		
-		# Update visibility (this won't work as expected - workspaces are role-based)
-		# Instead, we'll use role-based filtering in the workspace JSON
-		
-		# Log access for audit
-		if has_access:
-			frappe.logger().debug(f"User {user} has Marketing Hub workspace access")
-		else:
-			frappe.logger().debug(f"User {user} does not have Marketing Hub workspace access")
-	except frappe.DoesNotExistError:
-		frappe.logger().warning("Marketing Hub workspace not found")
 
 
 @frappe.whitelist()
@@ -218,7 +192,7 @@ def assign_user_to_campaign(campaign, user, role="Collaborator", can_edit=1, can
 	user_perm.allow = "Marketing Campaign"
 	user_perm.for_value = campaign
 	user_perm.applicable_for = "Marketing Hub"
-	user_perm.insert(ignore_permissions=True)
+	user_perm.insert()
 	
 	# Log the assignment
 	frappe.logger().info(f"Assigned user {user} to campaign {campaign} as {role}")
@@ -249,7 +223,7 @@ def remove_user_from_campaign(campaign, user):
 	)
 	
 	for perm in user_perms:
-		frappe.delete_doc("User Permission", perm, ignore_permissions=True)
+		frappe.delete_doc("User Permission", perm)
 	
 	frappe.logger().info(f"Removed user {user} from campaign {campaign}")
 	
@@ -298,5 +272,5 @@ def validate_campaign_limits(doc, method):
 		
 		if not result.get("valid"):
 			frappe.throw(_(result.get("message", "Campaign limit exceeded")))
-	except Exception as e:
+	except (frappe.DoesNotExistError, frappe.ValidationError) as e:
 		frappe.log_error(f"Campaign limit validation error: {str(e)}", "Marketing Hub Permissions")

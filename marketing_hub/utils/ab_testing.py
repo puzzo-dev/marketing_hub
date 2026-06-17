@@ -46,7 +46,7 @@ def execute_test(test_id):
 				reference_name=test.name,
 				custom_message_id=f"{test.name}-A"
 			)
-		except Exception as e:
+		except (frappe.ValidationError, frappe.OutgoingEmailError) as e:
 			frappe.log_error(f"Failed to send Variant A to {r.get('email')}", str(e))
 			
 	# Send Variant B
@@ -61,7 +61,7 @@ def execute_test(test_id):
 				reference_name=test.name,
 				custom_message_id=f"{test.name}-B"
 			)
-		except Exception as e:
+		except (frappe.ValidationError, frappe.OutgoingEmailError) as e:
 			frappe.log_error(f"Failed to send Variant B to {r.get('email')}", str(e))
 			
 	# Update test status
@@ -126,6 +126,6 @@ def _send_to_remaining(test, winner):
 				reference_doctype="A-B Test",
 				reference_name=test.name
 			)
-		except Exception as e:
+		except (frappe.ValidationError, frappe.OutgoingEmailError) as e:
 			frappe.log_error(f"Failed to send Winner to {r.get('email')}", str(e))
 

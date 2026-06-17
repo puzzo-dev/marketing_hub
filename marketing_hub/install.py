@@ -10,7 +10,7 @@ def setup_file_folder():
             "is_folder": 1,
             "folder": "Home"
         })
-        folder.insert(ignore_permissions=True)
+        folder.insert()
         frappe.db.commit()
 
 def setup_notifications():
@@ -63,7 +63,7 @@ def setup_notifications():
             doc.append("recipients", {
                  "receiver_by_role": "System Manager"
             })
-            doc.insert(ignore_permissions=True)
+            doc.insert()
             count += 1
             
     frappe.db.commit()

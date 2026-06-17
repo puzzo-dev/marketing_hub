@@ -11,7 +11,7 @@ from frappe.utils.data import flt
 def _is_agency_mode():
 	try:
 		return bool(frappe.db.get_single_value("Marketing Hub Settings", "agency_mode"))
-	except Exception:
+	except (frappe.ValidationError, frappe.DoesNotExistError):
 		return False
 
 
@@ -33,9 +33,9 @@ def get_clients(filters=None, limit=20, offset=0):
 
 	# Get all customers with active subscriptions
 	subscribed_clients = frappe.db.sql("""
-		SELECT DISTINCT cs.client
-		FROM `tabClient Subscription` cs
-		WHERE cs.status = 'Active' AND cs.end_date >= %(today)s
+		SELECT DISTINCT s.party
+		FROM `tabSubscription` s
+		WHERE s.status IN ('Active', 'Trialling') AND s.end_date >= %(today)s
 	""", {"today": today()}, as_list=True)
 	subscribed_set = {r[0] for r in subscribed_clients}
 
@@ -73,13 +73,23 @@ def get_clients(filters=None, limit=20, offset=0):
 	for client in customers:
 		# Active subscription
 		sub = frappe.db.sql("""
-			SELECT cs.name, cs.package, cs.status, cs.end_date, ap.package_name
-			FROM `tabClient Subscription` cs
-			LEFT JOIN `tabAgency Package` ap ON ap.name = cs.package
-			WHERE cs.client = %(client)s AND cs.status = 'Active' AND cs.end_date >= %(today)s
-			ORDER BY cs.end_date DESC LIMIT 1
+			SELECT s.name, s.status, s.end_date
+			FROM `tabSubscription` s
+			WHERE s.party_type = 'Customer' AND s.party = %(client)s
+			AND s.status IN ('Active', 'Trialling') AND s.end_date >= %(today)s
+			ORDER BY s.end_date DESC LIMIT 1
 		""", {"client": client.name, "today": today()}, as_dict=True)
 		client["subscription"] = sub[0] if sub else None
+		if sub:
+			# Resolve agency package from subscription plans
+			sub_doc = frappe.get_doc("Subscription", sub[0].name)
+			for plan_row in sub_doc.get("plans", []):
+				if plan_row.plan:
+					pkg = frappe.get_all("Agency Package", filters={"subscription_plan": plan_row.plan}, limit=1)
+					if pkg:
+						client["subscription"]["package"] = pkg[0].name
+						client["subscription"]["package_name"] = frappe.get_value("Agency Package", pkg[0].name, "package_name")
+						break
 
 		# Campaign counts
 		client["active_campaigns"] = frappe.db.count(
@@ -122,9 +132,14 @@ def get_client_detail(client):
 
 	# Active subscription
 	subs = frappe.get_all(
-		"Client Subscription",
-		filters={"client": client, "status": "Active", "end_date": [">=", today()]},
-		fields=["name", "package", "status", "start_date", "end_date", "monthly_fee"],
+		"Subscription",
+		filters={
+			"party_type": "Customer",
+			"party": client,
+			"status": ["in", ["Active", "Trialling"]],
+			"end_date": [">=", today()]
+		},
+		fields=["name", "status", "start_date", "end_date"],
 		order_by="end_date desc",
 		limit=1
 	)
@@ -133,16 +148,22 @@ def get_client_detail(client):
 	package_info = None
 	if subs:
 		try:
-			pkg = frappe.get_doc("Agency Package", subs[0].package)
-			package_info = {
-				"name": pkg.name,
-				"package_name": pkg.package_name,
-				"campaign_limit": pkg.campaign_limit or 0,
-				"blast_limit": pkg.blast_limit or 0,
-				"social_post_limit": pkg.social_post_limit or 0,
-				"included_channels": (pkg.included_channels or "").split("\n"),
-			}
-		except Exception:
+			sub_doc = frappe.get_doc("Subscription", subs[0].name)
+			for plan_row in sub_doc.get("plans", []):
+				if plan_row.plan:
+					pkg_names = frappe.get_all("Agency Package", filters={"subscription_plan": plan_row.plan}, limit=1)
+					if pkg_names:
+						pkg = frappe.get_doc("Agency Package", pkg_names[0].name)
+						package_info = {
+							"name": pkg.name,
+							"package_name": pkg.package_name,
+							"campaign_limit": pkg.campaign_limit or 0,
+							"blast_limit": pkg.blast_limit or 0,
+							"social_post_limit": pkg.social_post_limit or 0,
+							"included_channels": (pkg.included_channels or "").split("\n"),
+						}
+						break
+		except (frappe.ValidationError, frappe.DoesNotExistError):
 			pass
 
 	# Campaigns for this client
@@ -197,14 +218,18 @@ def get_agency_overview():
 	today_date = today()
 
 	active_subs = frappe.db.count(
-		"Client Subscription",
-		filters={"status": "Active", "end_date": [">=", today_date]}
+		"Subscription",
+		filters={
+			"party_type": "Customer",
+			"status": ["in", ["Active", "Trialling"]],
+			"end_date": [">=", today_date]
+		}
 	)
 
 	# Unique clients with active subscriptions
 	active_clients = frappe.db.sql("""
-		SELECT COUNT(DISTINCT client) FROM `tabClient Subscription`
-		WHERE status = 'Active' AND end_date >= %(today)s
+		SELECT COUNT(DISTINCT party) FROM `tabSubscription`
+		WHERE party_type = 'Customer' AND status IN ('Active', 'Trialling') AND end_date >= %(today)s
 	""", {"today": today_date})[0][0] or 0
 
 	# Total active campaigns across all clients
@@ -215,12 +240,13 @@ def get_agency_overview():
 
 	# Subscriptions expiring within 30 days
 	expiring = frappe.get_all(
-		"Client Subscription",
+		"Subscription",
 		filters={
-			"status": "Active",
+			"party_type": "Customer",
+			"status": ["in", ["Active", "Trialling"]],
 			"end_date": ["between", [today_date, add_days(today_date, 30)]]
 		},
-		fields=["name", "client", "client_name", "end_date", "package"],
+		fields=["name", "party as client", "end_date"],
 		order_by="end_date asc"
 	)
 

@@ -14,54 +14,54 @@ def get_leads_overview(company=None):
 	company = _get_company(company)
 	from_date = add_days(today(), -30)
 	params = {"company": company, "from_date": from_date}
-	company_cond = "AND company = %(company)s" if company else ""
+
+	conditions = ["utm_campaign IS NOT NULL AND utm_campaign != ''"]
+	if company:
+		conditions.append("company = %(company)s")
+
+	where_clause = " AND ".join(conditions)
 
 	# Total marketing leads (have UTM campaign set)
-	total = frappe.db.sql("""
+	total = frappe.db.sql(f"""
 		SELECT COUNT(*) FROM `tabLead`
-		WHERE utm_campaign IS NOT NULL AND utm_campaign != ''
-		{company_cond}
-	""".format(company_cond=company_cond), params)[0][0] or 0
+		WHERE {where_clause}
+	""", params)[0][0] or 0
 
 	# Last 30 days
-	recent = frappe.db.sql("""
+	recent = frappe.db.sql(f"""
 		SELECT COUNT(*) FROM `tabLead`
-		WHERE utm_campaign IS NOT NULL AND utm_campaign != ''
+		WHERE {where_clause}
 		AND creation >= %(from_date)s
-		{company_cond}
-	""".format(company_cond=company_cond), params)[0][0] or 0
+	""", params)[0][0] or 0
 
 	# Converted
-	converted = frappe.db.sql("""
+	converted = frappe.db.sql(f"""
 		SELECT COUNT(*) FROM `tabLead`
-		WHERE utm_campaign IS NOT NULL AND utm_campaign != ''
+		WHERE {where_clause}
 		AND status = 'Converted'
-		{company_cond}
-	""".format(company_cond=company_cond), params)[0][0] or 0
+	""", params)[0][0] or 0
 
 	# By status
-	by_status = frappe.db.sql("""
+	by_status = frappe.db.sql(f"""
 		SELECT status, COUNT(*) as count FROM `tabLead`
-		WHERE utm_campaign IS NOT NULL AND utm_campaign != ''
-		{company_cond}
+		WHERE {where_clause}
 		GROUP BY status ORDER BY count DESC
-	""".format(company_cond=company_cond), params, as_dict=True)
+	""", params, as_dict=True)
 
 	# Top campaigns by lead count
-	by_campaign = frappe.db.sql("""
+	by_campaign = frappe.db.sql(f"""
 		SELECT utm_campaign as campaign, COUNT(*) as count FROM `tabLead`
-		WHERE utm_campaign IS NOT NULL AND utm_campaign != ''
-		{company_cond}
+		WHERE {where_clause}
 		GROUP BY utm_campaign ORDER BY count DESC LIMIT 10
-	""".format(company_cond=company_cond), params, as_dict=True)
+	""", params, as_dict=True)
 
 	# Top sources
-	by_source = frappe.db.sql("""
+	by_source = frappe.db.sql(f"""
 		SELECT utm_source as source, COUNT(*) as count FROM `tabLead`
 		WHERE utm_source IS NOT NULL AND utm_source != ''
-		{company_cond}
+		{'AND company = %(company)s' if company else ''}
 		GROUP BY utm_source ORDER BY count DESC LIMIT 10
-	""".format(company_cond=company_cond), params, as_dict=True)
+	""", params, as_dict=True)
 
 	conversion_rate = (converted / total * 100) if total > 0 else 0
 

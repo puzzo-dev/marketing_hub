@@ -1,0 +1,279 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:META-CAMP-{YYYY}-{#####}",
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "campaign_name",
+        "status",
+        "column_break_1",
+        "scheduled_datetime",
+        "ad_account",
+        "campaign_objective",
+        "budget_section",
+        "daily_budget",
+        "lifetime_budget",
+        "budget_type",
+        "column_break_2",
+        "currency",
+        "bid_strategy",
+        "targeting_section",
+        "target_audience",
+        "custom_audience",
+        "location",
+        "age_range",
+        "gender",
+        "creative_section",
+        "ad_creative_name",
+        "headline",
+        "primary_text",
+        "description",
+        "call_to_action",
+        "media_attachment",
+        "link_url",
+        "results_section",
+        "platform_campaign_id",
+        "results_json",
+        "error_log"
+    ],
+    "fields": [
+        {
+            "fieldname": "campaign_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Campaign Name",
+            "reqd": 1
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nRunning\nCompleted\nFailed\nPaused\nCancelled",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "scheduled_datetime",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date & Time"
+        },
+        {
+            "fieldname": "ad_account",
+            "fieldtype": "Link",
+            "label": "Ad Account",
+            "options": "Ad Account",
+            "reqd": 1,
+            "description": "Linked Meta Ads account"
+        },
+        {
+            "fieldname": "campaign_objective",
+            "fieldtype": "Select",
+            "label": "Campaign Objective",
+            "options": "AWARENESS\nTRAFFIC\nENGAGEMENT\nLEADS\nSALES\nAPP_PROMOTION",
+            "reqd": 1
+        },
+        {
+            "fieldname": "budget_section",
+            "fieldtype": "Section Break",
+            "label": "Budget"
+        },
+        {
+            "fieldname": "daily_budget",
+            "fieldtype": "Currency",
+            "label": "Daily Budget",
+            "precision": 2
+        },
+        {
+            "fieldname": "lifetime_budget",
+            "fieldtype": "Currency",
+            "label": "Lifetime Budget",
+            "precision": 2
+        },
+        {
+            "fieldname": "budget_type",
+            "fieldtype": "Select",
+            "label": "Budget Type",
+            "options": "\nDaily\nLifetime",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "currency",
+            "fieldtype": "Link",
+            "label": "Currency",
+            "options": "Currency",
+            "default": "USD"
+        },
+        {
+            "fieldname": "bid_strategy",
+            "fieldtype": "Select",
+            "label": "Bid Strategy",
+            "options": "\nLOWEST_COST_WITHOUT_CAP\nLOWEST_COST_WITH_BID_CAP\nCOST_CAP\nMINIMUM_ROAS\nHIGHEST_VALUE"
+        },
+        {
+            "fieldname": "targeting_section",
+            "fieldtype": "Section Break",
+            "label": "Targeting"
+        },
+        {
+            "fieldname": "target_audience",
+            "fieldtype": "Small Text",
+            "label": "Target Audience Description"
+        },
+        {
+            "fieldname": "custom_audience",
+            "fieldtype": "Data",
+            "label": "Custom Audience ID",
+            "description": "Meta Custom Audience identifier"
+        },
+        {
+            "fieldname": "location",
+            "fieldtype": "Small Text",
+            "label": "Target Locations",
+            "description": "Comma-separated country codes or location keys"
+        },
+        {
+            "fieldname": "age_range",
+            "fieldtype": "Data",
+            "label": "Age Range",
+            "description": "e.g. 18-65"
+        },
+        {
+            "fieldname": "gender",
+            "fieldtype": "Select",
+            "label": "Gender",
+            "options": "\nAll\nMale\nFemale"
+        },
+        {
+            "fieldname": "creative_section",
+            "fieldtype": "Section Break",
+            "label": "Creative"
+        },
+        {
+            "fieldname": "ad_creative_name",
+            "fieldtype": "Data",
+            "label": "Ad Creative Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "headline",
+            "fieldtype": "Data",
+            "label": "Headline",
+            "reqd": 1
+        },
+        {
+            "fieldname": "primary_text",
+            "fieldtype": "Small Text",
+            "label": "Primary Text",
+            "reqd": 1
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Small Text",
+            "label": "Description"
+        },
+        {
+            "fieldname": "call_to_action",
+            "fieldtype": "Select",
+            "label": "Call to Action",
+            "options": "\nLEARN_MORE\nSHOP_NOW\nSIGN_UP\nDOWNLOAD\nCONTACT_US\nGET_QUOTE\nGET_OFFER",
+            "reqd": 1
+        },
+        {
+            "fieldname": "media_attachment",
+            "fieldtype": "Attach",
+            "label": "Media Attachment",
+            "description": "Image or video for the ad"
+        },
+        {
+            "fieldname": "link_url",
+            "fieldtype": "Data",
+            "label": "Link URL",
+            "description": "Destination URL for the ad"
+        },
+        {
+            "fieldname": "results_section",
+            "fieldtype": "Section Break",
+            "label": "Results"
+        },
+        {
+            "fieldname": "platform_campaign_id",
+            "fieldtype": "Data",
+            "label": "Platform Campaign ID",
+            "read_only": 1,
+            "description": "Meta Campaign ID returned after creation"
+        },
+        {
+            "fieldname": "results_json",
+            "fieldtype": "Code",
+            "label": "Results",
+            "options": "JSON",
+            "read_only": 1
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Meta Ads Campaign",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

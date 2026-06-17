@@ -35,7 +35,7 @@ def get_data(filters):
 		values["status"] = filters.get("status")
 
 	# Fetch aggregated data
-	campaigns = frappe.db.sql("""
+	campaigns = frappe.db.sql(f"""
 		SELECT
 			c.name as campaign,
 			c.status,
@@ -48,7 +48,7 @@ def get_data(filters):
 		WHERE 1=1 {conditions}
 		GROUP BY c.name
 		ORDER BY revenue DESC
-	""".format(conditions=conditions), values, as_dict=True)
+	""", values, as_dict=True)
 
 	for row in campaigns:
 		# Get lead count separately to ensure accuracy

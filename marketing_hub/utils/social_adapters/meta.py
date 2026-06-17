@@ -40,7 +40,7 @@ class MetaAdapter(BasePlatformAdapter):
 			else:
 				return self._publish_facebook(post_doc, ad_account, access_token)
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"Meta publish error: {str(e)}", "Meta Adapter")
 			return {"success": False, "error": str(e)}
 	
@@ -148,7 +148,7 @@ class MetaAdapter(BasePlatformAdapter):
 			
 			return {"success": True, "message": "Post deleted from Meta"}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			return {"success": False, "error": str(e)}
 	
 	def get_post_analytics(self, platform_post_id):
@@ -190,7 +190,7 @@ class MetaAdapter(BasePlatformAdapter):
 				"engagement_rate": 0
 			}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"Meta analytics error: {str(e)}", "Meta Adapter")
 			return {
 				"impressions": 0, "clicks": 0, "likes": 0,

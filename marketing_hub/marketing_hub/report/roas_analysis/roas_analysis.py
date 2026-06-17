@@ -125,63 +125,151 @@ def get_data(filters):
 
 
 def get_campaign_data(filters):
-	"""Get ROAS data grouped by campaign"""
+	"""Get ROAS data grouped by campaign using bulk aggregation"""
 	conditions = get_conditions(filters)
 
 	# Get campaigns
-	campaigns = frappe.db.sql("""
+	campaigns = frappe.db.sql(f"""
 		SELECT
 			c.name as campaign
 		FROM `tabMarketing Campaign` c
 		WHERE c.docstatus < 2
 		{conditions}
 		ORDER BY c.creation DESC
-	""".format(conditions=conditions), filters, as_dict=1)
+	""", filters, as_dict=1)
+
+	if not campaigns:
+		return []
+
+	campaign_names = [c.campaign for c in campaigns]
+
+	# Bulk fetch all metrics in 3 queries
+	metrics_map = get_bulk_campaign_metrics(campaign_names)
+
+	# Bulk fetch channels
+	channel_rows = frappe.db.sql("""
+		SELECT parent, social_media_network
+		FROM `tabMarketing Campaign Channel`
+		WHERE parenttype = 'Marketing Campaign'
+		AND parent IN %(campaigns)s
+	""", {"campaigns": campaign_names}, as_dict=1)
+
+	channels_map = {}
+	for row in channel_rows:
+		channels_map.setdefault(row.parent, []).append(row.social_media_network)
 
 	data = []
-
 	for campaign in campaigns:
-		row = get_campaign_metrics(campaign.campaign)
+		row = metrics_map.get(campaign.campaign, {})
 		row["campaign"] = campaign.campaign
+		row["channels"] = ", ".join(channels_map.get(campaign.campaign, [])) or "-"
 
-		# Get channels from Table MultiSelect
-		channel_names = frappe.get_all(
-			"Marketing Campaign Channel",
-			filters={"parent": campaign.campaign, "parenttype": "Marketing Campaign"},
-			pluck="social_media_network"
-		)
-		row["channels"] = ", ".join(channel_names) if channel_names else "-"
-
-		# Only include if meets minimum ROAS threshold
 		min_roas = filters.get("min_roas", 0)
-		if row["roas"] >= min_roas:
+		if row.get("roas", 0) >= min_roas:
 			data.append(row)
 
 	return data
 
 
+def get_bulk_campaign_metrics(campaign_names):
+	"""Fetch metrics for multiple campaigns in bulk (3 queries total)"""
+	if not campaign_names:
+		return {}
+
+	# 1. Analytics aggregation
+	analytics = frappe.db.sql("""
+		SELECT
+			campaign,
+			SUM(spend) as spend,
+			SUM(impressions) as impressions,
+			SUM(clicks) as clicks
+		FROM `tabAnalytics Daily Log`
+		WHERE campaign IN %(campaigns)s
+		GROUP BY campaign
+	""", {"campaigns": campaign_names}, as_dict=1)
+
+	analytics_map = {a.campaign: a for a in analytics}
+
+	# 2. Leads count
+	leads = frappe.db.sql("""
+		SELECT campaign_name as campaign, COUNT(*) as leads
+		FROM `tabLead`
+		WHERE campaign_name IN %(campaigns)s
+		GROUP BY campaign_name
+	""", {"campaigns": campaign_names}, as_dict=1)
+
+	leads_map = {l.campaign: l.leads for l in leads}
+
+	# 3. Revenue from Sales Orders
+	revenue = frappe.db.sql("""
+		SELECT campaign, COALESCE(SUM(grand_total), 0) as revenue
+		FROM `tabSales Order`
+		WHERE campaign IN %(campaigns)s
+		AND docstatus = 1
+		GROUP BY campaign
+	""", {"campaigns": campaign_names}, as_dict=1)
+
+	revenue_map = {r.campaign: r.revenue for r in revenue}
+
+	# Build metrics map
+	metrics_map = {}
+	for name in campaign_names:
+		spend = analytics_map.get(name, {}).get("spend") or 0
+		impressions = analytics_map.get(name, {}).get("impressions") or 0
+		clicks = analytics_map.get(name, {}).get("clicks") or 0
+		leads_count = leads_map.get(name, 0)
+		rev = revenue_map.get(name, 0)
+
+		metrics_map[name] = {
+			"spend": spend,
+			"impressions": impressions,
+			"clicks": clicks,
+			"leads": leads_count,
+			"revenue": rev,
+			"roas": rev / spend if spend > 0 else 0,
+			"ctr": (clicks / impressions) * 100 if impressions > 0 else 0,
+			"cpc": spend / clicks if clicks > 0 else 0,
+			"cpl": spend / leads_count if leads_count > 0 else 0,
+		}
+
+	return metrics_map
+
+
 def get_channel_data(filters):
-	"""Get ROAS data grouped by channel"""
+	"""Get ROAS data grouped by channel using bulk metrics"""
 	conditions = get_conditions(filters)
 
-	campaigns = frappe.db.sql("""
+	campaigns = frappe.db.sql(f"""
 		SELECT name
 		FROM `tabMarketing Campaign`
 		WHERE docstatus < 2
 		{conditions}
-	""".format(conditions=conditions), filters, as_dict=1)
+	""", filters, as_dict=1)
+
+	if not campaigns:
+		return []
+
+	campaign_names = [c.name for c in campaigns]
+	metrics_map = get_bulk_campaign_metrics(campaign_names)
+
+	# Bulk fetch channels
+	channel_rows = frappe.db.sql("""
+		SELECT parent, social_media_network
+		FROM `tabMarketing Campaign Channel`
+		WHERE parenttype = 'Marketing Campaign'
+		AND parent IN %(campaigns)s
+	""", {"campaigns": campaign_names}, as_dict=1)
+
+	campaign_channels = {}
+	for row in channel_rows:
+		campaign_channels.setdefault(row.parent, []).append(row.social_media_network)
 
 	# Aggregate by channel
 	channel_data = {}
 
 	for campaign in campaigns:
-		# Get channels from Table MultiSelect
-		channel_names = frappe.get_all(
-			"Marketing Campaign Channel",
-			filters={"parent": campaign.name, "parenttype": "Marketing Campaign"},
-			pluck="social_media_network"
-		)
-		metrics = get_campaign_metrics(campaign.name)
+		channel_names = campaign_channels.get(campaign.name, [])
+		metrics = metrics_map.get(campaign.name, {})
 
 		for channel in channel_names:
 			if not channel:
@@ -197,13 +285,12 @@ def get_channel_data(filters):
 					"leads": 0
 				}
 
-			# Divide metrics equally among channels
 			channel_count = len(channel_names) or 1
-			channel_data[channel]["spend"] += metrics["spend"] / channel_count
-			channel_data[channel]["revenue"] += metrics["revenue"] / channel_count
-			channel_data[channel]["impressions"] += metrics["impressions"] / channel_count
-			channel_data[channel]["clicks"] += metrics["clicks"] / channel_count
-			channel_data[channel]["leads"] += metrics["leads"] / channel_count
+			channel_data[channel]["spend"] += metrics.get("spend", 0) / channel_count
+			channel_data[channel]["revenue"] += metrics.get("revenue", 0) / channel_count
+			channel_data[channel]["impressions"] += metrics.get("impressions", 0) / channel_count
+			channel_data[channel]["clicks"] += metrics.get("clicks", 0) / channel_count
+			channel_data[channel]["leads"] += metrics.get("leads", 0) / channel_count
 
 	# Calculate derived metrics
 	data = []
@@ -213,14 +300,11 @@ def get_channel_data(filters):
 		metrics["cpc"] = metrics["spend"] / metrics["clicks"] if metrics["clicks"] > 0 else 0
 		metrics["cpl"] = metrics["spend"] / metrics["leads"] if metrics["leads"] > 0 else 0
 
-		# Apply minimum ROAS filter
 		min_roas = filters.get("min_roas", 0)
 		if metrics["roas"] >= min_roas:
 			data.append(metrics)
 
-	# Sort by ROAS descending
 	data.sort(key=lambda x: x["roas"], reverse=True)
-
 	return data
 
 
@@ -228,7 +312,7 @@ def get_monthly_data(filters):
 	"""Get ROAS data grouped by month"""
 	date_conditions = get_date_conditions(filters)
 
-	monthly_data = frappe.db.sql("""
+	monthly_data = frappe.db.sql(f"""
 		SELECT
 			DATE_FORMAT(log_date, '%%Y-%%m') as month,
 			SUM(spend) as spend,
@@ -237,10 +321,10 @@ def get_monthly_data(filters):
 			SUM(clicks) as clicks
 		FROM `tabAnalytics Daily Log`
 		WHERE 1=1
-		{conditions}
+		{date_conditions}
 		GROUP BY DATE_FORMAT(log_date, '%%Y-%%m')
 		ORDER BY month DESC
-	""".format(conditions=date_conditions), filters, as_dict=1)
+	""", filters, as_dict=1)
 
 	data = []
 	for row in monthly_data:

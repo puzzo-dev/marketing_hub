@@ -67,17 +67,17 @@
             <div class="flex items-center text-sm">
               <FeatherIcon name="users" class="mr-1 h-4 w-4 text-ink-gray-6" />
               <span class="font-medium text-ink-gray-9">
-                {{ formatNumber(segment.count) || '—' }}
+                {{ formatNumber(segment.segment_size) || '—' }}
               </span>
               <span class="ml-1 text-ink-gray-6">contacts</span>
             </div>
           </div>
 
           <!-- Segment Filters Preview -->
-          <div v-if="segment.filter_json" class="mb-3">
+          <div v-if="segment.filters?.length" class="mb-3">
             <div class="rounded-md bg-surface-gray-1 p-2">
               <p class="text-xs text-ink-gray-6">
-                {{ getFilterPreview(segment.filter_json) }}
+                {{ getFilterPreview(segment.filters) }}
               </p>
             </div>
           </div>
@@ -299,12 +299,10 @@ import IconUsers from '~icons/lucide/users'
 
 // Resources
 const segmentsResource = createResource({
-  url: 'frappe.client.get_list',
+  url: 'marketing_hub.api.segments.get_segment_list',
   params: {
-    doctype: 'Marketing Segment',
-    fields: ['name', 'segment_name', 'description', 'filter_json', 'disabled', 'creation'],
-    limit_page_length: 100,
-    order_by: 'creation desc',
+    limit: 100,
+    offset: 0,
   },
   auto: true,
 })
@@ -395,11 +393,14 @@ async function testSegment(segment) {
 
   try {
     const result = await call(
-      'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.test_segment',
-      { segment: segment.name }
+      'marketing_hub.marketing_hub.doctype.marketing_segment.marketing_segment.get_segment_preview',
+      { filters_json: JSON.stringify(segment.filters), segment_type: segment.segment_type || 'Lead', limit: 20 }
     )
 
-    testResults.value = result
+    testResults.value = {
+      count: result.total_count,
+      records: result.preview,
+    }
     showTestDialog.value = true
   } catch (error) {
     toast({
@@ -463,10 +464,13 @@ async function saveSegment() {
       doctype: 'Marketing Segment',
       segment_name: segmentForm.value.segment_name,
       description: segmentForm.value.description,
-      filter_json: JSON.stringify({
-        doctype: segmentForm.value.doctype,
-        filters: filters,
-      }),
+      segment_type: segmentForm.value.doctype,
+      filters: filters.map(f => ({
+        doctype: 'Marketing Segment Filter',
+        fieldname: f[0],
+        operator: f[1],
+        value: String(f[2]),
+      })),
     }
 
     if (editingSegment.value) {
@@ -511,17 +515,12 @@ function closeSegmentDialog() {
   editingSegment.value = null
 }
 
-function getFilterPreview(filterJson) {
-  try {
-    const filters = JSON.parse(filterJson)
-    if (filters.filters && filters.filters.length > 0) {
-      return filters.filters
-        .slice(0, 2)
-        .map(f => `${f[0]} ${f[1]} ${f[2]}`)
-        .join(', ')
-    }
-  } catch (e) {
-    return 'Custom filters'
+function getFilterPreview(filters) {
+  if (Array.isArray(filters) && filters.length > 0) {
+    return filters
+      .slice(0, 2)
+      .map(f => `${f.fieldname} ${f.operator} ${f.value}`)
+      .join(', ')
   }
   return 'No filters'
 }

@@ -114,7 +114,7 @@ def get_data(filters):
 	"""Return report data"""
 	conditions = get_conditions(filters)
 
-	data = frappe.db.sql("""
+	data = frappe.db.sql(f"""
 		SELECT
 			posting_date,
 			name,
@@ -134,7 +134,7 @@ def get_data(filters):
 		WHERE docstatus = 1
 		{conditions}
 		ORDER BY posting_date DESC, name DESC
-	""".format(conditions=conditions), filters, as_dict=1)
+	""", filters, as_dict=1)
 
 	return data
 

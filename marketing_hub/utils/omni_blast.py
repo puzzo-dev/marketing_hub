@@ -12,20 +12,20 @@ def execute_blast(campaign_activity):
 
     activity = frappe.get_doc("Campaign Activity", campaign_activity)
 
-    if activity.status != "Scheduled":
-        frappe.throw(_("Activity must be in Scheduled status to execute"))
+    if activity.status not in ("Scheduled", "In Progress"):
+        frappe.throw(_("Activity must be in Scheduled or In Progress status to execute"))
 
     # Check if it's time to execute
-    if activity.scheduled_time and get_datetime(activity.scheduled_time) > now_datetime():
+    if activity.scheduled_date and get_datetime(activity.scheduled_date) > now_datetime():
         return {"message": "Not yet time to execute"}
 
     # Update status
-    activity.status = "Running"
+    activity.status = "In Progress"
     activity.save()
     frappe.db.commit()
 
     results = {}
-    channels = activity.activity_type.split("\n") if activity.activity_type else []
+    channels = [ch.strip() for ch in (activity.channels or "").split(",") if ch.strip()]
 
     for channel in channels:
         try:
@@ -43,7 +43,7 @@ def execute_blast(campaign_activity):
                 results[channel] = _execute_social_post_blast(activity, channel)
             else:
                 results[channel] = {"status": "Not Implemented", "count": 0}
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.log_error(f"Blast execution error for {channel}", str(e))
             results[channel] = {"status": "Error", "error": str(e)}
 
@@ -57,24 +57,35 @@ def execute_blast(campaign_activity):
 
 
 def execute_if_scheduled(doc, method):
-    """Hook to auto-execute scheduled blasts"""
-    if doc.status == "Scheduled" and doc.scheduled_time:
-        if get_datetime(doc.scheduled_time) <= now_datetime():
+    """Hook to auto-enqueue scheduled blasts as background jobs"""
+    if doc.status == "Scheduled" and doc.scheduled_date and not doc.flags.get("auto_enqueued"):
+        if get_datetime(doc.scheduled_date) <= now_datetime():
             try:
-                execute_blast(doc.name)
-            except Exception as e:
-                frappe.log_error("Scheduled blast execution failed", str(e))
+                doc.flags.auto_enqueued = True
+                frappe.enqueue(
+                    "marketing_hub.marketing_hub.doctype.campaign_activity.campaign_activity._run_execution_job",
+                    campaign_activity=doc.name,
+                    queue="default",
+                    timeout=600,
+                    job_id=f"campaign_activity_{doc.name}"
+                )
+            except (frappe.ValidationError, frappe.DoesNotExistError) as e:
+                frappe.log_error("Scheduled blast enqueue failed", str(e))
 
 
 def _execute_email_blast(activity):
     """Execute email blast to segment"""
 
     if not activity.segment:
-        return {"status": "Error", "message": "No segment defined"}
+        return {"status": "Error", "message": _("No segment defined")}
 
     # Get segment recipients
     segment = frappe.get_doc("Marketing Segment", activity.segment)
     recipients = _get_segment_recipients(segment, channel="Email")
+
+    if activity.get("is_test_mode") and activity.get("test_emails"):
+        test_emails = [e.strip() for e in activity.test_emails.split(",") if e.strip()]
+        recipients = [{"email": e} for e in test_emails]
 
     # Get template
     template = _get_template(activity.campaign, "Email")
@@ -83,7 +94,7 @@ def _execute_email_blast(activity):
         return {"status": "Error", "message": "No email template found"}
 
     sent_count = 0
-    for recipient in recipients:
+    for idx, recipient in enumerate(recipients):
         try:
             frappe.sendmail(
                 recipients=[recipient.get("email")],
@@ -93,8 +104,12 @@ def _execute_email_blast(activity):
                 reference_name=activity.name
             )
             sent_count += 1
-        except Exception as e:
+        except (frappe.ValidationError, frappe.OutgoingEmailError) as e:
             frappe.log_error(f"Email send failed to {recipient.get('email')}", str(e))
+
+        # Commit every 100 emails to prevent memory buildup and allow recovery
+        if (idx + 1) % 100 == 0:
+            frappe.db.commit()
 
     return {"status": "Completed", "sent": sent_count, "total": len(recipients)}
 
@@ -171,7 +186,7 @@ def _execute_whatsapp_blast(activity):
                     wa_message.flags.custom_ref_doc = recipient
                     wa_message.insert()
                     sent += 1
-                except Exception as e:
+                except (frappe.ValidationError, frappe.DoesNotExistError) as e:
                     frappe.log_error(f"WhatsApp blast error: {str(e)}", "Marketing Hub WhatsApp")
                     failed += 1
 
@@ -180,7 +195,7 @@ def _execute_whatsapp_blast(activity):
                 "sent": sent,
                 "failed": failed
             }
-    except Exception as e:
+    except (frappe.ValidationError, frappe.DoesNotExistError) as e:
         frappe.log_error(f"WhatsApp blast execution error: {str(e)}", "Marketing Hub")
         return {"status": "Error", "message": str(e)}
 
@@ -190,13 +205,13 @@ def _execute_sms_blast(activity):
     from frappe.core.doctype.sms_settings.sms_settings import send_sms
     
     if not activity.segment:
-        return {"status": "Error", "message": "No segment defined"}
+        return {"status": "Error", "message": _("No segment defined")}
 
     # Check if SMS gateway is configured
     if not frappe.db.get_single_value("SMS Settings", "sms_gateway_url"):
         return {
             "status": "Error",
-            "message": "SMS gateway not configured. Please configure SMS Settings.",
+            "message": _("SMS gateway not configured. Please configure SMS Settings."),
             "count": 0
         }
 
@@ -204,12 +219,12 @@ def _execute_sms_blast(activity):
     recipients = _get_segment_recipients(segment, channel="SMS")
 
     if not recipients:
-        return {"status": "Error", "message": "No recipients found in segment", "count": 0}
+        return {"status": "Error", "message": _("No recipients found in segment"), "count": 0}
 
     # Get message content
     message = activity.message or activity.content_html or ""
     if not message:
-        return {"status": "Error", "message": "No message content provided", "count": 0}
+        return {"status": "Error", "message": _("No message content provided"), "count": 0}
 
     # Strip HTML tags for SMS (plain text only)
     from frappe.utils import strip_html_tags
@@ -239,7 +254,7 @@ def _execute_sms_blast(activity):
             "count": len(mobile_numbers),
             "channel": "SMS"
         }
-    except Exception as e:
+    except (frappe.ValidationError, frappe.DoesNotExistError) as e:
         frappe.log_error("SMS Blast Error", str(e))
         return {
             "status": "Error",
@@ -249,68 +264,47 @@ def _execute_sms_blast(activity):
 
 
 def _execute_push_blast(activity):
-    """Execute push notification blast (stub)"""
-    # TODO: Integrate with push notification service
-
+    """Execute push notification blast (not yet implemented)"""
     if not activity.segment:
-        return {"status": "Error", "message": "No segment defined"}
+        return {"status": "Error", "message": _("No segment defined")}
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
     recipients = _get_segment_recipients(segment, channel="Push Notification")
 
-    # Stub implementation
     return {
-        "status": "Stub",
-        "message": "Push notification service required",
+        "status": "Not Implemented",
+        "message": "Push notification service not yet integrated",
         "potential_recipients": len(recipients)
     }
 
 
 def _get_segment_recipients(segment, channel=None):
     """Get list of recipients from segment and filter out suppressed contacts"""
-    recipients = []
-
-    # Get from Customers if segment has customer filters
-    if segment.get("customer_group"):
-        customers = frappe.get_all(
-            "Customer",
-            filters={"customer_group": segment.customer_group},
-            fields=["name", "email_id as email", "mobile_no"]
-        )
-        recipients.extend(customers)
-
-    # Get from Leads if segment has lead filters
-    if segment.get("lead_source"):
-        leads = frappe.get_all(
-            "Lead",
-            filters={"source": segment.lead_source},
-            fields=["name", "email_id as email", "mobile_no"]
-        )
-        recipients.extend(leads)
+    recipients = segment.get_segment_members(limit=5000)
 
     # Get Suppression List for this channel
     suppressed_contacts = set()
     if frappe.db.exists("DocType", "Suppression List"):
-        filters = {}
+        supp_filters = {}
         if channel:
-            filters["channel"] = ["in", [channel, "All"]]
+            supp_filters["channel"] = ["in", [channel, "All"]]
         else:
-            filters["channel"] = "All"
-            
-        suppressions = frappe.get_all("Suppression List", filters=filters, fields=["contact_id"])
+            supp_filters["channel"] = "All"
+
+        suppressions = frappe.get_all("Suppression List", filters=supp_filters, fields=["contact_id"])
         suppressed_contacts = {s.contact_id for s in suppressions}
 
     # Remove duplicates and filter suppressed
     seen = set()
     unique_recipients = []
     for r in recipients:
-        email = r.get("email")
+        email = r.get("email") or r.get("email_id")
         mobile = r.get("mobile_no") or r.get("mobile") or r.get("phone")
-        
+
         # Check suppression
         if (email and email in suppressed_contacts) or (mobile and mobile in suppressed_contacts):
             continue
-            
+
         if email and email not in seen:
             seen.add(email)
             unique_recipients.append(r)
@@ -336,7 +330,7 @@ def _get_template(campaign, channel_type):
             limit=1
         )
         return template[0] if template else None
-    except Exception:
+    except (frappe.ValidationError, frappe.DoesNotExistError):
         return None
 
 def _execute_meta_ads_blast(activity):
@@ -344,13 +338,13 @@ def _execute_meta_ads_blast(activity):
     from marketing_hub.utils.social_adapter import publish_to_platform
 
     if not activity.segment:
-        return {"status": "Error", "message": "No segment defined"}
+        return {"status": "Error", "message": _("No segment defined")}
 
     segment = frappe.get_doc("Marketing Segment", activity.segment)
     recipients = _get_segment_recipients(segment)
 
     if not recipients:
-        return {"status": "Error", "message": "No recipients found in segment"}
+        return {"status": "Error", "message": _("No recipients found in segment")}
 
     # Check for a linked Social Post for Meta
     social_posts = frappe.get_all(
@@ -379,7 +373,7 @@ def _execute_meta_ads_blast(activity):
                 published += 1
             else:
                 failed += 1
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.log_error(f"Meta blast post error: {str(e)}", "Omni Blast Meta")
             failed += 1
 
@@ -427,7 +421,7 @@ def _execute_social_post_blast(activity, channel):
             else:
                 failed += 1
             frappe.db.commit()
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.log_error(
                 f"Social blast error for {channel} post {post_name}: {str(e)}",
                 "Omni Blast Social"

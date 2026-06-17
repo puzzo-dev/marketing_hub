@@ -9,13 +9,10 @@
         "account_name",
         "social_media_network",
         "platform",
-        "account_id",
+        "network_account",
         "column_break_3",
         "company",
         "is_active",
-        "oauth_section",
-        "social_login_key",
-        "oauth_user",
         "platform_specific_section",
         "ad_account_id",
         "pixel_id",
@@ -54,11 +51,13 @@
             "read_only": 1
         },
         {
-            "fieldname": "account_id",
-            "fieldtype": "Data",
+            "fieldname": "network_account",
+            "fieldtype": "Link",
             "in_list_view": 1,
-            "label": "Account ID",
-            "reqd": 1
+            "label": "Network Account",
+            "options": "Network Account",
+            "reqd": 1,
+            "description": "OAuth connection that owns this ad account"
         },
         {
             "fieldname": "column_break_3",
@@ -75,27 +74,6 @@
             "fieldname": "is_active",
             "fieldtype": "Check",
             "label": "Is Active"
-        },
-        {
-            "collapsible": 1,
-            "fieldname": "oauth_section",
-            "fieldtype": "Section Break",
-            "label": "OAuth Configuration",
-            "description": "Link to Frappe's OAuth system for authentication"
-        },
-        {
-            "fieldname": "social_login_key",
-            "fieldtype": "Link",
-            "label": "Social Login Key",
-            "options": "Social Login Key",
-            "description": "OAuth client configuration (client_id, client_secret, endpoints)"
-        },
-        {
-            "fieldname": "oauth_user",
-            "fieldtype": "Link",
-            "label": "OAuth User",
-            "options": "User",
-            "description": "User whose OAuth Bearer Token to use for API calls"
         },
         {
             "collapsible": 1,
@@ -170,7 +148,7 @@
     ],
     "index_web_pages_for_search": 1,
     "links": [],
-    "modified": "2026-01-18 03:52:00.000000",
+    "modified": "2026-06-17 00:00:00.000000",
     "modified_by": "Administrator",
     "module": "Marketing Hub",
     "name": "Ad Account",

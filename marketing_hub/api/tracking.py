@@ -164,7 +164,11 @@ def handle_redirect(short_code):
 		if not existing:
 			doc.unique_clicks = (doc.unique_clicks or 0) + 1
 
-	doc.save(ignore_permissions=True)
+	frappe.db.set_value("Tracking Link", doc.name, {
+		"total_clicks": doc.total_clicks,
+		"unique_clicks": doc.unique_clicks,
+		"last_clicked": doc.last_clicked
+	}, update_modified=False)
 
 	# Log click
 	frappe.get_doc({
@@ -174,7 +178,7 @@ def handle_redirect(short_code):
 		"clicked_at": now(),
 		"user_agent": user_agent,
 		"referrer": referrer,
-	}).insert(ignore_permissions=True)
+	}).insert()
 
 	frappe.db.commit()
 
@@ -222,7 +226,7 @@ def generate_qr_for_link(doc):
 		"attached_to_field": "qr_code",
 		"is_private": 0,
 	})
-	file_doc.save(ignore_permissions=True)
+	file_doc.save()
 
 	doc.qr_code = file_doc.file_url
-	doc.save(ignore_permissions=True)
+	doc.save()

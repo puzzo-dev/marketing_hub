@@ -303,7 +303,8 @@ def check_budget_exceeded(doc):
 		if getattr(settings, "validate_budget", 0):
 			frappe.throw(msg, title=_("Budget Exceeded"))
 		else:
-			frappe.msgprint(msg, indicator="orange", alert=True)
+			# Even if not globally enforced, budget overruns must be hard-blocked to prevent revenue leakage
+			frappe.throw(msg, title=_("Budget Exceeded"))
 		return True
 	
 	return False
@@ -315,15 +316,24 @@ def update_campaign_spent_amount(doc, method=None):
 	if not doc.campaign:
 		return
 	
-	# Calculate total spent for this campaign
+	# Calculate total manual spent for this campaign (excluding auto-synced to prevent double counting)
 	total_spent = frappe.db.sql("""
 		SELECT SUM(amount)
 		FROM `tabMarketing Expense`
-		WHERE campaign = %s AND docstatus = 1
+		WHERE campaign = %s AND docstatus = 1 AND COALESCE(exclude_from_campaign_totals, 0) = 0
+	""", doc.campaign)[0][0] or 0
+
+	# Calculate analytics auto-synced spend
+	analytics_spent = frappe.db.sql("""
+		SELECT SUM(spend)
+		FROM `tabAnalytics Daily Log`
+		WHERE campaign = %s
 	""", doc.campaign)[0][0] or 0
 	
+	final_cost = flt(total_spent) + flt(analytics_spent)
+	
 	# Update campaign
-	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_actual_cost", flt(total_spent), update_modified=False)
+	frappe.db.set_value("Marketing Campaign", doc.campaign, "total_actual_cost", final_cost, update_modified=False)
 
 
 # ─── Ledger / Settings helpers (merged from inner utils) ────────────────────

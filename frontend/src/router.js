@@ -42,6 +42,31 @@ const routes = [
     component: () => import("@/pages/Analytics.vue"),
   },
   {
+    path: "/marketing/connectors",
+    name: "AnalyticsConnectors",
+    component: () => import("@/pages/AnalyticsConnectors.vue"),
+  },
+  {
+    path: "/marketing/connectors/:name",
+    name: "AnalyticsConnectorDetail",
+    component: () => import("@/pages/AnalyticsConnectorDetail.vue"),
+  },
+  {
+    path: "/marketing/activities",
+    name: "Activities",
+    component: () => import("@/pages/Activities.vue"),
+  },
+  {
+    path: "/marketing/activities/:name",
+    name: "ActivityDetail",
+    component: () => import("@/pages/ActivityDetail.vue"),
+  },
+  {
+    path: "/marketing/blasts",
+    name: "Blasts",
+    component: () => import("@/pages/Blasts.vue"),
+  },
+  {
     path: "/marketing/blast/new",
     name: "OmniBlast",
     component: () => import("@/pages/OmniBlast.vue"),

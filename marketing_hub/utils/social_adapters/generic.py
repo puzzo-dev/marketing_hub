@@ -34,16 +34,18 @@ class GenericAdapter:
 	No hardcoded platform logic - everything driven by database configuration.
 	"""
 	
-	def __init__(self, network_doc, ad_account_doc=None):
+	def __init__(self, network_doc, ad_account_doc=None, network_account_doc=None):
 		"""
 		Initialize adapter with network configuration.
-		
+
 		Args:
 			network_doc: Social Media Network document
-			ad_account_doc: Ad Account document (optional, for auth)
+			ad_account_doc: Ad Account document (optional, for ad-specific IDs)
+			network_account_doc: Network Account document (optional, for auth)
 		"""
 		self.network = network_doc
 		self.ad_account = ad_account_doc
+		self.network_account = network_account_doc
 		self.api_base_url = network_doc.api_base_url or ""
 		self.network_code = network_doc.network_code
 		
@@ -112,7 +114,7 @@ class GenericAdapter:
 				"message": f"Published successfully to {self.network.network_name}"
 			}
 			
-		except Exception as e:
+		except (PlatformAPIError, requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"{self.network.network_name} publish error: {str(e)}", "Generic Adapter")
 			return {"success": False, "error": str(e)}
 	
@@ -139,7 +141,7 @@ class GenericAdapter:
 			
 			return {"success": True, "message": "Post deleted successfully"}
 			
-		except Exception as e:
+		except (PlatformAPIError, requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"{self.network.network_name} delete error: {str(e)}", "Generic Adapter")
 			return {"success": False, "error": str(e)}
 	
@@ -177,7 +179,7 @@ class GenericAdapter:
 				"engagement_rate": response.get("engagement_rate", 0)
 			}
 			
-		except Exception as e:
+		except (PlatformAPIError, requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"{self.network.network_name} analytics error: {str(e)}", "Generic Adapter")
 			return {
 				"impressions": 0,
@@ -192,25 +194,22 @@ class GenericAdapter:
 	def build_auth_headers(self):
 		"""
 		Build authentication headers based on auth_type.
-		Uses Frappe's OAuth Bearer Token system.
+		Uses Network Account -> Connected App -> Token Cache for tokens.
 		"""
-		if not self.ad_account:
+		network_account = self.get_network_account()
+		if not network_account:
 			return {}
-		
-		# Get OAuth token from Frappe's OAuth system
-		oauth_token = self.get_oauth_token()
-		access_token = oauth_token.access_token
-		
+
+		access_token = network_account.get_access_token()
 		if not access_token:
 			return {}
-		
+
 		if self.auth_type == "Bearer Token" or self.auth_type == "OAuth 2.0":
 			return {
 				"Authorization": f"Bearer {access_token}",
 				"Content-Type": "application/json"
 			}
 		elif self.auth_type == "API Key":
-			# API Key can be in header or query param - this is a common pattern
 			api_key_header = self.network.get("api_key_header") or "X-API-Key"
 			return {
 				api_key_header: access_token,
@@ -218,17 +217,15 @@ class GenericAdapter:
 			}
 		elif self.auth_type == "Basic Auth":
 			import base64
-			# Get client credentials from Social Login Key
-			social_login_key = frappe.get_doc("Social Login Key", self.ad_account.social_login_key)
-			client_id = social_login_key.client_id or ""
-			client_secret = social_login_key.get_password("client_secret") or ""
+			connected_app = frappe.get_doc("Connected App", network_account.connected_app)
+			client_id = connected_app.client_id or ""
+			client_secret = connected_app.get_password("client_secret") or ""
 			credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 			return {
 				"Authorization": f"Basic {credentials}",
 				"Content-Type": "application/json"
 			}
 		else:
-			# Default to Bearer token
 			return {
 				"Authorization": f"Bearer {access_token}",
 				"Content-Type": "application/json"
@@ -236,48 +233,19 @@ class GenericAdapter:
 	
 	def refresh_access_token(self):
 		"""
-		Generic OAuth token refresh using Frappe's Social Login Key configuration.
+		Generic OAuth token refresh using Frappe's Connected App configuration.
 		"""
-		if not self.ad_account.social_login_key:
-			raise PlatformAPIError("No Social Login Key configured for token refresh")
-		
-		# Get OAuth config from Social Login Key
-		social_login_key = frappe.get_doc("Social Login Key", self.ad_account.social_login_key)
-		oauth_token = self.get_oauth_token()
-		
-		refresh_token = oauth_token.refresh_token
-		client_id = social_login_key.client_id
-		client_secret = social_login_key.get_password("client_secret")
-		
-		if not all([refresh_token, client_id, client_secret]):
-			raise PlatformAPIError("Missing OAuth credentials for token refresh")
-		
-		# Use access_token_url from Social Login Key
-		token_url = social_login_key.access_token_url
-		if not token_url:
-			# Fallback to generic OAuth 2.0 pattern
-			token_url = f"{self.api_base_url}/oauth/token"
-		
-		payload = {
-			"grant_type": "refresh_token",
-			"refresh_token": refresh_token,
-			"client_id": client_id,
-			"client_secret": client_secret
-		}
-		
-		try:
-			response = requests.post(token_url, data=payload, timeout=30)
-			response.raise_for_status()
-			data = response.json()
-			
-			return {
-				"access_token": data["access_token"],
-				"refresh_token": data.get("refresh_token", refresh_token),
-				"expires_in": data.get("expires_in", 3600)
-			}
-		except Exception as e:
-			frappe.log_error(f"Token refresh error: {str(e)}", "Generic Adapter")
-			raise PlatformAPIError(f"Failed to refresh token: {str(e)}")
+		network_account = self.get_network_account()
+		if not network_account or not network_account.connected_app:
+			raise PlatformAPIError("No Connected App configured for token refresh")
+
+		connected_app = frappe.get_doc("Connected App", network_account.connected_app)
+		token_cache = connected_app.get_active_token(network_account.user)
+
+		if not token_cache:
+			raise PlatformAPIError("No active token cache for refresh")
+
+		return token_cache.get_json()
 	
 	# ============ COMMON HELPER METHODS ============
 	
@@ -399,85 +367,52 @@ class GenericAdapter:
 		self.ad_account = frappe.get_doc("Ad Account", accounts[0].name)
 		return self.ad_account
 	
-	def get_oauth_token(self):
+	def get_network_account(self):
 		"""
-		Get OAuth Bearer Token for the user linked to this Ad Account.
-		Uses Frappe's built-in OAuth system.
-		
-		Returns:
-			OAuth Bearer Token document
+		Get Network Account for auth. Uses explicit network_account if set,
+		otherwise looks up via Ad Account -> Network Account or directly by platform.
 		"""
-		if not self.ad_account:
-			self.get_ad_account()
-		
-		if not self.ad_account.oauth_user:
-			raise frappe.ValidationError(
-				f"No OAuth user configured for Ad Account {self.ad_account.name}"
+		if self.network_account:
+			return self.network_account
+
+		# If ad_account has network_account, use that
+		if self.ad_account and self.ad_account.network_account:
+			self.network_account = frappe.get_doc("Network Account", self.ad_account.network_account)
+			return self.network_account
+
+		# Fallback: find active Network Account for this platform
+		if self.network:
+			networks = frappe.get_all(
+				"Network Account",
+				filters={
+					"platform": self.network.network_name,
+					"is_active": 1,
+				},
+				fields=["name"],
+				limit=1,
+				order_by="modified desc",
 			)
-		
-		if not self.ad_account.social_login_key:
-			raise frappe.ValidationError(
-				f"No Social Login Key configured for Ad Account {self.ad_account.name}"
-			)
-		
-		# Get the OAuth Bearer Token for this user and social login key
-		oauth_token = frappe.get_all(
-			"OAuth Bearer Token",
-			filters={
-				"user": self.ad_account.oauth_user,
-				"client": self.ad_account.social_login_key,
-				"status": "Active"
-			},
-			fields=["name", "access_token", "refresh_token", "expiration_time"],
-			limit=1
-		)
-		
-		if not oauth_token:
-			raise frappe.ValidationError(
-				f"No active OAuth Bearer Token found for user {self.ad_account.oauth_user}"
-			)
-		
-		return frappe.get_doc("OAuth Bearer Token", oauth_token[0].name)
+			if networks:
+				self.network_account = frappe.get_doc("Network Account", networks[0].name)
+				return self.network_account
+
+		return None
 	
 	def _log_request(self, method, url, status_code):
 		"""Log API request for debugging."""
 		frappe.logger().debug(f"{self.network.network_name} API: {method} {url} -> {status_code}")
 	
 	def check_token_expiry(self):
-		"""Check if OAuth token is expired and refresh if needed."""
-		if not self.ad_account:
+		"""Check if OAuth token is expired and refresh if needed via Connected App."""
+		network_account = self.get_network_account()
+		if not network_account:
 			return
-		
-		from frappe.utils import now_datetime
-		
-		oauth_token = self.get_oauth_token()
-		
-		if oauth_token.expiration_time and now_datetime() >= oauth_token.expiration_time:
-			# Token expired, refresh it using Frappe's OAuth system
-			frappe.logger().info(f"Refreshing expired token for {self.network.network_name}")
-			
-			try:
-				new_tokens = self.refresh_access_token()
-				
-				# Update OAuth Bearer Token document
-				oauth_token.access_token = new_tokens["access_token"]
-				if "refresh_token" in new_tokens:
-					oauth_token.refresh_token = new_tokens["refresh_token"]
-				
-				# Calculate new expiry
-				from frappe.utils import add_to_date
-				oauth_token.expiration_time = add_to_date(
-					now_datetime(), 
-					seconds=new_tokens.get("expires_in", 3600)
-				)
-				oauth_token.expires_in = new_tokens.get("expires_in", 3600)
-				
-				oauth_token.save(ignore_permissions=True)
-				frappe.db.commit()
-				
-			except Exception as e:
-				frappe.log_error(f"Token refresh failed: {str(e)}", "OAuth Token Refresh")
-				raise AuthenticationError(f"Failed to refresh access token: {str(e)}")
+
+		connected_app = frappe.get_doc("Connected App", network_account.connected_app)
+		token_cache = connected_app.get_active_token(network_account.user)
+
+		if not token_cache:
+			raise AuthenticationError(f"No active token for {self.network.network_name}")
 	
 	def get_public_url(self, file_path):
 		"""

@@ -16,7 +16,8 @@ def publish_scheduled_posts():
             "status": ["in", ["Draft", "Scheduled"]],
             "scheduled_time": ["<=", now_datetime()]
         },
-        fields=["name"]
+        fields=["name"],
+        limit_page_length=100
     )
 
     for post_name in due_posts:
@@ -24,7 +25,7 @@ def publish_scheduled_posts():
             post = frappe.get_doc("Social Post", post_name.name)
             publish_post(post)
             frappe.db.commit()
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.log_error(f"Auto-post failed for {post_name.name}", str(e))
             frappe.db.rollback()
 
@@ -65,7 +66,7 @@ def publish_post(post):
 
         return result
 
-    except Exception as e:
+    except (frappe.ValidationError, frappe.DoesNotExistError) as e:
         post.status = "Failed"
         post.post_results = frappe.as_json({"status": "Error", "error": str(e)})
         post.save()
@@ -88,7 +89,7 @@ def _get_ad_account(company, platform):
             limit=1
         )
         return account[0].name if account else None
-    except Exception:
+    except (frappe.ValidationError, frappe.DoesNotExistError):
         return None
 
 

@@ -12,57 +12,39 @@ import json
 
 class AdAccount(Document):
 	def validate(self):
-		"""Validate OAuth configuration and platform-specific fields"""
-		# Validate OAuth configuration
-		if not self.social_login_key:
-			frappe.msgprint("Social Login Key is required for OAuth authentication", indicator="orange")
-		
-		if not self.oauth_user:
-			frappe.msgprint("OAuth User is required to link to OAuth Bearer Token", indicator="orange")
-		
+		"""Validate platform-specific fields"""
 		# Validate that at least one platform-specific identifier is provided
 		platform_ids = [self.ad_account_id, self.pixel_id, self.customer_id, self.account_urn, self.business_id]
 		if not any(platform_ids):
 			frappe.msgprint(
-				"Please provide at least one platform-specific identifier (Ad Account ID, Customer ID, Account URN, etc.)",
+				_(
+					"Please provide at least one platform-specific identifier "
+					"(Ad Account ID, Customer ID, Account URN, etc.)"
+				),
 				indicator="orange"
 			)
-	
-	def get_oauth_token(self):
-		"""Get OAuth Bearer Token for the configured user."""
-		if not self.oauth_user or not self.social_login_key:
-			frappe.throw("OAuth User and Social Login Key must be configured")
-		
-		oauth_token = frappe.get_all(
-			"OAuth Bearer Token",
-			filters={
-				"user": self.oauth_user,
-				"client": self.social_login_key,
-				"status": "Active"
-			},
-			fields=["name", "access_token", "refresh_token", "expiration_time"],
-			limit=1
-		)
-		
-		if not oauth_token:
-			frappe.throw(_("No active OAuth Bearer Token found for user {0}").format(self.oauth_user))
-		
-		return frappe.get_doc("OAuth Bearer Token", oauth_token[0].name)
-	
+
+	def get_access_token(self):
+		"""Get valid access token via linked Network Account."""
+		if not self.network_account:
+			frappe.throw(_("Network Account must be linked to fetch access token"))
+
+		network_account = frappe.get_doc("Network Account", self.network_account)
+		return network_account.get_access_token()
+
 	@frappe.whitelist()
 	def test_connection(self):
-		"""Test API connection using OAuth Bearer Token"""
+		"""Test API connection using access token from Network Account"""
 		try:
-			oauth_token = self.get_oauth_token()
-			access_token = oauth_token.access_token
-		except Exception as e:
+			access_token = self.get_access_token()
+		except (frappe.DoesNotExistError, frappe.ValidationError) as e:
 			return {"status": "Error", "message": str(e)}
 		
 		# Get Social Media Network configuration
 		network = frappe.get_doc("Social Media Network", self.platform)
 		
 		if not network.api_base_url:
-			return {"status": "Error", "message": f"No API configuration found for {self.platform}"}
+			return {"status": "Error", "message": _("No API configuration found for {0}").format(self.platform)}
 		
 		# Build test URL based on platform
 		if self.ad_account_id:
@@ -86,18 +68,18 @@ class AdAccount(Document):
 			
 			return {
 				"status": "Success",
-				"message": f"Successfully connected to {self.platform}",
+				"message": _("Successfully connected to {0}").format(self.platform),
 				"data": response.json()
 			}
 			
-		except Exception as e:
+		except requests.exceptions.RequestException as e:
 			self.sync_status = "Failed"
 			self.error_log = str(e)
 			self.save()
-			
+
 			return {
 				"status": "Error",
-				"message": f"Connection failed: {str(e)}"
+				"message": _("Connection failed: {0}").format(str(e))
 			}
 
 
@@ -114,7 +96,7 @@ def get_authorization_url(platform, social_login_key, redirect_uri):
 	# Get Social Login Key document (contains client_id and OAuth URLs)
 	try:
 		login_key = frappe.get_doc("Social Login Key", social_login_key)
-	except Exception as e:
+	except frappe.DoesNotExistError:
 		return f"#error-social-login-key-not-found"
 	
 	if not login_key.client_id or not login_key.authorize_url:

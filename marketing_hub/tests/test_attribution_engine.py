@@ -5,7 +5,7 @@
 import frappe
 import unittest
 from unittest.mock import patch, MagicMock
-from marketing_hub.utils.attribution_engine import get_real_lead_source, get_lead_attribution_data
+from marketing_hub.utils.attribution_engine import get_real_lead_source
 
 
 class TestAttributionEngine(unittest.TestCase):
@@ -27,6 +27,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"lead_name": "Test Lead UTM",
 			"email_id": "test@example.com",
 			"source": "Website",
+            "custom_message": "test",
 			"utm_campaign": "summer_sale",
 			"utm_source": "google",
 			"utm_medium": "cpc",
@@ -56,6 +57,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"lead_name": "Test Lead Priority",
 			"email_id": "priority@example.com",
 			"source": "Campaign",
+			"custom_message": "test",
 			"campaign_name": "Old Campaign",
 			"utm_campaign": "new_campaign",
 			"utm_source": "facebook"
@@ -78,6 +80,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"lead_name": "Test Lead Campaign",
 			"email_id": "campaign@example.com",
 			"source": "Campaign",
+			"custom_message": "test",
 			"campaign_name": "Email Newsletter"
 		})
 		lead.insert(ignore_permissions=True)
@@ -96,6 +99,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"lead_name": "Test Lead Referral",
 			"email_id": "referral@example.com",
 			"source": "Referral",
+			"custom_message": "test"
 		})
 		lead.insert(ignore_permissions=True)
 		
@@ -112,7 +116,8 @@ class TestAttributionEngine(unittest.TestCase):
 			"doctype": "Lead",
 			"lead_name": "Test Lead No Attribution",
 			"email_id": "none@example.com",
-			"source": "Website"
+			"source": "Website",
+			"custom_message": "test"
 		})
 		lead.insert(ignore_permissions=True)
 		
@@ -129,6 +134,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"doctype": "Lead",
 			"lead_name": "Test Lead Null UTM",
 			"email_id": "null@example.com",
+			"custom_message": "test",
 			"utm_campaign": "",
 			"utm_source": None,
 			"utm_medium": ""
@@ -151,6 +157,7 @@ class TestAttributionEngine(unittest.TestCase):
 				"doctype": "Lead",
 				"lead_name": "Test CRM Sync",
 				"email_id": "crm@example.com",
+				"custom_message": "test",
 				"utm_campaign": "test_campaign"
 			})
 			
@@ -170,6 +177,7 @@ class TestAttributionEngine(unittest.TestCase):
 				"doctype": "Lead",
 				"lead_name": f"Test Lead Metrics {i}",
 				"email_id": f"metrics{i}@example.com",
+				"custom_message": "test",
 				"utm_campaign": campaign,
 				"utm_source": "google"
 			})
@@ -189,6 +197,7 @@ class TestAttributionEngine(unittest.TestCase):
 			"doctype": "Lead",
 			"lead_name": "Test Special Chars",
 			"email_id": "special@example.com",
+			"custom_message": "test",
 			"utm_campaign": "summer-sale_2026!",
 			"utm_source": "email+newsletter",
 			"utm_content": "variant/a&b"
@@ -218,6 +227,7 @@ class TestAttributionEngine(unittest.TestCase):
 				"doctype": "Lead",
 				"lead_name": f"Test Channel {i}",
 				"email_id": f"channel{i}@example.com",
+				"custom_message": "test",
 				"utm_source": source,
 				"utm_medium": medium
 			})
@@ -244,8 +254,8 @@ def get_lead_attribution_data(lead_name):
 			"campaign": lead.utm_campaign,
 			"source": lead.utm_source,
 			"medium": lead.utm_medium,
-			"content": lead.utm_content,
-			"term": lead.utm_term,
+			"content": lead.get("utm_content"),
+			"term": lead.get("utm_term"),
 			"attribution_method": "UTM Parameters"
 		}
 	elif lead.campaign_name:

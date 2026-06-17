@@ -24,6 +24,5 @@ class ContentAsset(Document):
 
     def increment_usage(self):
         """Increment usage count when asset is used"""
-        self.usage_count = (self.usage_count or 0) + 1
-        self.last_used = frappe.utils.now()
-        self.save(ignore_permissions=True)
+        self.db_set("usage_count", (self.usage_count or 0) + 1, update_modified=False)
+        self.db_set("last_used", frappe.utils.now(), update_modified=False)

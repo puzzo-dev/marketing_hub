@@ -23,14 +23,27 @@ def get_real_lead_source(doc, method):
     utm_source = frappe.form_dict.get("utm_source") or doc.get("utm_source")
     utm_medium = frappe.form_dict.get("utm_medium") or doc.get("utm_medium")
 
-    if utm_campaign:
-        # Store UTM data in lead
-        doc.utm_campaign = utm_campaign
-        if utm_source:
-            doc.utm_source = utm_source
-        if utm_medium:
-            doc.utm_medium = utm_medium
-        sources.append(utm_campaign)
+    if utm_campaign or utm_source:
+        # Last Touch Attribution
+        doc.last_touch_campaign = utm_campaign or doc.get("utm_campaign")
+        doc.last_touch_source = utm_source or doc.get("utm_source")
+        doc.last_touch_medium = utm_medium or doc.get("utm_medium")
+
+        # First Touch Attribution (only set if not already set)
+        if not doc.get("first_touch_campaign") and not doc.get("first_touch_source"):
+            doc.first_touch_campaign = doc.last_touch_campaign
+            doc.first_touch_source = doc.last_touch_source
+            doc.first_touch_medium = doc.last_touch_medium
+
+        # Standard Fields Update
+        doc.utm_campaign = doc.last_touch_campaign
+        doc.utm_source = doc.last_touch_source
+        doc.utm_medium = doc.last_touch_medium
+
+        if utm_campaign:
+            sources.append(utm_campaign)
+        elif utm_source:
+            sources.append(utm_source)
 
     # 2. Check direct campaign link
     if doc.campaign_name and not sources:
@@ -84,7 +97,7 @@ def get_real_lead_source(doc, method):
                     queue="short"
                 )
 
-        except Exception as e:
+        except (frappe.ValidationError, frappe.DoesNotExistError) as e:
             frappe.logger().error(f"Attribution error for lead {doc.name}: {str(e)}")
 
 

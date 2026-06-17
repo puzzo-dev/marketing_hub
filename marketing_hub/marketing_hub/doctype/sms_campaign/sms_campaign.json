@@ -1,0 +1,176 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:SMS-CAMP-{YYYY}-{#####}",
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "campaign_name",
+        "status",
+        "column_break_1",
+        "scheduled_datetime",
+        "sent_count",
+        "failed_count",
+        "message_section",
+        "message",
+        "sender_id",
+        "targeting_section",
+        "segment",
+        "filter_criteria",
+        "suppression_list",
+        "results_section",
+        "results_json",
+        "error_log"
+    ],
+    "fields": [
+        {
+            "fieldname": "campaign_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Campaign Name",
+            "reqd": 1
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nRunning\nCompleted\nFailed\nPaused\nCancelled",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "scheduled_datetime",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date & Time"
+        },
+        {
+            "default": "0",
+            "fieldname": "sent_count",
+            "fieldtype": "Int",
+            "label": "Sent Count",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "failed_count",
+            "fieldtype": "Int",
+            "label": "Failed Count",
+            "read_only": 1
+        },
+        {
+            "fieldname": "message_section",
+            "fieldtype": "Section Break",
+            "label": "Message"
+        },
+        {
+            "fieldname": "message",
+            "fieldtype": "Small Text",
+            "label": "Message",
+            "reqd": 1,
+            "description": "Max 160 characters recommended for single SMS. Content will be truncated if exceeds gateway limit."
+        },
+        {
+            "fieldname": "sender_id",
+            "fieldtype": "Data",
+            "label": "Sender ID",
+            "description": "Registered sender identifier for your SMS gateway"
+        },
+        {
+            "fieldname": "targeting_section",
+            "fieldtype": "Section Break",
+            "label": "Targeting"
+        },
+        {
+            "fieldname": "segment",
+            "fieldtype": "Link",
+            "label": "Marketing Segment",
+            "options": "Marketing Segment"
+        },
+        {
+            "fieldname": "filter_criteria",
+            "fieldtype": "Code",
+            "label": "Filter Criteria",
+            "options": "JSON",
+            "description": "Additional JSON filters to apply on top of segment"
+        },
+        {
+            "fieldname": "suppression_list",
+            "fieldtype": "Link",
+            "label": "Suppression List",
+            "options": "Suppression List"
+        },
+        {
+            "fieldname": "results_section",
+            "fieldtype": "Section Break",
+            "label": "Results"
+        },
+        {
+            "fieldname": "results_json",
+            "fieldtype": "Code",
+            "label": "Results",
+            "options": "JSON",
+            "read_only": 1
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "SMS Campaign",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

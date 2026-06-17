@@ -56,7 +56,7 @@ def get_expense_list(filters=None, limit=20, offset=0):
 			"total_count": total_count,
 			"has_more": (offset + limit) < total_count
 		}
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Error fetching expenses: {str(e)}", "Expense API Error")
 		return {"error": str(e), "expenses": []}
 
@@ -76,21 +76,21 @@ def get_budget_overview(company=None):
 		)
 		params = {"company": company}
 
-		total_budget = frappe.db.sql("""
+		total_budget = frappe.db.sql(f"""
 			SELECT SUM(budget) FROM `tabMarketing Campaign`
 			WHERE status != 'Completed' {campaign_cond}
-		""".format(campaign_cond=campaign_cond), params)[0][0] or 0.0
+		""", params)[0][0] or 0.0
 
-		ad_spend = frappe.db.sql("""
+		ad_spend = frappe.db.sql(f"""
 			SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
 			{analytics_join}
 			WHERE 1=1
-		""".format(analytics_join=analytics_join), params)[0][0] or 0.0
+		""", params)[0][0] or 0.0
 
-		manual_spend = frappe.db.sql("""
+		manual_spend = frappe.db.sql(f"""
 			SELECT SUM(amount) FROM `tabMarketing Expense`
 			WHERE status = 'Approved' {expense_cond}
-		""".format(expense_cond=expense_cond), params)[0][0] or 0.0
+		""", params)[0][0] or 0.0
 
 		total_spend = ad_spend + manual_spend
 
@@ -107,17 +107,17 @@ def get_budget_overview(company=None):
 			trend_labels.append(get_datetime(month_start).strftime("%b %Y"))
 			month_params = {"company": company, "month_start": month_start, "month_end": month_end}
 
-			m_ad_spend = frappe.db.sql("""
+			m_ad_spend = frappe.db.sql(f"""
 				SELECT SUM(a.spend) FROM `tabAnalytics Daily Log` a
 				{analytics_join}
 				WHERE a.log_date BETWEEN %(month_start)s AND %(month_end)s
-			""".format(analytics_join=analytics_join), month_params)[0][0] or 0.0
+			""", month_params)[0][0] or 0.0
 
-			m_manual_spend = frappe.db.sql("""
+			m_manual_spend = frappe.db.sql(f"""
 				SELECT SUM(amount) FROM `tabMarketing Expense`
 				WHERE expense_date BETWEEN %(month_start)s AND %(month_end)s
 				AND status = 'Approved' {expense_cond}
-			""".format(expense_cond=expense_cond), month_params)[0][0] or 0.0
+			""", month_params)[0][0] or 0.0
 
 			trend_actual.append(flt(m_ad_spend + m_manual_spend, 2))
 			trend_budget.append(flt(total_budget / 12, 2))
@@ -133,7 +133,7 @@ def get_budget_overview(company=None):
 				"actual": trend_actual
 			}
 		}
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Error fetching budget overview: {str(e)}", "Budget API Error")
 		return {"error": str(e)}
 
@@ -146,6 +146,7 @@ def create_expense(data):
 			import json
 			data = json.loads(data)
 
+		frappe.has_permission("Marketing Expense", throw=True)
 		expense = frappe.get_doc({
 			"doctype": "Marketing Expense",
 			"expense_title": data.get("title"),
@@ -161,6 +162,6 @@ def create_expense(data):
 
 		expense.insert()
 		return {"success": True, "message": _("Expense logged successfully")}
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"Error creating expense: {str(e)}", "Expense Creation Error")
 		return {"success": False, "error": str(e)}

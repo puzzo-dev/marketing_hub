@@ -68,7 +68,7 @@ class TwitterAdapter(BasePlatformAdapter):
 				"message": "Published to Twitter/X"
 			}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"Twitter publish error: {str(e)}", "Twitter Adapter")
 			return {"success": False, "error": str(e)}
 	
@@ -92,7 +92,7 @@ class TwitterAdapter(BasePlatformAdapter):
 			
 			return response.json().get("media_id_string")
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError, OSError) as e:
 			frappe.log_error(f"Twitter media upload error: {str(e)}", "Twitter Adapter")
 			return None
 	
@@ -111,7 +111,7 @@ class TwitterAdapter(BasePlatformAdapter):
 			
 			return {"success": True, "message": "Tweet deleted"}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			return {"success": False, "error": str(e)}
 	
 	def get_post_analytics(self, platform_post_id):
@@ -150,7 +150,7 @@ class TwitterAdapter(BasePlatformAdapter):
 				"engagement_rate": round(engagement_rate, 2)
 			}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"Twitter analytics error: {str(e)}", "Twitter Adapter")
 			return {
 				"impressions": 0, "clicks": 0, "likes": 0,

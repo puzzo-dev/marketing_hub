@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.utils import today
 
 def update_campaign_statuses():
@@ -35,4 +36,4 @@ def update_campaign_statuses():
 			sub_check = frappe.call("marketing_hub.utils.agency_mode.check_client_subscription", client=c.customer)
 			if not sub_check.get("valid"):
 				frappe.db.set_value("Marketing Campaign", c.name, "status", "Paused")
-				frappe.log_error(f"Campaign {c.name} paused due to expired subscription for {c.customer}", "Campaign Paused")
+				frappe.log_error(_("Campaign {0} paused due to expired subscription for {1}").format(c.name, c.customer), "Campaign Paused")

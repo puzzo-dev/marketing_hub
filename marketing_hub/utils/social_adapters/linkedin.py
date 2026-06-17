@@ -111,7 +111,7 @@ class LinkedInAdapter(BasePlatformAdapter):
 				"message": "Published to LinkedIn"
 			}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"LinkedIn publish error: {str(e)}", "LinkedIn Adapter")
 			return {"success": False, "error": str(e)}
 	
@@ -134,7 +134,7 @@ class LinkedInAdapter(BasePlatformAdapter):
 			
 			return {"success": True, "message": "Post deleted from LinkedIn"}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			return {"success": False, "error": str(e)}
 	
 	def get_post_analytics(self, platform_post_id):
@@ -166,7 +166,7 @@ class LinkedInAdapter(BasePlatformAdapter):
 				"engagement_rate": 0
 			}
 		
-		except Exception as e:
+		except (requests.exceptions.RequestException, frappe.ValidationError) as e:
 			frappe.log_error(f"LinkedIn analytics error: {str(e)}", "LinkedIn Adapter")
 			return {
 				"impressions": 0, "clicks": 0, "likes": 0,

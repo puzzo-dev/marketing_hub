@@ -32,15 +32,20 @@ def _analytics_company_join(company):
 @frappe.whitelist()
 def get_dashboard_data(company=None):
 	"""
-	Get dashboard overview data
+	Get dashboard overview data (cached for 5 minutes)
 	Returns: active campaigns, spend metrics, leads, ROI stats, and connectors status
 	"""
+	company = _get_company(company)
+	cache_key = f"marketing_hub:dashboard:{company or 'all'}"
+	cached = frappe.cache().get_value(cache_key)
+	if cached:
+		return cached
+
 	try:
 		today_date = today()
 		last_30_days = add_days(today_date, -30)
 		prev_period_start = add_days(last_30_days, -30)
 
-		company = _get_company(company)
 		params = {"company": company, "from_date": last_30_days, "prev_start": prev_period_start}
 
 		campaign_filters = {"status": "Active"}
@@ -53,8 +58,8 @@ def get_dashboard_data(company=None):
 		company_join = _analytics_company_join(company)
 
 		# Analytics Aggregation (Spend, Revenue, ROAS)
-		analytics_data = frappe.db.sql("""
-			SELECT 
+		analytics_data = frappe.db.sql(f"""
+			SELECT
 				SUM(CASE WHEN a.log_date >= %(from_date)s THEN a.spend ELSE 0 END) as total_spend,
 				SUM(CASE WHEN a.log_date >= %(prev_start)s AND a.log_date < %(from_date)s THEN a.spend ELSE 0 END) as prev_period_spend,
 				SUM(CASE WHEN a.log_date >= %(from_date)s THEN a.revenue ELSE 0 END) as total_revenue,
@@ -62,7 +67,7 @@ def get_dashboard_data(company=None):
 			FROM `tabAnalytics Daily Log` a
 			{company_join}
 			WHERE a.log_date >= %(prev_start)s
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
 		total_spend = analytics_data[0].total_spend or 0.0 if analytics_data else 0.0
 		prev_period_spend = analytics_data[0].prev_period_spend or 0.0 if analytics_data else 0.0
@@ -71,15 +76,15 @@ def get_dashboard_data(company=None):
 
 		# Leads Aggregation
 		company_cond = "AND company = %(company)s" if company else ""
-		leads_data = frappe.db.sql("""
-			SELECT 
+		leads_data = frappe.db.sql(f"""
+			SELECT
 				SUM(CASE WHEN creation >= %(from_date)s THEN 1 ELSE 0 END) as leads_generated,
 				SUM(CASE WHEN creation >= %(prev_start)s AND creation < %(from_date)s THEN 1 ELSE 0 END) as prev_period_leads
 			FROM `tabLead`
-			WHERE creation >= %(prev_start)s 
+			WHERE creation >= %(prev_start)s
 			AND source IS NOT NULL AND source != ''
 			{company_cond}
-		""".format(company_cond=company_cond), params, as_dict=True)
+		""", params, as_dict=True)
 
 		leads_generated = leads_data[0].leads_generated or 0 if leads_data else 0
 		prev_period_leads = leads_data[0].prev_period_leads or 0 if leads_data else 0
@@ -99,7 +104,7 @@ def get_dashboard_data(company=None):
 
 		# Top performing campaigns (by ROAS)
 		company_cond = _campaign_company_condition(company)
-		top_campaigns = frappe.db.sql("""
+		top_campaigns = frappe.db.sql(f"""
 			SELECT
 				c.name as campaign_name,
 				c.campaign_name as title,
@@ -114,13 +119,13 @@ def get_dashboard_data(company=None):
 			HAVING spend > 0
 			ORDER BY roas DESC
 			LIMIT 5
-		""".format(company_cond=company_cond), params, as_dict=True)
+		""", params, as_dict=True)
 
 		# Calculate percentage changes
 		spend_change = _percentage_change(prev_period_spend, total_spend)
 		leads_change = _percentage_change(prev_period_leads, leads_generated)
 
-		return {
+		result = {
 			"active_campaigns": active_campaigns,
 			"total_spend": flt(total_spend, 2),
 			"spend_change": spend_change,
@@ -132,7 +137,10 @@ def get_dashboard_data(company=None):
 			"top_campaigns": top_campaigns
 		}
 
-	except Exception as e:
+		frappe.cache().set_value(cache_key, result, expires_in_sec=300)
+		return result
+
+	except (frappe.DatabaseError, frappe.ValidationError) as e:
 		frappe.log_error(f"Error fetching dashboard data: {str(e)}", "Dashboard API Error")
 		return {
 			"error": _("Failed to load dashboard data"),
@@ -149,20 +157,25 @@ def get_dashboard_data(company=None):
 @frappe.whitelist()
 def get_analytics_data(from_date=None, to_date=None, company=None):
 	"""
-	Get analytics metrics for charts
+	Get analytics metrics for charts (cached for 10 minutes)
 	"""
-	try:
-		if not from_date:
-			from_date = add_days(today(), -30)
-		if not to_date:
-			to_date = today()
+	if not from_date:
+		from_date = add_days(today(), -30)
+	if not to_date:
+		to_date = today()
 
-		company = _get_company(company)
+	company = _get_company(company)
+	cache_key = f"marketing_hub:analytics:{company or 'all'}:{from_date}:{to_date}"
+	cached = frappe.cache().get_value(cache_key)
+	if cached:
+		return cached
+
+	try:
 		company_join = _analytics_company_join(company)
 		params = {"from_date": from_date, "to_date": to_date, "company": company}
 
 		# Get daily metrics
-		daily_metrics = frappe.db.sql("""
+		daily_metrics = frappe.db.sql(f"""
 			SELECT
 				a.log_date as date,
 				SUM(a.impressions) as impressions,
@@ -176,7 +189,7 @@ def get_analytics_data(from_date=None, to_date=None, company=None):
 			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
 			GROUP BY a.log_date
 			ORDER BY a.log_date ASC
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
 		for metric in daily_metrics:
 			metric["ctr"] = (metric["clicks"] / metric["impressions"] * 100) if metric["impressions"] > 0 else 0
@@ -185,7 +198,7 @@ def get_analytics_data(from_date=None, to_date=None, company=None):
 			metric["roas"] = flt(metric["roas"], 2)
 
 		# Get channel breakdown
-		channel_breakdown = frappe.db.sql("""
+		channel_breakdown = frappe.db.sql(f"""
 			SELECT
 				a.channel,
 				SUM(a.spend) as spend,
@@ -196,14 +209,17 @@ def get_analytics_data(from_date=None, to_date=None, company=None):
 			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
 			GROUP BY a.channel
 			ORDER BY spend DESC
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
-		return {
+		result = {
 			"daily_metrics": daily_metrics,
 			"channel_breakdown": channel_breakdown
 		}
 
-	except Exception as e:
+		frappe.cache().set_value(cache_key, result, expires_in_sec=600)
+		return result
+
+	except (frappe.DatabaseError, frappe.ValidationError) as e:
 		frappe.log_error(f"Error fetching analytics data: {str(e)}", "Analytics API Error")
 		return {
 			"error": _("Failed to load analytics data"),
@@ -232,7 +248,7 @@ def get_dashboard_charts(company=None):
 		company_join = _analytics_company_join(company)
 
 		# Spend & Revenue trend (daily, last 30 days)
-		spend_trend = frappe.db.sql("""
+		spend_trend = frappe.db.sql(f"""
 			SELECT
 				a.log_date as date,
 				SUM(a.spend) as spend,
@@ -242,7 +258,7 @@ def get_dashboard_charts(company=None):
 			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
 			GROUP BY a.log_date
 			ORDER BY a.log_date ASC
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
 		for row in spend_trend:
 			row["spend"] = flt(row["spend"], 2)
@@ -250,7 +266,7 @@ def get_dashboard_charts(company=None):
 
 		# Leads over time (daily, last 30 days)
 		company_cond = "AND company = %(company)s" if company else ""
-		leads_trend = frappe.db.sql("""
+		leads_trend = frappe.db.sql(f"""
 			SELECT DATE(creation) as date, COUNT(*) as leads
 			FROM `tabLead`
 			WHERE creation >= %(from_date)s AND creation <= %(to_date)s
@@ -258,10 +274,10 @@ def get_dashboard_charts(company=None):
 			{company_cond}
 			GROUP BY DATE(creation)
 			ORDER BY date ASC
-		""".format(company_cond=company_cond), params, as_dict=True)
+		""", params, as_dict=True)
 
 		# Channel spend breakdown (for donut chart)
-		channel_breakdown = frappe.db.sql("""
+		channel_breakdown = frappe.db.sql(f"""
 			SELECT
 				a.channel as channel,
 				SUM(a.spend) as spend
@@ -271,13 +287,13 @@ def get_dashboard_charts(company=None):
 			AND a.channel IS NOT NULL AND a.channel != ''
 			GROUP BY a.channel
 			ORDER BY spend DESC
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
 		for row in channel_breakdown:
 			row["spend"] = flt(row["spend"], 2)
 
 		# Conversion funnel: impressions -> clicks -> conversions
-		funnel_data = frappe.db.sql("""
+		funnel_data = frappe.db.sql(f"""
 			SELECT
 				SUM(a.impressions) as impressions,
 				SUM(a.clicks) as clicks,
@@ -285,7 +301,7 @@ def get_dashboard_charts(company=None):
 			FROM `tabAnalytics Daily Log` a
 			{company_join}
 			WHERE a.log_date >= %(from_date)s AND a.log_date <= %(to_date)s
-		""".format(company_join=company_join), params, as_dict=True)
+		""", params, as_dict=True)
 
 		funnel = []
 		if funnel_data and funnel_data[0]:
@@ -297,7 +313,7 @@ def get_dashboard_charts(company=None):
 			]
 
 		# Lead sources breakdown
-		lead_sources = frappe.db.sql("""
+		lead_sources = frappe.db.sql(f"""
 			SELECT source, COUNT(*) as count
 			FROM `tabLead`
 			WHERE creation >= %(from_date)s AND creation <= %(to_date)s
@@ -306,7 +322,7 @@ def get_dashboard_charts(company=None):
 			GROUP BY source
 			ORDER BY count DESC
 			LIMIT 10
-		""".format(company_cond=company_cond), params, as_dict=True)
+		""", params, as_dict=True)
 
 		return {
 			"spend_trend": spend_trend,
@@ -316,7 +332,7 @@ def get_dashboard_charts(company=None):
 			"lead_sources": lead_sources,
 		}
 
-	except Exception as e:
+	except (frappe.DatabaseError, frappe.ValidationError) as e:
 		frappe.log_error(f"Error fetching dashboard charts: {str(e)}", "Dashboard Charts API Error")
 		return {
 			"spend_trend": [],

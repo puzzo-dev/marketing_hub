@@ -348,6 +348,7 @@ import IconBuilding from '~icons/lucide/building'
 import IconAlertTriangle from '~icons/lucide/alert-triangle'
 import IconFolderOpen from '~icons/lucide/folder-open'
 import IconLink2 from '~icons/lucide/link-2'
+import IconPlug from '~icons/lucide/plug'
 
 const userStore = useUserStore();
 const configStore = useConfigStore();
@@ -492,12 +493,13 @@ function formatShortDate(date) {
 
 const quickActions = [
   { route: '/marketing/campaigns', label: 'Campaigns', description: 'Manage campaigns', icon: IconMegaphone, bgClass: 'bg-surface-blue-1 group-hover:bg-surface-blue-2', iconClass: 'text-ink-blue-3' },
-  { route: '/marketing/blast/new', label: 'Omni Blast', description: 'Multi-channel blast', icon: IconSend, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
+  { route: '/marketing/activities', label: 'Activities', description: 'Campaign activities', icon: IconActivity, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
+  { route: '/marketing/blasts', label: 'Blasts', description: 'Omni-channel blasts', icon: IconSend, bgClass: 'bg-surface-orange-1 group-hover:bg-surface-orange-2', iconClass: 'text-ink-orange-3' },
   { route: '/marketing/social', label: 'Social Media', description: 'Schedule posts', icon: IconShare2, bgClass: 'bg-surface-blue-1 group-hover:bg-surface-blue-2', iconClass: 'text-ink-blue-3' },
   { route: '/marketing/analytics', label: 'Analytics', description: 'View metrics', icon: IconBarChart, bgClass: 'bg-surface-green-1 group-hover:bg-surface-green-2', iconClass: 'text-ink-green-3' },
+  { route: '/marketing/connectors', label: 'Connectors', description: 'Ad integrations', icon: IconPlug, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
   { route: '/marketing/content', label: 'Content', description: 'Assets & templates', icon: IconFileText, bgClass: 'bg-surface-orange-1 group-hover:bg-surface-orange-2', iconClass: 'text-ink-orange-3' },
   { route: '/marketing/segments', label: 'Segments', description: 'Manage audiences', icon: IconUsers, bgClass: 'bg-surface-green-1 group-hover:bg-surface-green-2', iconClass: 'text-ink-green-3' },
-  { route: '/marketing/expenses', label: 'Expenses', description: 'Track spending', icon: IconWallet, bgClass: 'bg-surface-red-1 group-hover:bg-surface-red-2', iconClass: 'text-ink-red-3' },
   { route: '/marketing/tracking', label: 'Tracking Links', description: 'QR codes & links', icon: IconLink2, bgClass: 'bg-surface-purple-1 group-hover:bg-surface-purple-2', iconClass: 'text-ink-purple-3' },
   { route: '/marketing/settings', label: 'Settings', description: 'Configure hub', icon: IconSettings, bgClass: 'bg-surface-gray-2 group-hover:bg-surface-gray-3', iconClass: 'text-ink-gray-5' },
 ];
@@ -518,7 +520,7 @@ function openCampaign(name) {
 }
 
 function openActivity(name) {
-  window.location.href = `/app/campaign-activity/${name}`;
+  router.push(`/marketing/activities/${name}`);
 }
 
 function refreshDashboard() {

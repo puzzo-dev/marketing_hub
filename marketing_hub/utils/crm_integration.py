@@ -35,15 +35,15 @@ def sync_lead_with_crm(lead_name, marketing_data=None):
 			# Add marketing attribution data
 			if marketing_data:
 				crm_lead_doc.source = marketing_data.get("utm_source", lead.source)
-                # Ensure we don't break CRM Campaign link if it expects standard Campaign
-                # We put the string name, let CRM handle it (or fail gracefully)
+				# Ensure we don't break CRM Campaign link if it expects standard Campaign
+				# We put the string name, let CRM handle it (or fail gracefully)
 				crm_lead_doc.campaign = marketing_data.get("campaign")
 
-			crm_lead_doc.insert(ignore_permissions=True)
+			crm_lead_doc.insert()
 
 			# Link ERPNext Lead to CRM Lead
 			lead.crm_lead = crm_lead_doc.name
-			lead.save(ignore_permissions=True)
+			lead.save()
 
 			return crm_lead_doc.name
 		else:
@@ -55,7 +55,7 @@ def sync_lead_with_crm(lead_name, marketing_data=None):
 				})
 
 			return crm_lead
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"CRM sync error: {str(e)}", "Marketing Hub CRM Integration")
 		return False
 
@@ -80,7 +80,7 @@ def get_crm_deal_value(lead_name):
 			return deals[0].deal_value or 0
 
 		return 0
-	except Exception:
+	except (frappe.ValidationError, frappe.DoesNotExistError):
 		return 0
 
 
@@ -107,11 +107,11 @@ def create_crm_activity_from_campaign(campaign_name, lead_name, activity_type="E
 			activity.activity_type = activity_type
 			activity.reference_doctype = "Marketing Campaign"
 			activity.reference_docname = campaign_name
-			activity.insert(ignore_permissions=True)
+			activity.insert()
 			return activity.name
 
 		return False
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"CRM activity creation error: {str(e)}", "Marketing Hub CRM Integration")
 		return False
 
@@ -162,20 +162,31 @@ def get_lead_engagement_score(lead_name, crm_lead=None):
 				score += activity_count * 5
 
 		return score
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"Engagement score error: {str(e)}", "Marketing Hub CRM Integration")
 		return 0
 
 def batch_update_engagement_scores():
 	"""Nightly job to calculate and cache engagement scores on Lead doctype"""
 	try:
-		# Get all leads (in batches if needed, but simple for now)
-		leads = frappe.get_all("Lead", fields=["name", "crm_lead"])
-		for lead in leads:
-			score = get_lead_engagement_score(lead.name, lead.crm_lead)
-			frappe.db.set_value("Lead", lead.name, "engagement_score", score, update_modified=False)
-		frappe.db.commit()
-	except Exception as e:
+		# Process in batches to avoid memory issues
+		batch_size = 500
+		offset = 0
+		while True:
+			leads = frappe.get_all(
+				"Lead",
+				fields=["name", "crm_lead"],
+				limit_page_length=batch_size,
+				limit_start=offset
+			)
+			if not leads:
+				break
+			for lead in leads:
+				score = get_lead_engagement_score(lead.name, lead.crm_lead)
+				frappe.db.set_value("Lead", lead.name, "engagement_score", score, update_modified=False)
+			frappe.db.commit()
+			offset += batch_size
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Batch engagement score error: {str(e)}", "Marketing Hub CRM Integration")
 
 
@@ -189,7 +200,7 @@ def get_crm_dashboard_data(campaign=None):
 		data = {}
 
 		# Get leads from campaign
-        # Use utm_campaign to find leads linked to Marketing Campaign
+		# Use utm_campaign to find leads linked to Marketing Campaign
 		if campaign:
 			leads = frappe.get_all(
 				"Lead",
@@ -203,20 +214,19 @@ def get_crm_dashboard_data(campaign=None):
 			converted = 0
 			total_deal_value = 0
 
-			for lead in leads:
-				if lead.crm_lead:
-					# Check if converted to deal
-					deals = frappe.db.get_all(
-						"CRM Deal",
-						filters={"lead": lead.crm_lead},
-						fields=["status", "deal_value"]
-					)
-
-					if deals:
-						converted += 1
-						for deal in deals:
-							if deal.status == "Won":
-								total_deal_value += deal.deal_value or 0
+			crm_leads = [lead.crm_lead for lead in leads if lead.crm_lead]
+			if crm_leads:
+				deals = frappe.get_all(
+					"CRM Deal",
+					filters={"lead": ["in", crm_leads]},
+					fields=["lead", "status", "deal_value"]
+				)
+				converted_leads = set()
+				for deal in deals:
+					converted_leads.add(deal.lead)
+					if deal.status == "Won":
+						total_deal_value += deal.deal_value or 0
+				converted = len(converted_leads)
 
 			data["converted_leads"] = converted
 			data["conversion_rate"] = (converted / len(leads) * 100) if leads else 0
@@ -228,7 +238,7 @@ def get_crm_dashboard_data(campaign=None):
 			data["won_deals"] = frappe.db.count("CRM Deal", {"status": "Won"})
 
 		return data
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"CRM dashboard error: {str(e)}", "Marketing Hub CRM Integration")
 		return {"error": str(e)}
 
@@ -258,7 +268,7 @@ def link_whatsapp_to_campaign(whatsapp_message_name, campaign_name):
 			)
 
 		return True
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"WhatsApp campaign link error: {str(e)}", "Marketing Hub CRM Integration")
 		return False
 
@@ -319,6 +329,6 @@ def get_campaign_performance_with_crm(campaign_name):
 				performance["win_rate"] = (performance["won_deals"] / performance["deals"]) * 100
 
 		return performance
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Campaign performance error: {str(e)}", "Marketing Hub CRM Integration")
 		return {"error": str(e)}

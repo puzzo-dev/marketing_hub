@@ -41,12 +41,21 @@ class AnalyticsConnector(Document):
 	def sync_analytics(self):
 		"""Fetch analytics data from platform and create Analytics Daily Log entries.
 		Includes retry logic with exponential backoff (max 3 retries).
+		Prevents overlapping syncs via sync_in_progress flag.
 		"""
 		if not self.is_active:
 			return {"status": "Error", "message": "Connector is not active"}
 		
 		if self.sync_status == "Paused":
 			return {"status": "Error", "message": "Connector is paused"}
+		
+		# Prevent overlapping syncs
+		if self.sync_in_progress:
+			return {"status": "Error", "message": "Sync already in progress"}
+		
+		self.sync_in_progress = 1
+		self.save()
+		frappe.db.commit()
 		
 		max_retries = 3
 		base_delay = 2  # seconds
@@ -69,6 +78,7 @@ class AnalyticsConnector(Document):
 				self.consecutive_failures = 0
 				self.sync_status = "Active"
 				self.last_error = ""
+				self.sync_in_progress = 0
 				self.set_next_sync_date()
 				self.save()
 				
@@ -114,7 +124,7 @@ class AnalyticsConnector(Document):
 				last_error = f"Connection error: {str(e)}"
 				break
 			
-			except Exception as e:
+			except (frappe.ValidationError, frappe.DoesNotExistError, ValueError) as e:
 				last_error = str(e)
 				break
 		
@@ -122,6 +132,7 @@ class AnalyticsConnector(Document):
 		self.failed_syncs = (self.failed_syncs or 0) + 1
 		self.consecutive_failures = (self.consecutive_failures or 0) + 1
 		self.last_error = last_error or "Unknown error"
+		self.sync_in_progress = 0
 		
 		# Auto-pause after 5 consecutive failures
 		if self.consecutive_failures >= 5:
@@ -162,19 +173,19 @@ class AnalyticsConnector(Document):
 
 	def _sync_meta_ads(self, ad_account):
 		"""Sync data from Meta Ads API using Social Media Network configuration"""
-		oauth_token = ad_account.get_oauth_token()
-		
+		access_token = ad_account.get_access_token()
+
 		# Get API endpoint from Social Media Network doctype
 		network = frappe.get_cached_doc("Social Media Network", self.platform)
 		base_url = network.api_base_url or "https://graph.facebook.com/v18.0"
 		analytics_endpoint = network.analytics_endpoint or "{account_id}/insights"
-		
+
 		# Replace placeholders
 		endpoint = analytics_endpoint.replace("{account_id}", ad_account.ad_account_id)
 		url = f"{base_url}/{endpoint}"
-		
+
 		params = {
-			"access_token": oauth_token.access_token,
+			"access_token": access_token,
 			"fields": "campaign_id,campaign_name,impressions,clicks,spend,actions,action_values",
 			"time_range": json.dumps({
 				"since": str(self.sync_start_date or getdate()),
@@ -183,10 +194,10 @@ class AnalyticsConnector(Document):
 			"level": "campaign",
 			"limit": 100
 		}
-		
+
 		response = requests.get(url, params=params)
 		response.raise_for_status()
-		
+
 		return self.parse_meta_ads_response(response.json())
 	
 	def _sync_google_ads_ads(self, ad_account): # Handle redundancy from scrub("Google Ads") -> "google_ads" + "_ads"
@@ -194,17 +205,17 @@ class AnalyticsConnector(Document):
 
 	def _sync_google_ads(self, ad_account):
 		"""Sync data from Google Ads API"""
-		oauth_token = ad_account.get_oauth_token()
+		access_token = ad_account.get_access_token()
 		# Google Ads API v17
 		url = f"https://googleads.googleapis.com/v17/customers/{ad_account.customer_id}/googleAds:searchStream"
 		
 		# Get developer token from settings
 		developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
 		if not developer_token:
-			frappe.throw("Google Ads Developer Token is not configured in Marketing Hub Settings")
+			frappe.throw(_("Google Ads Developer Token is not configured in Marketing Hub Settings"))
 
 		headers = {
-			"Authorization": f"Bearer {oauth_token.access_token}",
+			"Authorization": f"Bearer {access_token}",
 			"developer-token": developer_token,
 			"login-customer-id": ad_account.customer_id 
 		}
@@ -220,10 +231,11 @@ class AnalyticsConnector(Document):
 			"metrics.cost_micros, metrics.conversions, "
 			"metrics.conversions_value "
 			"FROM campaign "
-			f"WHERE segments.date BETWEEN '{sync_start}' AND '{sync_end}'"
+			"WHERE segments.date BETWEEN %(sync_start)s AND %(sync_end)s"
 		)
+		params = {"sync_start": sync_start, "sync_end": sync_end}
 
-		response = requests.post(url, headers=headers, json={"query": query})
+		response = requests.post(url, headers=headers, json={"query": query, "params": params})
 		response.raise_for_status()
 
 		return self.parse_google_ads_response(response.json())
@@ -233,7 +245,7 @@ class AnalyticsConnector(Document):
 
 	def _sync_linkedin_ads(self, ad_account):
 		"""Sync data from LinkedIn Ads API using Social Media Network configuration"""
-		oauth_token = ad_account.get_oauth_token()
+		access_token = ad_account.get_access_token()
 		
 		# Get API endpoint from Social Media Network doctype
 		network = frappe.get_cached_doc("Social Media Network", self.platform)
@@ -255,7 +267,7 @@ class AnalyticsConnector(Document):
 		}
 
 		headers = {
-			"Authorization": f"Bearer {oauth_token.access_token}",
+			"Authorization": f"Bearer {access_token}",
 			"X-Restli-Protocol-Version": "2.0.0"
 		}
 
@@ -372,24 +384,24 @@ class AnalyticsConnector(Document):
 				if campaign:
 					log.campaign = campaign
 			
-			log.save(ignore_permissions=True)
+			log.save()
 	
 	def get_or_create_campaign(self, campaign_name, campaign_id_platform):
-		"""Get or create Campaign record"""
-		# Search for existing campaign
-		existing = frappe.db.get_value("Campaign", {"campaign_name": campaign_name})
+		"""Get or create Marketing Campaign record"""
+		# Search for existing marketing campaign
+		existing = frappe.db.get_value("Marketing Campaign", {"campaign_name": campaign_name})
 		if existing:
 			return existing
-		
-		# Create new campaign
+
+		# Create new marketing campaign
 		try:
-			campaign = frappe.new_doc("Campaign")
+			campaign = frappe.new_doc("Marketing Campaign")
 			campaign.campaign_name = campaign_name
 			campaign.description = f"Auto-created from {self.platform} (ID: {campaign_id_platform})"
-			campaign.save(ignore_permissions=True)
+			campaign.save()
 			return campaign.name
-		except Exception as e:
-			frappe.log_error(f"Failed to create campaign: {str(e)}", "Analytics Connector")
+		except (frappe.ValidationError, frappe.DoesNotExistError) as e:
+			frappe.log_error(f"Failed to create marketing campaign: {str(e)}", "Analytics Connector")
 			return None
 	
 	@frappe.whitelist()
@@ -397,7 +409,7 @@ class AnalyticsConnector(Document):
 		"""Fetch campaigns from platform using Social Media Network configuration"""
 		try:
 			ad_account = frappe.get_doc("Ad Account", self.ad_account)
-			oauth_token = ad_account.get_oauth_token()
+			access_token = ad_account.get_access_token()
 			
 			# Get API configuration from Social Media Network doctype
 			network = frappe.get_cached_doc("Social Media Network", self.platform)
@@ -409,7 +421,7 @@ class AnalyticsConnector(Document):
 			if self.platform in ("Meta Ads", "Facebook", "Instagram"):
 				url = f"{base_url}/{ad_account.ad_account_id}/campaigns"
 				params = {
-					"access_token": oauth_token.access_token,
+					"access_token": access_token,
 					"fields": "id,name,status,objective",
 					"limit": 100
 				}
@@ -477,7 +489,7 @@ class AnalyticsConnector(Document):
 			else:
 				return {"status": "Error", "message": f"Campaign listing not implemented for {self.platform}"}
 				
-		except Exception as e:
+		except (frappe.ValidationError, requests.exceptions.RequestException) as e:
 			return {"status": "Error", "message": str(e)}
 
 

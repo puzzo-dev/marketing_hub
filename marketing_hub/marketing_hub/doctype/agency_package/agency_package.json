@@ -106,6 +106,13 @@
    "label": "Billing"
   },
   {
+   "fieldname": "subscription_plan",
+   "fieldtype": "Link",
+   "label": "Subscription Plan",
+   "options": "Subscription Plan",
+   "description": "Linked ERPNext Subscription Plan for billing"
+  },
+  {
    "fieldname": "monthly_fee",
    "fieldtype": "Currency",
    "in_list_view": 1,

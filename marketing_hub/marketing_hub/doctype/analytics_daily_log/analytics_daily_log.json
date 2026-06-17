@@ -47,7 +47,8 @@
             "in_list_view": 1,
             "in_standard_filter": 1,
             "label": "Log Date",
-            "reqd": 1
+            "reqd": 1,
+            "search_index": 1
         },
         {
             "fieldname": "connector",
@@ -73,13 +74,15 @@
         {
             "fieldname": "campaign_id_platform",
             "fieldtype": "Data",
-            "label": "Platform Campaign ID"
+            "label": "Platform Campaign ID",
+            "search_index": 1
         },
         {
             "fieldname": "channel",
             "fieldtype": "Select",
             "label": "Channel",
-            "options": "Meta Ads\nGoogle Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nEmail\nWhatsApp\nSMS"
+            "options": "Meta Ads\nGoogle Ads\nLinkedIn Ads\nTikTok Ads\nTwitter/X Ads\nEmail\nWhatsApp\nSMS",
+            "search_index": 1
         },
         {
             "fieldname": "metrics_section",

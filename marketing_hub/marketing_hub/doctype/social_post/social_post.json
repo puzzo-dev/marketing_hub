@@ -106,6 +106,7 @@
         {
             "fieldname": "scheduled_time",
             "fieldtype": "Datetime",
+            "index": 1,
             "label": "Scheduled Time"
         },
         {
@@ -120,6 +121,13 @@
             "label": "Account",
             "options": "Ad Account",
             "description": "The connected account to publish to"
+        },
+        {
+            "fieldname": "network_account",
+            "fieldtype": "Link",
+            "label": "Network Account",
+            "options": "Network Account",
+            "description": "OAuth connection for organic posting (optional, falls back to Ad Account's Network Account)"
         },
         {
             "fieldname": "post_id",

@@ -101,12 +101,12 @@ def publish_post(post_name):
 			doc.status = "Published"
 			doc.published_time = now()
 			doc.post_id = result.get("id")
-			doc.save(ignore_permissions=True)
+			doc.save()
 			return {"success": True, "message": _("Post published successfully via Adapter")}
 		else:
 			frappe.throw(_("Publishing failed: {0}").format(result.get("error", "Unknown error")))
 			
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"Publishing Error: {str(e)}", "Social Post Publish")
 		frappe.throw(_("Failed during publishing process: {0}").format(str(e)))
 
@@ -124,7 +124,7 @@ def schedule_post(post_name, scheduled_time):
 
 	doc.scheduled_time = scheduled_time
 	doc.status = "Scheduled"
-	doc.save(ignore_permissions=True)
+	doc.save()
 
 	return {"success": True, "message": _("Post scheduled successfully")}
 
@@ -154,7 +154,7 @@ def update_metrics(post_name, metrics):
 		doc.shares = metrics["shares"]
 
 	doc.calculate_engagement_rate()
-	doc.save(ignore_permissions=True)
+	doc.save()
 
 	return {"success": True, "engagement_rate": doc.engagement_rate}
 
@@ -174,33 +174,9 @@ def get_platform_best_time(platform):
 		# Check if there's a best_posting_times field in description
 		if network.description and "best time" in network.description.lower():
 			return network.description
-	except:
+	except (frappe.ValidationError, frappe.DoesNotExistError):
 		pass
-	
-	return "Best times vary by audience - analyze your specific audience engagement data"
+
+	return _("Best times vary by audience - analyze your specific audience engagement data")
 
 
-def publish_scheduled_posts():
-	"""Background job to publish scheduled posts"""
-	settings = frappe.get_single("Marketing Hub Settings")
-	if not settings.enable_auto_post:
-		return
-
-	scheduled_posts = frappe.get_all(
-		"Social Post",
-		filters={
-			"status": "Scheduled",
-			"scheduled_time": ["<=", now()]
-		},
-		pluck="name"
-	)
-
-	for post_name in scheduled_posts:
-		try:
-			publish_post(post_name)
-			frappe.db.commit()
-		except Exception as e:
-			frappe.log_error(f"Error publishing scheduled post {post_name}: {str(e)}", "Social Post Publish Error")
-			# Mark as failed
-			frappe.db.set_value("Social Post", post_name, "status", "Failed")
-			frappe.db.commit()

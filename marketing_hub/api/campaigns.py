@@ -91,7 +91,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 			"has_more": (offset + limit) < total_count
 		}
 
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Error fetching campaign list: {str(e)}", "Campaigns API Error")
 		return {"error": _("Failed to load campaigns"), "campaigns": [], "total_count": 0, "has_more": False}
 
@@ -125,7 +125,7 @@ def get_campaign_metrics(campaign):
 				"conversions": metrics[0].conversions or 0,
 			}
 		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DatabaseError) as e:
 		frappe.log_error(f"Error fetching campaign metrics: {str(e)}", "Campaign Metrics API Error")
 		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
 
@@ -139,12 +139,20 @@ def update_campaign(name, data):
 			data = json.loads(data)
 
 		doc = frappe.get_doc("Marketing Campaign", name)
+		doc.check_permission("write")
 		for field in ["campaign_name", "status", "description", "budget", "start_date", "end_date", "company", "is_omni_campaign"]:
 			if field in data:
 				doc.set(field, data[field])
+
+		# Update campaign engines if provided
+		if "campaign_engines" in data:
+			doc.campaign_engines = []
+			for engine_row in data["campaign_engines"]:
+				doc.append("campaign_engines", engine_row)
+
 		doc.save()
 		return {"success": True, "name": doc.name}
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"Error updating campaign: {str(e)}", "Campaign Update Error")
 		return {"success": False, "error": str(e)}
 
@@ -157,6 +165,7 @@ def create_campaign(data):
 			import json
 			data = json.loads(data)
 
+		frappe.has_permission("Marketing Campaign", throw=True)
 		campaign = frappe.get_doc({
 			"doctype": "Marketing Campaign",
 			"campaign_name": data.get("campaign_name"),
@@ -165,6 +174,10 @@ def create_campaign(data):
 			"budget": data.get("budget", 0),
 			"company": data.get("company") or _get_company(),
 		})
+
+		# Add campaign engines if provided
+		for engine_row in data.get("campaign_engines", []):
+			campaign.append("campaign_engines", engine_row)
 
 		campaign.insert()
 		frappe.db.commit()
@@ -175,6 +188,6 @@ def create_campaign(data):
 			"message": _("Campaign created successfully")
 		}
 
-	except Exception as e:
+	except (frappe.ValidationError, frappe.DoesNotExistError) as e:
 		frappe.log_error(f"Error creating campaign: {str(e)}", "Campaign Creation Error")
 		return {"success": False, "error": _("Failed to create campaign: {0}").format(str(e))}

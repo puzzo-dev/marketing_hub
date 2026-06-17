@@ -1,0 +1,178 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:vendor_name",
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "vendor_name",
+        "vendor_code",
+        "is_active",
+        "column_break_1",
+        "vendor_type",
+        "contact_email",
+        "contact_phone",
+        "api_configuration_section",
+        "api_base_url",
+        "auth_type",
+        "custom_adapter_class",
+        "specifications_section",
+        "supported_formats",
+        "max_text_length",
+        "max_media_count",
+        "supports_media",
+        "description"
+    ],
+    "fields": [
+        {
+            "fieldname": "vendor_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Vendor Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "vendor_code",
+            "fieldtype": "Data",
+            "label": "Vendor Code",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "is_active",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Is Active"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "vendor_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Vendor Type",
+            "options": "\nBillboard\nTransit Ads\nStreet Furniture\nDigital Display\nOther",
+            "reqd": 1
+        },
+        {
+            "fieldname": "contact_email",
+            "fieldtype": "Data",
+            "label": "Contact Email",
+            "options": "Email"
+        },
+        {
+            "fieldname": "contact_phone",
+            "fieldtype": "Data",
+            "label": "Contact Phone"
+        },
+        {
+            "fieldname": "api_configuration_section",
+            "fieldtype": "Section Break",
+            "label": "API Configuration"
+        },
+        {
+            "fieldname": "api_base_url",
+            "fieldtype": "Data",
+            "label": "API Base URL",
+            "description": "Optional. Leave blank if vendor is managed manually."
+        },
+        {
+            "fieldname": "auth_type",
+            "fieldtype": "Select",
+            "label": "Auth Type",
+            "options": "\nNone\nOAuth 2.0\nAPI Key\nBearer Token"
+        },
+        {
+            "fieldname": "custom_adapter_class",
+            "fieldtype": "Data",
+            "label": "Custom Adapter Class",
+            "description": "Full dotted path to custom adapter (restricted to allowlist)"
+        },
+        {
+            "fieldname": "specifications_section",
+            "fieldtype": "Section Break",
+            "label": "Specifications"
+        },
+        {
+            "fieldname": "supported_formats",
+            "fieldtype": "Data",
+            "label": "Supported Formats",
+            "description": "e.g. jpg, png, pdf"
+        },
+        {
+            "fieldname": "max_text_length",
+            "fieldtype": "Int",
+            "label": "Max Text Length"
+        },
+        {
+            "fieldname": "max_media_count",
+            "fieldtype": "Int",
+            "label": "Max Media Count"
+        },
+        {
+            "default": "1",
+            "fieldname": "supports_media",
+            "fieldtype": "Check",
+            "label": "Supports Media"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text Editor",
+            "label": "Description"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "OOH Vendor",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

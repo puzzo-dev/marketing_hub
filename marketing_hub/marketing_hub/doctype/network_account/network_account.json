@@ -1,0 +1,151 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:NA-{platform}-{####}",
+    "creation": "2026-06-17 00:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "account_name",
+        "social_media_network",
+        "platform",
+        "column_break_1",
+        "company",
+        "is_active",
+        "oauth_section",
+        "connected_app",
+        "user",
+        "sync_status_section",
+        "last_sync",
+        "sync_status",
+        "column_break_2",
+        "error_log"
+    ],
+    "fields": [
+        {
+            "fieldname": "account_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Account Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "social_media_network",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Social Media Network",
+            "options": "Social Media Network",
+            "reqd": 1
+        },
+        {
+            "fieldname": "platform",
+            "fieldtype": "Data",
+            "label": "Platform",
+            "fetch_from": "social_media_network.network_name",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "company",
+            "fieldtype": "Link",
+            "label": "Company",
+            "options": "Company"
+        },
+        {
+            "fieldname": "is_active",
+            "fieldtype": "Check",
+            "default": "1",
+            "label": "Is Active"
+        },
+        {
+            "fieldname": "oauth_section",
+            "fieldtype": "Section Break",
+            "label": "OAuth Configuration",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "connected_app",
+            "fieldtype": "Link",
+            "label": "Connected App",
+            "options": "Connected App",
+            "reqd": 1,
+            "description": "Frappe Connected App that handles OAuth for this platform"
+        },
+        {
+            "fieldname": "user",
+            "fieldtype": "Link",
+            "label": "User",
+            "options": "User",
+            "description": "User who authorized this connection"
+        },
+        {
+            "fieldname": "sync_status_section",
+            "fieldtype": "Section Break",
+            "label": "Sync Status"
+        },
+        {
+            "fieldname": "last_sync",
+            "fieldtype": "Datetime",
+            "label": "Last Sync",
+            "read_only": 1
+        },
+        {
+            "fieldname": "sync_status",
+            "fieldtype": "Select",
+            "label": "Sync Status",
+            "options": "Success\nFailed\nPending",
+            "default": "Pending"
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "error_log",
+            "fieldtype": "Text",
+            "label": "Error Log",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-06-17 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Marketing Hub",
+    "name": "Network Account",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Marketing Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

@@ -21,6 +21,7 @@
         "last_sync_date",
         "sync_status_section",
         "sync_status",
+        "sync_in_progress",
         "total_syncs",
         "column_break_13",
         "failed_syncs",
@@ -116,6 +117,13 @@
             "in_list_view": 1,
             "label": "Sync Status",
             "options": "Active\nError\nPaused"
+        },
+        {
+            "default": "0",
+            "fieldname": "sync_in_progress",
+            "fieldtype": "Check",
+            "label": "Sync In Progress",
+            "read_only": 1
         },
         {
             "default": "0",
