@@ -21,13 +21,14 @@ def get_campaign_permission_query_conditions(user):
 		return ""
 	
 	# Others see only campaigns they own or are assigned to
+	escaped_user = frappe.db.escape(user)
 	return f"""(
-		`tabMarketing Campaign`.owner = '{frappe.db.escape(user)}' 
+		`tabMarketing Campaign`.owner = {escaped_user}
 		OR `tabMarketing Campaign`.name IN (
 			SELECT DISTINCT parent 
 			FROM `tabUser Permission` 
 			WHERE allow = 'Marketing Campaign' 
-			AND user = '{frappe.db.escape(user)}'
+			AND user = {escaped_user}
 			AND applicable_for IN ('', NULL, 'Marketing Hub')
 		)
 	)"""
@@ -66,12 +67,14 @@ def has_campaign_permission(doc, ptype, user):
 	)
 	
 	if user_perms:
-		# User has permission via User Permission doctype
+		# User has access via User Permission doctype.
+		# Do NOT call frappe.has_permission() here: it re-invokes this same
+		# has_permission hook and causes infinite recursion. Grant based on
+		# the User Permission record alone.
 		if ptype == "read":
 			return True
 		elif ptype in ("write", "submit", "cancel"):
-			# Check if they have write permission specifically
-			return frappe.has_permission("Marketing Campaign", ptype, user=user)
+			return True
 		elif ptype == "delete":
 			# Only owners, System Manager, Marketing Manager can delete
 			return False
@@ -93,15 +96,16 @@ def get_campaign_activity_permission_query_conditions(user):
 		return ""
 	
 	# Others see activities from campaigns they can access
+	escaped_user = frappe.db.escape(user)
 	return f"""(
 		`tabCampaign Activity`.campaign IN (
 			SELECT name FROM `tabMarketing Campaign`
-			WHERE owner = '{frappe.db.escape(user)}'
+			WHERE owner = {escaped_user}
 			OR name IN (
 				SELECT DISTINCT for_value 
 				FROM `tabUser Permission` 
 				WHERE allow = 'Marketing Campaign' 
-				AND user = '{frappe.db.escape(user)}'
+				AND user = {escaped_user}
 			)
 		)
 	)"""
@@ -137,7 +141,7 @@ def get_marketing_segment_permission_query_conditions(user):
 		return ""
 	
 	# Others see only their own
-	return f"`tabMarketing Segment`.owner = '{frappe.db.escape(user)}'"
+	return f"`tabMarketing Segment`.owner = {frappe.db.escape(user)}"
 
 
 def has_workspace_access(user=None):
