@@ -9,7 +9,7 @@
   "function": "Sum",
   "idx": 0,
   "is_public": 1,
-  "is_standard": 1,
+  "is_standard": 0,
   "label": "Total Spend",
   "modified": "2026-01-25 10:00:00.000000",
   "modified_by": "Administrator",
