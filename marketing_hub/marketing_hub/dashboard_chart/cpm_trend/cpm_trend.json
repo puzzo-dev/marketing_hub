@@ -8,7 +8,7 @@
   "dynamic_filters_json": "[]",
   "filters_json": "[]",
   "is_public": 1,
-  "is_standard": 0,
+  "is_standard": 1,
   "module": "Marketing Hub",
   "name": "CPM Trend",
   "based_on": "log_date",
