@@ -259,7 +259,6 @@
             "fieldtype": "Column Break"
         },
         {
-            "default": "Last Touch",
             "fieldname": "default_attribution_model",
             "fieldtype": "Link",
             "label": "Default Attribution Model",

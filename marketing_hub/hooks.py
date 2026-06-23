@@ -16,7 +16,7 @@ add_to_apps_screen = [
         "name": "marketing_hub",
         "logo": "/assets/marketing_hub/frontend/logo.svg",
         "title": "Marketing Hub",
-        "route": "/app/marketing-hub",
+        "route": "/desk/marketing-hub",
         "has_permission": "marketing_hub.api.permission.has_app_permission"
     }
 ]
@@ -146,7 +146,7 @@ app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 # ------------
 
 # before_install = "marketing_hub.install.before_install"
-# after_install = "marketing_hub.install.after_install"
+after_install = "marketing_hub.install.after_install"
 
 # Uninstallation
 # ------------
