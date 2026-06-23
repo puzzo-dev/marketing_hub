@@ -100,23 +100,22 @@ class OmniBlast(Document):
 		
 		# Parse created posts (newline-separated list of post names)
 		post_list = [p.strip() for p in self.created_posts.split('\n') if p.strip()]
-		
-		# For large blasts (>5 posts), run in background
-		if len(post_list) > 5:
-			self.status = "Publishing"
-			self.save()
-			frappe.enqueue(
-				"marketing_hub.marketing_hub.doctype.omni_blast.omni_blast._execute_blast_posts",
-				blast_name=self.name,
-				post_list=post_list,
-				queue="default",
-				timeout=600,
-				job_id=f"omni_blast_{self.name}"
-			)
-			frappe.msgprint(f"Publishing {len(post_list)} posts in background...")
-			return {"published": 0, "failed": 0, "status": "enqueued"}
-		
-		return _execute_blast_posts(self.name, post_list)
+
+		# Always publish in the background. _execute_blast_posts performs external
+		# API calls and commits per post to persist progress; running it inside the
+		# web-request transaction would violate Frappe's transaction management.
+		self.status = "Publishing"
+		self.save()
+		frappe.enqueue(
+			"marketing_hub.marketing_hub.doctype.omni_blast.omni_blast._execute_blast_posts",
+			blast_name=self.name,
+			post_list=post_list,
+			queue="default",
+			timeout=600,
+			job_id=f"omni_blast_{self.name}"
+		)
+		frappe.msgprint(f"Publishing {len(post_list)} posts in background...")
+		return {"published": 0, "failed": 0, "status": "enqueued"}
 
 
 def _execute_blast_posts(blast_name, post_list):

@@ -47,7 +47,6 @@ def publish_to_platform(post):
 			post.error_log = result.get("error")
 		
 		post.save(ignore_permissions=True)
-		frappe.db.commit()
 		
 		return result
 		
@@ -124,7 +123,6 @@ def get_post_analytics(post):
 			post.shares = analytics.get("shares", 0)
 			post.engagement_rate = analytics.get("engagement_rate", 0)
 			post.save(ignore_permissions=True)
-			frappe.db.commit()
 		
 		return analytics
 		
@@ -156,7 +154,6 @@ def delete_post(post):
 		if result.get("success"):
 			post.status = "Deleted"
 			post.save(ignore_permissions=True)
-			frappe.db.commit()
 		
 		return result
 		

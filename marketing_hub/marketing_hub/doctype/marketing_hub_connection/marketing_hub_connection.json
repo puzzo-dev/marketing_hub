@@ -12,10 +12,7 @@
   "status",
   "last_synced",
   "section_break_6",
-  "description",
-  "parent",
-  "parentfield",
-  "parenttype"
+  "description"
  ],
  "fields": [
   {
@@ -59,24 +56,6 @@
    "fieldname": "description",
    "fieldtype": "Text",
    "label": "Description"
-  },
-  {
-   "fieldname": "parent",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Parent"
-  },
-  {
-   "fieldname": "parentfield",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Parent Field"
-  },
-  {
-   "fieldname": "parenttype",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Parent Type"
   }
  ],
  "index_web_pages_for_search": 1,

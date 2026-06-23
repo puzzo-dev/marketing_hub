@@ -146,7 +146,7 @@ app_include_js = "/assets/marketing_hub/js/marketing_hub.js"
 # ------------
 
 # before_install = "marketing_hub.install.before_install"
-# after_install = "marketing_hub.install.after_install"
+after_install = "marketing_hub.install.after_install"
 
 # Uninstallation
 # ------------

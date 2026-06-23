@@ -46,8 +46,7 @@ class CampaignActivity(Document):
 			self.status = "In Progress"
 			self.started_at = now_datetime()
 			self.save()
-			frappe.db.commit()
-			
+
 			# Execute based on activity type
 			if self.activity_type == "Omni-Channel Blast":
 				result = self.execute_omni_blast()

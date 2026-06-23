@@ -1,6 +1,28 @@
 import frappe
 from frappe import _
 
+
+def after_install():
+    """Seed attribution models, set the default, and run base setup on fresh install."""
+    from marketing_hub.patches.v1_0.seed_attribution_models import execute as seed_attribution_models
+
+    seed_attribution_models()
+    set_default_attribution_model()
+    setup_file_folder()
+    setup_notifications()
+
+
+def set_default_attribution_model():
+    """Set Last Touch as the default attribution model in Marketing Hub Settings."""
+    if not frappe.db.exists("Attribution Model", "Last Touch"):
+        return
+
+    settings = frappe.get_single("Marketing Hub Settings")
+    if not settings.default_attribution_model:
+        settings.default_attribution_model = "Last Touch"
+        settings.save(ignore_permissions=True)
+
+
 def setup_file_folder():
     """Create Marketing Hub folder in Frappe Files for uploaded assets."""
     if not frappe.db.exists("File", {"file_name": "Marketing Hub", "is_folder": 1}):
