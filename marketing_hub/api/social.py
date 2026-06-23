@@ -67,7 +67,7 @@ def get_social_posts(filters=None, limit=20, offset=0):
 		}
 
 	except Exception as e:
-		frappe.log_error(f"Error fetching social posts: {str(e)}", "Social Posts API Error")
+		frappe.log_error(title="Social Posts API Error", message=frappe.get_traceback())
 		return {"error": str(e), "posts": [], "total_count": 0, "has_more": False, "status_counts": {}}
 
 
@@ -93,7 +93,7 @@ def create_social_post(data):
 		return {"success": True, "post_name": post.name, "message": "Social post created successfully"}
 
 	except Exception as e:
-		frappe.log_error(f"Error creating social post: {str(e)}", "Social Post Creation Error")
+		frappe.log_error(title="Social Post Creation Error", message=frappe.get_traceback())
 		return {"success": False, "error": str(e)}
 
 
@@ -112,7 +112,7 @@ def update_social_post(name, data):
 		doc.save()
 		return {"success": True, "name": doc.name}
 	except Exception as e:
-		frappe.log_error(f"Error updating social post: {str(e)}", "Social Post Update Error")
+		frappe.log_error(title="Social Post Update Error", message=frappe.get_traceback())
 		return {"success": False, "error": str(e)}
 
 
@@ -128,5 +128,5 @@ def publish_social_post(name):
 		result = publish_post(doc)
 		return {"success": True, "result": result}
 	except Exception as e:
-		frappe.log_error(f"Error publishing social post: {str(e)}", "Social Post Publish Error")
+		frappe.log_error(title="Social Post Publish Error", message=frappe.get_traceback())
 		return {"success": False, "error": str(e)}

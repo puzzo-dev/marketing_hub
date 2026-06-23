@@ -44,7 +44,7 @@ def execute_blast(campaign_activity):
             else:
                 results[channel] = {"status": "Not Implemented", "count": 0}
         except Exception as e:
-            frappe.log_error(f"Blast execution error for {channel}", str(e))
+            frappe.log_error(title=f"Blast execution error for {channel}", message=frappe.get_traceback())
             results[channel] = {"status": "Error", "error": str(e)}
 
     # Update activity with results

@@ -4,7 +4,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, now
 
 
 class CampaignActivity(Document):
@@ -26,27 +26,47 @@ class CampaignActivity(Document):
 		self.target_count = 0
 	
 	def on_update(self):
-		"""Execute if scheduled time reached"""
-		# Guard: only auto-execute if not already called from execute()
-		if getattr(self, '_executing', False):
-			return
+		"""If scheduled time reached, enqueue execution instead of running inline.
 
+		Running a blast synchronously inside a document save would block the
+		request and risks transaction conflicts. The background worker performs
+		the atomic DB-level claim.
+		"""
 		if self.status == "Scheduled" and self.scheduled_date:
 			if now_datetime() >= self.scheduled_date:
-				self.execute()
+				frappe.enqueue(
+					"marketing_hub.marketing_hub.doctype.campaign_activity.campaign_activity.execute_activity",
+					activity_name=self.name,
+					queue="default",
+					timeout=600,
+					job_id=f"campaign_activity_{self.name}",
+				)
 	
 	@frappe.whitelist()
 	def execute(self):
-		"""Execute campaign activity"""
-		if self.status == "Completed":
-			return {"status": "Error", "message": "Activity already completed"}
+		"""Execute campaign activity.
+
+		Uses an atomic DB-level claim so concurrent calls/retries only run once.
+		"""
+		if self.status in ("Completed", "In Progress"):
+			return {"status": "Error", "message": f"Activity already {self.status.lower()}"}
+		
+		# Atomic DB-level claim: only move from Scheduled -> In Progress if still Scheduled.
+		frappe.db.sql(
+			"""
+			UPDATE `tabCampaign Activity`
+			SET status = 'In Progress', started_at = %s, modified = %s
+			WHERE name = %s AND status = 'Scheduled'
+			""",
+			(now_datetime(), now(), self.name),
+		)
+		frappe.db.commit()
+
+		self.reload()
+		if self.status != "In Progress":
+			return {"status": "Error", "message": "Activity is already being executed by another worker"}
 		
 		try:
-			self._executing = True
-			self.status = "In Progress"
-			self.started_at = now_datetime()
-			self.save()
-
 			# Execute based on activity type
 			if self.activity_type == "Omni-Channel Blast":
 				result = self.execute_omni_blast()
@@ -71,7 +91,10 @@ class CampaignActivity(Document):
 			self.status = "Failed"
 			self.error_log = str(e)
 			self.save()
-			frappe.log_error(f"Campaign activity execution failed: {str(e)}", "Campaign Activity")
+			frappe.log_error(
+				title=f"Campaign activity execution failed: {self.name}",
+				message=frappe.get_traceback(),
+			)
 			return {"status": "Error", "message": str(e)}
 	
 	def execute_omni_blast(self):

@@ -83,7 +83,7 @@ def get_campaign_list(filters=None, limit=20, offset=0):
 		}
 
 	except Exception as e:
-		frappe.log_error(f"Error fetching campaign list: {str(e)}", "Campaigns API Error")
+		frappe.log_error(title="Campaigns API Error", message=frappe.get_traceback())
 		return {"error": _("Failed to load campaigns"), "campaigns": [], "total_count": 0, "has_more": False}
 
 
@@ -117,7 +117,7 @@ def get_campaign_metrics(campaign):
 			}
 		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
 	except Exception as e:
-		frappe.log_error(f"Error fetching campaign metrics: {str(e)}", "Campaign Metrics API Error")
+		frappe.log_error(title="Campaign Metrics API Error", message=frappe.get_traceback())
 		return {"spend": 0, "revenue": 0, "roas": 0, "impressions": 0, "clicks": 0, "conversions": 0}
 
 
@@ -134,7 +134,7 @@ def update_campaign(name, data):
 		doc.save()
 		return {"success": True, "name": doc.name}
 	except Exception as e:
-		frappe.log_error(f"Error updating campaign: {str(e)}", "Campaign Update Error")
+		frappe.log_error(title="Campaign Update Error", message=frappe.get_traceback())
 		return {"success": False, "error": str(e)}
 
 
@@ -162,5 +162,5 @@ def create_campaign(data):
 		}
 
 	except Exception as e:
-		frappe.log_error(f"Error creating campaign: {str(e)}", "Campaign Creation Error")
+		frappe.log_error(title="Campaign Creation Error", message=frappe.get_traceback())
 		return {"success": False, "error": _("Failed to create campaign: {0}").format(str(e))}

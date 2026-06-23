@@ -118,45 +118,50 @@ class OmniBlast(Document):
 		return {"published": 0, "failed": 0, "status": "enqueued"}
 
 
-def _execute_blast_posts(blast_name, post_list):
+def _execute_blast_posts(blast_name, post_list=None):
 	"""Execute publishing for a list of Social Post names.
-	Can run synchronously or as a background job.
+	Runs as a background job. Uses atomic row-level status claiming to prevent
+	concurrent workers from publishing the same post twice.
 	"""
 	from marketing_hub.utils.social_adapter import publish_to_platform
-	
+
 	blast = frappe.get_doc("Omni Blast", blast_name)
-	blast.status = "Publishing"
-	blast.save()
-	frappe.db.commit()
-	
+
+	# If another worker already finished this blast, exit immediately.
+	if blast.status in ("Published", "Partially Published", "Failed"):
+		return {"published": 0, "failed": 0, "status": "skipped"}
+
+	# Re-query the post list if not provided (idempotent retries).
+	if post_list is None:
+		post_list = frappe.get_all(
+			"Social Post",
+			filters={"omni_blast": blast_name, "status": ["in", ["Draft", "Scheduled"]]},
+			pluck="name",
+		)
+
 	published_count = 0
 	failed_count = 0
 	errors = []
-	
+
 	for post_name in post_list:
 		try:
-			if not frappe.db.exists("Social Post", post_name):
-				failed_count += 1
-				errors.append(f"{post_name}: Post not found")
+			# Atomically claim the post: only a row still in Draft/Scheduled can be claimed.
+			claimed = _claim_social_post(post_name)
+			if not claimed:
 				continue
-			
+
 			social_post = frappe.get_doc("Social Post", post_name)
-			
-			# Skip already-published or deleted posts
-			if social_post.status in ("Published", "Deleted"):
-				published_count += 1
-				continue
-			
+
 			# For scheduled blasts, just mark as Scheduled
 			if blast.blast_type == "Scheduled":
 				social_post.status = "Scheduled"
 				social_post.save()
 				published_count += 1
 				continue
-			
+
 			# Get the network to determine channel type
-			network = frappe.get_cached_doc("Social Media Network", social_post.social_media_network)
-			
+			network = frappe.get_cached_doc("Social Media Network", social_post.platform)
+
 			# Non-social channels are handled elsewhere (Email/WhatsApp/SMS)
 			if network.network_type in ("Email", "Messaging", "SMS"):
 				social_post.status = "Published"
@@ -164,41 +169,64 @@ def _execute_blast_posts(blast_name, post_list):
 				social_post.save()
 				published_count += 1
 				continue
-			
+
 			# Social media channels — publish via GenericAdapter
 			result = publish_to_platform(social_post)
-			
+
 			if result.get("success"):
 				published_count += 1
 			else:
 				failed_count += 1
 				errors.append(f"{post_name}: {result.get('error', 'Unknown error')}")
-			
-			frappe.db.commit()
-			
+
 		except Exception as e:
-			frappe.log_error(f"Failed to publish post {post_name}: {str(e)}", "Omni Blast Publish")
+			frappe.log_error(
+				title=f"Failed to publish post {post_name}",
+				message=frappe.get_traceback(),
+			)
 			failed_count += 1
 			errors.append(f"{post_name}: {str(e)}")
-			frappe.db.rollback()
-	
-	# Update blast status
+		finally:
+			# Commit each post's result so progress is not lost if a later post fails.
+			frappe.db.commit()
+
+	# Update blast status based on results
 	if failed_count > 0 and published_count == 0:
 		blast.status = "Failed"
 	elif failed_count > 0:
 		blast.status = "Partially Published"
 	else:
 		blast.status = "Published"
-	
+
 	if errors:
-		blast.error_log = "\n".join(errors[:20])  # Cap at 20 errors
-	
+		blast.error_log = "\n".join(errors[:20])
+
 	blast.save()
 	frappe.db.commit()
-	
+
 	result = {"published": published_count, "failed": failed_count}
-	
+
 	if not frappe.flags.in_test:
 		frappe.msgprint(f"Published {published_count} posts. Failed: {failed_count}")
-	
+
 	return result
+
+
+def _claim_social_post(post_name: str) -> bool:
+	"""Atomically claim a Social Post row for publishing.
+
+	Returns True only if this worker successfully moved the post from
+	Draft/Scheduled into Publishing. This is equivalent to row-level locking
+	for concurrent blast workers.
+	"""
+	frappe.db.sql(
+		"""
+		UPDATE `tabSocial Post`
+		SET status = 'Publishing', modified = %s
+		WHERE name = %s AND status IN ('Draft', 'Scheduled')
+		""",
+		(frappe.utils.now(), post_name),
+	)
+	frappe.db.commit()
+	current_status = frappe.db.get_value("Social Post", post_name, "status")
+	return current_status == "Publishing"

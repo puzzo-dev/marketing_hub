@@ -51,7 +51,7 @@ def publish_to_platform(post):
 		return result
 		
 	except Exception as e:
-		frappe.log_error(f"Publish error: {str(e)}", "Social Adapter")
+		frappe.log_error(title="Social Adapter Publish Error", message=frappe.get_traceback())
 		return {"success": False, "error": str(e)}
 
 
@@ -127,7 +127,7 @@ def get_post_analytics(post):
 		return analytics
 		
 	except Exception as e:
-		frappe.log_error(f"Get analytics error: {str(e)}", "Social Adapter")
+		frappe.log_error(title="Social Adapter Get Analytics Error", message=frappe.get_traceback())
 		return {"error": str(e)}
 
 
@@ -158,7 +158,7 @@ def delete_post(post):
 		return result
 		
 	except Exception as e:
-		frappe.log_error(f"Delete post error: {str(e)}", "Social Adapter")
+		frappe.log_error(title="Social Adapter Delete Post Error", message=frappe.get_traceback())
 		return {"error": str(e)}
 
 

@@ -25,7 +25,7 @@ def publish_scheduled_posts():
             publish_post(post)
             frappe.db.commit()
         except Exception as e:
-            frappe.log_error(f"Auto-post failed for {post_name.name}", str(e))
+            frappe.log_error(title=f"Auto-post failed for {post_name.name}", message=frappe.get_traceback())
             frappe.db.rollback()
 
 
@@ -70,7 +70,7 @@ def publish_post(post):
         post.post_results = frappe.as_json({"status": "Error", "error": str(e)})
         post.save()
         frappe.db.commit()
-        frappe.log_error("Post publishing failed", str(e))
+        frappe.log_error(title="Post publishing failed", message=frappe.get_traceback())
         raise
 
 
