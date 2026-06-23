@@ -199,7 +199,7 @@ def _execute_blast_posts(blast_name, post_list):
 	
 	result = {"published": published_count, "failed": failed_count}
 	
-	if not frappe.flags.in_test:
+	if not frappe.in_test:
 		frappe.msgprint(f"Published {published_count} posts. Failed: {failed_count}")
 	
 	return result
