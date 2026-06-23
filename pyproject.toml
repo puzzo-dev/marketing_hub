@@ -1,7 +1,7 @@
 [project]
 name = "marketing_hub"
 authors = [
-    { name = "I-Varse Technologies", email = "support@itechnologies.ng"}
+    { name = "I-Varse Technologies NG", email = "dev@itechnologies.ng"}
 ]
 description = "Frappe Framework based Marketing App for managing marketing operations of an organization"
 requires-python = ">=3.10"

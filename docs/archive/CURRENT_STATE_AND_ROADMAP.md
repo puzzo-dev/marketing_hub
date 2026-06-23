@@ -453,7 +453,7 @@ const data = await call('marketing_hub.www.marketing.index.get_my_data')
 ## 👥 Team & Contact
 
 **Current State**: Solo development
-**Support**: support@itechnologies.ng
+**Support**: dev@itechnologies.ng
 **License**: MIT
 
 ---

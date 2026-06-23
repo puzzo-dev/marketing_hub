@@ -121,7 +121,7 @@ The Marketing Hub uses a **modular workspace architecture** with 4 separate work
    - JavaScript client script with action buttons
    - Unit tests
    - Migration patch executed successfully
-   - **Settings created for both companies** (I-Varse Limited, I-Varse Technologies)
+   - **Settings created for both companies** (I-Varse Technologies NG, I-Varse Technologies NG)
 
 2. **Integrated into Marketing Settings Workspace**
    - Added as first item in Configuration section

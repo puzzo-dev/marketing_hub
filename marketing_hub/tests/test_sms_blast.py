@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2026, I-Varse Technologies and Contributors
+# Copyright (c) 2026, I-Varse Technologies NG and Contributors
 # License: MIT
 
 import frappe

@@ -1,8 +1,8 @@
 app_name = "marketing_hub"
 app_title = "Marketing Hub"
-app_publisher = "I-Varse Technologies"
+app_publisher = "I-Varse Technologies NG"
 app_description = "Frappe Framework based Marketing App for managing marketing operations of an organization"
-app_email = "support@itechnologies.ng"
+app_email = "dev@itechnologies.ng"
 app_version = "1.0.0-beta.1"
 app_license = "mit"
 
