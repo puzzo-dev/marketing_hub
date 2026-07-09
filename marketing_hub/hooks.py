@@ -42,21 +42,6 @@ website_route_rules = [
 # --------
 fixtures = [
     {
-        "dt": "Custom Field",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-
-                    "Lead-utm_campaign",
-                    "Lead-utm_source",
-                    "Lead-utm_medium"
-                ]
-            ]
-        ]
-    },
-    {
         "dt": "Workspace",
         "filters": [
             [
