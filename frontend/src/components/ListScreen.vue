@@ -4,6 +4,7 @@
       <PaneHeader :title="title">
         <template #actions>
           <template v-if="statuses.length">
+            <slot name="toolbar" />
             <TabButtons v-if="!compact" v-model="status" :options="statusButtons" />
             <Select v-else v-model="status" variant="ghost" :options="statusButtons" />
           </template>

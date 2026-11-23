@@ -25,7 +25,6 @@ const routes = [
     path: "/placements", name: "Placements", component: page("Placements"), meta: { roles: [manager, publisher], fixed: true },
     children: [{ path: ":name", name: "Placement", props: true, component: page("Placement") }],
   },
-  { path: "/calendar", name: "Calendar", component: page("Calendar"), meta: { roles: [manager, publisher] } },
   { path: "/out-of-home/new", name: "NewOOHBooking", component: page("NewOOHBooking"), meta: { roles: [manager, ooh] } },
   {
     path: "/out-of-home", name: "OutOfHome", component: page("OutOfHome"), meta: { roles: [manager, ooh], fixed: true },
