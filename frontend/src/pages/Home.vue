@@ -95,6 +95,7 @@ const strip = computed(() => [
 const loading = computed(() => call.isFetching?.value ?? false)
 const trendChart = computed(() => ({
   loading: loading.value,
+  card: false,
   data: data.value.trend,
   x: "date",
   y: ["clicks", "impressions"],
@@ -104,6 +105,7 @@ const trendChart = computed(() => ({
 }))
 const channelShare = computed(() => ({
   loading: loading.value,
+  card: false,
   data: data.value.by_channel,
   category: "channel",
   value: "spend",
@@ -114,6 +116,7 @@ const channelShare = computed(() => ({
 }))
 const exerciseChart = computed(() => ({
   loading: loading.value,
+  card: false,
   data: data.value.by_exercise,
   x: "name",
   y: ["spend"],
@@ -123,6 +126,7 @@ const exerciseChart = computed(() => ({
 }))
 const channelChart = computed(() => ({
   loading: loading.value,
+  card: false,
   data: data.value.by_channel,
   x: "channel",
   y: ["clicks", "conversions"],
