@@ -17,12 +17,12 @@
         :columns="[{ key: 'subject', label: 'Task' }, { key: 'status', label: 'Status', width: '9rem', badge: true }, { key: 'exp_end_date', label: 'Due', width: '9rem' }]" />
       <template v-else-if="tab === 'budget'">
         <StatStrip :items="[{ label: 'Planned budget', value: money(doc.budget) }, { label: 'Spent so far', value: money(doc.total_spent) }, { label: 'Left', value: money((doc.budget || 0) - (doc.total_spent || 0)) }]" />
-        <p class="text-sm text-ink-gray-5">Spend is read from the ledger against the exercise's Project.</p>
+        <p class="text-sm text-ink-gray-6">Spend is read from the ledger against the exercise's Project.</p>
       </template>
       <DataList v-else-if="tab === 'changes'" :rows="changes" empty="No change requests."
         :columns="[{ key: 'name', label: 'Request', width: '10rem' }, { key: 'reason', label: 'Reason' }, { key: 'workflow_state', label: 'State', width: '9rem', badge: true }]" />
       <template v-else-if="tab === 'email'">
-        <p class="max-w-xl text-sm text-ink-gray-5">These are ERPNext Email Campaigns started from this exercise. ERPNext sends each one once a day on its start date, with one message for every recipient.</p>
+        <p class="max-w-xl text-sm text-ink-gray-6">These are ERPNext Email Campaigns started from this exercise. ERPNext sends each one once a day on its start date, with one message for every recipient.</p>
         <DataList :rows="doc.email_campaigns || []" empty="No email campaigns yet." :columns="[{ key: 'email_campaign', label: 'Email Campaign' }, { key: 'activity', label: 'Activity', width: '12rem' }, { key: 'start_date', label: 'Starts', width: '9rem' }]" />
       </template>
     </div>

@@ -16,7 +16,7 @@
     <section class="flex flex-col gap-2">
       <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Versions</h3></div>
       <div v-for="v in [...(doc.versions || [])].reverse()" :key="v.name" class="flex flex-col gap-1.5 border-b py-3">
-        <div class="flex items-center gap-2 text-sm text-ink-gray-5"><span>Version {{ v.version_no }}</span><Badge v-if="v.approved_on" label="Approved" theme="green" /></div>
+        <div class="flex items-center gap-2 text-sm text-ink-gray-6"><span>Version {{ v.version_no }}</span><Badge v-if="v.approved_on" label="Approved" theme="green" /></div>
         <p class="whitespace-pre-wrap text-base text-ink-gray-8">{{ v.body }}</p>
       </div>
       <p v-if="!doc.versions?.length" class="text-base text-ink-gray-6">No version yet.</p>

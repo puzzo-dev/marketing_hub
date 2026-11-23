@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-0 flex-1">
-    <section v-if="!(isMobile && hasDetail)" class="flex min-h-0 flex-col" :class="split ? 'w-[400px] shrink-0 border-e' : 'min-w-0 flex-1'" :aria-label="title">
+    <section v-if="!(stacked && hasDetail)" class="flex min-h-0 flex-col" :class="split ? 'w-[400px] shrink-0 border-e' : 'min-w-0 flex-1'" :aria-label="title">
       <PaneHeader :title="title">
         <template #actions>
           <template v-if="statuses.length">
@@ -25,9 +25,9 @@
             <ListRows :items="rows" row-key="name" v-slot="{ item, value }">
               <ListRow :value="value" :route="rowTo(item)">
                 <ListCell>
-                  <div class="min-w-0">
+                  <div class="flex min-w-0 flex-col gap-1.5">
                     <div class="truncate text-base text-ink-gray-8">{{ format(item[cols[0].field], cols[0]) }}</div>
-                    <div v-if="subtitle(item)" class="mt-1.5 truncate text-sm text-ink-gray-5">{{ subtitle(item) }}</div>
+                    <div v-if="subtitle(item)" class="truncate text-sm text-ink-gray-6">{{ subtitle(item) }}</div>
                   </div>
                 </ListCell>
                 <template v-if="!compact">
@@ -42,7 +42,7 @@
               </ListRow>
             </ListRows>
           </List>
-          <p v-if="note" class="pt-3 text-sm text-ink-gray-5">{{ note }}</p>
+          <p v-if="note" class="pt-3 text-sm text-ink-gray-6">{{ note }}</p>
         </div>
       </ScrollArea>
     </section>
@@ -62,7 +62,7 @@ import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "f
 import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "@/pages/ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
-import { rowHeight } from "@/lib/tweaks"
+import { openIn, rowHeight } from "@/lib/tweaks"
 import { isMobile } from "@/lib/viewport"
 
 const props = defineProps({
@@ -84,8 +84,10 @@ const router = useRouter()
 const route = useRoute()
 // A record is open when the child route is showing; the list then narrows to a column.
 const hasDetail = computed(() => route.name === props.rowRoute)
-const split = computed(() => hasDetail.value && !isMobile.value)
-const compact = computed(() => isMobile.value || hasDetail.value)
+// On a phone, or when the Tweak panel says "Full page", an open record replaces the list.
+const stacked = computed(() => isMobile.value || openIn.value === "page")
+const split = computed(() => hasDetail.value && !stacked.value)
+const compact = computed(() => isMobile.value || split.value)
 const status = ref("All")
 const statusButtons = computed(() => ["All", ...props.statuses].map((s) => ({ label: s, value: s })))
 

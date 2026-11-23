@@ -1,11 +1,11 @@
 <template>
   <!-- One row of figures divided by thin rules, with no card around each: the frappe-ui accounting recipe. -->
   <div class="grid grid-cols-2 gap-y-4 divide-outline-gray-2 sm:divide-x" :class="cols">
-    <div v-for="k in items" :key="k.label" class="px-4 first:pl-0 last:pr-0">
-      <div class="text-xs text-ink-gray-5">{{ k.label }}</div>
-      <Skeleton v-if="loading" class="mt-1 h-8 w-24" />
-      <div v-else class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ k.value ?? "—" }}</div>
-      <div v-if="k.hint" class="mt-1 text-xs text-ink-gray-5">{{ k.hint }}</div>
+    <div v-for="k in items" :key="k.label" class="flex flex-col gap-1 px-4 first:pl-0 last:pr-0">
+      <div class="text-sm text-ink-gray-6">{{ k.label }}</div>
+      <Skeleton v-if="loading" class="h-8 w-24" />
+      <div v-else class="text-2xl font-semibold text-ink-gray-9">{{ k.value ?? "—" }}</div>
+      <div v-if="k.hint" class="text-sm text-ink-gray-6">{{ k.hint }}</div>
     </div>
   </div>
 </template>

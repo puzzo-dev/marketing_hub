@@ -8,7 +8,7 @@
       <FormControl label="Ends" type="date" v-model="form.end_date" />
     </div>
     <FormControl label="Agreed rate (NGN)" type="number" v-model="form.agreed_rate" />
-    <p class="text-sm text-ink-gray-5">The booking goes to the exercise's Brand Manager. A purchase order is created once, when it is approved.</p>
+    <p class="text-sm text-ink-gray-6">The booking goes to the exercise's Brand Manager. A purchase order is created once, when it is approved.</p>
     <ErrorMessage :message="error" />
     <div class="flex gap-2"><Button type="submit" variant="solid" label="Create booking" :loading="saving" /><Button label="Cancel" @click="$router.back()" /></div>
   </form>

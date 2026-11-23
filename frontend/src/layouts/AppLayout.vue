@@ -7,15 +7,17 @@
         <Sidebar width="14rem" class="border-r">
           <SidebarHeader :title="company" :subtitle="role" :menu-items="headerMenu" />
           <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-10">
-            <div v-for="(section, i) in sections" :key="i" :class="i > 0 && 'mt-4'">
+            <div class="flex flex-col gap-4">
+            <div v-for="(section, i) in sections" :key="i" class="flex flex-col gap-0.5">
               <div v-if="section.label" class="flex h-7 items-center"><SidebarLabel>{{ section.label }}</SidebarLabel></div>
-              <div class="mt-0.5 space-y-0.5">
+              <div class="flex flex-col gap-0.5">
                 <SidebarItem v-for="item in section.items" :key="item.route" :route="{ name: item.route }">
                   <template #prefix><span :class="item.icon" class="size-4" aria-hidden="true" /></template>
                   <span class="flex-1 truncate text-sm">{{ item.label }}</span>
                   <template v-if="item.route === 'Approvals' && waiting" #suffix><Badge variant="ghost" :label="String(waiting)" /></template>
                 </SidebarItem>
               </div>
+            </div>
             </div>
           </ScrollArea>
           <div class="mt-auto px-2 pb-2">

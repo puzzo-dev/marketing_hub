@@ -13,12 +13,12 @@
             <ListRow :value="value" @click="selected = item">
               <ListCell><Avatar :label="item.reference_doctype" size="md" /></ListCell>
               <ListCell>
-                <div class="min-w-0">
+                <div class="flex min-w-0 flex-col gap-1.5">
                   <div class="truncate text-base text-ink-gray-8">{{ item.reference_name }}</div>
-                  <div class="mt-1.5 truncate text-sm text-ink-gray-5">{{ item.reference_doctype }}</div>
+                  <div class="truncate text-sm text-ink-gray-6">{{ item.reference_doctype }}</div>
                 </div>
               </ListCell>
-              <ListCell class="justify-end"><span class="text-sm text-ink-gray-5">{{ ago(item.creation) }}</span></ListCell>
+              <ListCell class="justify-end"><span class="text-sm text-ink-gray-6">{{ ago(item.creation) }}</span></ListCell>
             </ListRow>
           </ListRows>
         </List>

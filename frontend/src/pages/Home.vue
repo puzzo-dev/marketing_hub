@@ -11,11 +11,11 @@
   <div v-else class="flex flex-col gap-8 px-3 pb-10 pt-5 sm:px-5">
     <!-- One row of figures divided by thin rules, no card per figure (the frappe-ui accounting recipe). -->
     <div class="grid grid-cols-2 gap-y-4 divide-outline-gray-2 sm:grid-cols-3 sm:divide-x xl:grid-cols-5">
-      <div v-for="k in strip" :key="k.key" class="px-4 first:pl-0 last:pr-0">
-        <div class="text-xs text-ink-gray-5">{{ k.label }}</div>
-        <Skeleton v-if="loading" class="mt-1 h-8 w-24" />
-        <div v-else class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ k.format(k.value) }}</div>
-        <div class="mt-1 flex h-4 items-center gap-1 text-xs" :class="k.change == null ? 'text-ink-gray-4' : (k.change >= 0) !== !!k.lowerIsBetter ? 'text-ink-green-5' : 'text-ink-red-5'">
+      <div v-for="k in strip" :key="k.key" class="flex flex-col gap-1 px-4 first:pl-0 last:pr-0">
+        <div class="text-sm text-ink-gray-6">{{ k.label }}</div>
+        <Skeleton v-if="loading" class="h-8 w-24" />
+        <div v-else class="text-2xl font-semibold text-ink-gray-9">{{ k.format(k.value) }}</div>
+        <div class="flex h-4 items-center gap-1 text-sm" :class="k.change == null ? 'text-ink-gray-6' : (k.change >= 0) !== !!k.lowerIsBetter ? 'text-ink-green-5' : 'text-ink-red-5'">
           <template v-if="k.change != null">
             <span :class="k.change >= 0 ? 'lucide-arrow-up' : 'lucide-arrow-down'" class="size-3" aria-hidden="true" />
             <span>{{ Math.abs(k.change) }}% {{ caption }}</span>

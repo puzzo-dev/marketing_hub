@@ -4,7 +4,7 @@
     <section class="flex flex-col gap-2">
       <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Built in</h3></div>
       <div v-for="c in builtIn" :key="c.name" class="flex min-h-[60px] items-center gap-3 border-b">
-        <span class="min-w-0 flex-1"><div class="truncate text-base text-ink-gray-8">{{ c.name }}</div><div class="mt-1.5 truncate text-sm text-ink-gray-5">{{ c.note }}</div></span>
+        <span class="flex min-w-0 flex-1 flex-col gap-1.5"><div class="truncate text-base text-ink-gray-8">{{ c.name }}</div><div class="truncate text-sm text-ink-gray-6">{{ c.note }}</div></span>
         <Button label="Open in Desk" @click="desk(c.route)" />
       </div>
     </section>

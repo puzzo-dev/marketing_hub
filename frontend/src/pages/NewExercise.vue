@@ -12,7 +12,7 @@
     </div>
     <FormControl label="Planned budget (NGN)" type="number" v-model="form.budget" />
     <LinkSelect label="Brand Manager" doctype="User" label-field="full_name" v-model="form.brand_manager" />
-    <p class="text-sm text-ink-gray-5">Creating an exercise also creates its ERPNext Project. The Brand Manager you pick approves every change to it.</p>
+    <p class="text-sm text-ink-gray-6">Creating an exercise also creates its ERPNext Project. The Brand Manager you pick approves every change to it.</p>
     <ErrorMessage :message="error" />
     <div class="flex items-center gap-2">
       <Button type="submit" variant="solid" label="Create exercise" :loading="saving" />

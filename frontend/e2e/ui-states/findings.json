@@ -1,0 +1,9 @@
+{
+  "exercises": [
+    { "title": "Open record and Tweak 'A record opens' are two layouts of one machine", "detail": "ListScreen derives split/compact from route child, viewport and the openIn tweak; no single state value exists.", "fix": "Keep the derivation in one computed (stacked/split) as now; tests should assert on it." }
+  ],
+  "approvals": [
+    { "title": "Approve and Reject have no distinct in-flight state per button", "detail": "`acting` disables Reject while Approve loads but a second action can follow a failure with stale doc.", "fix": "Clear `doc` and refetch after a failed action." },
+    { "title": "Selected request can outlive its queue row", "detail": "After queue.reload the selected row may no longer exist while the pane stays open.", "fix": "Close the pane when the selected row is absent from the refreshed list." }
+  ]
+}
