@@ -23,6 +23,8 @@ export const NAV = {
     { label: "Deliver", items: [I("Out of home", "map-pin", "OutOfHome"), I("Vendors", "building-2", "Vendors"), I("Purchase orders", "receipt", "PurchaseOrders"), I("Exercises", "folder", "Exercises")] },
   ],
   [ROLES.client]: [
-    { items: [I("Overview", "house", "Home"), I("Exercises", "folder", "Exercises")] },
+    { items: [I("Overview", "house", "Home")] },
+    { label: "Your campaigns", items: [I("Exercises", "folder", "Exercises"), I("Out of home", "map-pin", "ClientOOH"), I("Posted content", "file-text", "ClientContent")] },
+    { label: "Reports", items: [I("Results", "chart-column", "ClientResults"), I("Spend", "wallet", "ClientSpend")] },
   ],
 }

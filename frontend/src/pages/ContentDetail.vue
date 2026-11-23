@@ -3,7 +3,8 @@
   <PaneHeader :title="doc?.title || name" :close="{ name: 'Content' }">
       <template #actions>
       <Button v-if="canApprove && doc?.status !== 'Approved'" label="Approve latest version" @click="approve" :loading="busy" />
-      <Button variant="solid" label="Schedule" @click="showSchedule = true" />
+      <Button v-if="canSend && doc?.status === 'Draft'" variant="solid" label="Send for approval" :loading="busy" @click="sendForApproval" />
+      <Button v-if="canSchedule && doc?.status === 'Approved'" variant="solid" label="Schedule placement" @click="showSchedule = true" />
     </template>
     </PaneHeader>
   <div class="min-h-0 flex-1 overflow-y-auto">
@@ -43,6 +44,23 @@ const doc = computed(() => docRef.value || docRef)
 const showSchedule = ref(false)
 const busy = ref(false)
 const canApprove = hasRole(ROLES.manager)
+// Only approved content can be scheduled; the publisher and the Brand Manager do it.
+const canSchedule = hasRole(ROLES.manager, ROLES.publisher)
+
+const canSend = hasRole(ROLES.planner, ROLES.contentLead)
+const setValue = useCall({ url: "/api/method/frappe.client.set_value", method: "POST", immediate: false })
+async function sendForApproval() {
+  busy.value = true
+  try {
+    await setValue.submit({ doctype: "Content Item", name: props.name, fieldname: "status", value: "In review" })
+    toast.success("Sent for approval")
+    location.reload()
+  } catch (e) {
+    toast.error(e?.message || "That did not go through.")
+  } finally {
+    busy.value = false
+  }
+}
 
 const run = useCall({ url: "/api/method/run_doc_method", method: "POST", immediate: false })
 async function approve() {

@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
   <PaneHeader :title="doc?.site || name" :close="{ name: 'OutOfHome' }">
-      <template v-if="next" #actions><Button variant="solid" :label="`Move to ${next}`" :loading="busy" @click="advance" /></template>
+      <template v-if="next && canAdvance" #actions><Button variant="solid" :label="next === 'Approved' ? 'Approve' : `Move to ${next}`" :icon-left="next === 'Approved' ? 'lucide-check' : undefined" :loading="busy" @click="advance" /></template>
     </PaneHeader>
   <div class="min-h-0 flex-1 overflow-y-auto">
   <div v-if="!doc" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-24 w-full" /></div>
@@ -24,6 +24,7 @@ import { Badge, Button, ErrorMessage, Skeleton, useCall, useDoc } from "frappe-u
 import PaneHeader from "@/components/PaneHeader.vue"
 import FieldRows from "@/components/FieldRows.vue"
 import { badgeTheme } from "@/lib/status"
+import { isAdmin, user } from "@/lib/session"
 
 const STEPS = ["Proposed", "Approved", "Production", "Live", "Ended"]
 const props = defineProps({ name: String })
@@ -31,6 +32,8 @@ const { doc: docRef, reload } = useDoc({ doctype: "OOH Booking", name: props.nam
 const doc = computed(() => docRef.value || docRef)
 const next = computed(() => STEPS[STEPS.indexOf(doc.value?.status) + 1])
 const rows = computed(() => [["Exercise", doc.value.campaign], ["Dates", `${doc.value.start_date} to ${doc.value.end_date}`], ["Agreed rate", doc.value.agreed_rate], ["Approved by", doc.value.approver]])
+// Approving is the exercise's Brand Manager only; the coordinator moves every later step.
+const canAdvance = computed(() => next.value !== "Approved" || doc.value?.approver === user.value.id || isAdmin())
 const busy = ref(false)
 const error = ref("")
 const run = useCall({ url: "/api/method/run_doc_method", method: "POST", immediate: false })

@@ -9,14 +9,16 @@ const page = (name) => () => import(`./pages/${name}.vue`)
 // `roles` lists who may open a route; a System Manager may open all of them.
 // `fixed` stops the shell scrolling the page, for screens whose panes scroll alone.
 const routes = [
-  { path: "/", name: "Home", component: () => (isClient() ? import("./pages/ClientHome.vue") : import("./pages/Home.vue")), meta: { roles: [...staff, client] } },
+  { path: "/", name: "Home", component: () => (isClient() ? import("./pages/ClientHome.vue") : primaryRole.value === ROLES.manager ? import("./pages/Home.vue") : import("./pages/RoleHome.vue")), meta: { roles: [...staff, client] } },
   { path: "/approvals", name: "Approvals", component: page("Approvals"), meta: { roles: [manager, head], fixed: true } },
+  { path: "/exercises/:name/edit", name: "EditExercise", props: true, component: page("EditExercise"), meta: { roles: [manager] } },
   { path: "/exercises/new", name: "NewExercise", component: page("NewExercise"), meta: { roles: [manager] } },
   {
     path: "/exercises", name: "Exercises", meta: { roles: [...staff, client], fixed: true },
     component: () => (isClient() ? import("./pages/ClientExercises.vue") : import("./pages/Exercises.vue")),
     children: [{ path: ":name", name: "Exercise", props: true, component: () => (isClient() ? import("./pages/ClientExercise.vue") : import("./pages/Exercise.vue")) }],
   },
+  { path: "/content/new", name: "NewContent", component: page("NewContent"), meta: { roles: [manager, planner, contentLead] } },
   {
     path: "/content", name: "Content", component: page("Content"), meta: { roles: [manager, planner, contentLead, publisher], fixed: true },
     children: [{ path: ":name", name: "ContentDetail", props: true, component: page("ContentDetail") }],
@@ -45,6 +47,10 @@ const routes = [
   { path: "/out-of-home-map", name: "OOHMap", component: page("OOHMap"), meta: { roles: [manager, ooh] } },
   { path: "/proof/:name", name: "OOHProof", props: true, component: page("OOHProof"), meta: { roles: [ooh] } },
   { path: "/setup", name: "Setup", component: page("Setup"), meta: { roles: ["System Manager"] } },
+  { path: "/my/content", name: "ClientContent", component: () => import("./pages/ClientList.vue"), props: { kind: "content" }, meta: { roles: [client] } },
+  { path: "/my/out-of-home", name: "ClientOOH", component: () => import("./pages/ClientList.vue"), props: { kind: "ooh" }, meta: { roles: [client] } },
+  { path: "/my/results", name: "ClientResults", component: () => import("./pages/ClientList.vue"), props: { kind: "results" }, meta: { roles: [client] } },
+  { path: "/my/spend", name: "ClientSpend", component: () => import("./pages/ClientList.vue"), props: { kind: "spend" }, meta: { roles: [client] } },
   { path: "/no-access", name: "NoAccess", component: page("NoAccessPage") },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: page("NotFoundPage") },
 ]

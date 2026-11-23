@@ -61,3 +61,46 @@ def results(name):
 	_exercise_for_client(name)
 	leads = frappe.db.count("Lead", {"mkt_campaign": name})
 	return {"leads": leads}
+
+
+# ---- across every exercise the client can see (the sidebar pages) ----
+def _my_exercise_names():
+	return [e.name for e in exercises()] if "System Manager" not in frappe.get_roles() else frappe.get_all("Marketing Campaign", pluck="name")
+
+
+@frappe.whitelist()
+def all_posted_content():
+	names = _my_exercise_names()
+	if not names:
+		return []
+	rows = frappe.get_all("Content Item", filters={"campaign": ["in", names], "status": "Posted"}, fields=["name", "title", "type", "campaign", "modified"], order_by="modified desc")
+	titles = dict(frappe.get_all("Marketing Campaign", filters={"name": ["in", names]}, fields=["name", "campaign_name"], as_list=True))
+	for r in rows:
+		r["exercise"] = titles.get(r["campaign"])
+	return rows
+
+
+@frappe.whitelist()
+def all_out_of_home():
+	names = _my_exercise_names()
+	if not names:
+		return []
+	rows = frappe.get_all("OOH Booking", filters={"campaign": ["in", names], "status": ["in", ["Live", "Ended"]]}, fields=["name", "site", "campaign", "start_date", "end_date", "status"], order_by="start_date desc")
+	titles = dict(frappe.get_all("Marketing Campaign", filters={"name": ["in", names]}, fields=["name", "campaign_name"], as_list=True))
+	for r in rows:
+		r["exercise"] = titles.get(r["campaign"])
+	return rows
+
+
+@frappe.whitelist()
+def all_results():
+	"""Leads per exercise. No cost per lead and no channel spend: clients see outcomes only."""
+	names = _my_exercise_names()
+	titles = dict(frappe.get_all("Marketing Campaign", filters={"name": ["in", names]}, fields=["name", "campaign_name"], as_list=True)) if names else {}
+	return [{"name": n, "exercise": titles.get(n), "leads": frappe.db.count("Lead", {"mkt_campaign": n})} for n in names]
+
+
+@frappe.whitelist()
+def all_spend():
+	names = _my_exercise_names()
+	return [dict(spend(n), name=n, exercise=frappe.db.get_value("Marketing Campaign", n, "campaign_name")) for n in names]

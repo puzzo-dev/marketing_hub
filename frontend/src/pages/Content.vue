@@ -10,7 +10,7 @@
       { label: 'Status', field: 'status', width: '130px', badge: true },
     ]"
     status-field="status" :statuses="STATUSES"
-    :action="canCreate ? { label: 'New content', to: { name: 'ContentDetail', params: { name: 'new' } } } : null"
+    :action="canCreate ? { label: 'New content', to: { name: 'NewContent' } } : null"
     empty-title="No content yet" empty-text="Content you create for an exercise appears here with its review status."
   >
     <template #toolbar><ViewSwitch v-if="!isMobile" /></template>
