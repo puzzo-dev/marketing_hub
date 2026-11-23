@@ -3,12 +3,12 @@
   <ErrorState v-if="call.error.value" icon="lucide-lock" title="You do not have access to this" text="Ask your agency to share this exercise with you." />
   <div v-else-if="ex" class="flex flex-col">
     <Tabs v-model="tab" :tabs="[{ value: 'overview', label: 'Overview' }, { value: 'content', label: 'Posted content' }, { value: 'ooh', label: 'Out of home' }, { value: 'results', label: 'Results' }, { value: 'spend', label: 'Spend' }]" variant="underline" class="px-3 sm:px-5" />
-    <div class="flex flex-col gap-3 px-3 py-4 sm:px-5">
-      <template v-if="tab === 'overview'"><Badge :label="ex.status" :theme="badgeTheme(ex.status)" /><p class="text-base text-ink-gray-8">{{ ex.objective }}</p><p class="text-sm text-ink-gray-6">{{ ex.start_date }} to {{ ex.end_date }}</p></template>
-      <template v-else-if="tab === 'content'"><div v-for="c in content" :key="c.name" class="flex h-11 items-center border-b px-3 text-base text-ink-gray-8">{{ c.title }}</div><p v-if="!content.length" class="text-base text-ink-gray-6">Nothing posted yet.</p></template>
-      <template v-else-if="tab === 'ooh'"><div v-for="o in ooh" :key="o.site + o.start_date" class="flex h-11 items-center gap-3 border-b px-3 text-base"><span class="flex-1 text-ink-gray-8">{{ o.site }}</span><span class="text-sm text-ink-gray-6">{{ o.start_date }} to {{ o.end_date }}</span><Badge :label="o.status" :theme="badgeTheme(o.status)" /></div><p v-if="!ooh.length" class="text-base text-ink-gray-6">No live sites yet.</p></template>
-      <template v-else-if="tab === 'results'"><div class="rounded-6 bg-surface-gray-1 p-4"><div class="text-sm text-ink-gray-6">Leads</div><div class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ results?.leads ?? "—" }}</div></div></template>
-      <template v-else><div class="rounded-6 bg-surface-gray-1 p-4"><div class="text-sm text-ink-gray-6">Spent of {{ money(spend?.budget) }}</div><div class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ money(spend?.spent) }}</div></div></template>
+    <div class="flex flex-col gap-4 px-3 pb-10 pt-5 sm:px-5">
+      <template v-if="tab === 'overview'"><FieldRows :rows="[['Status', ex.status], ['Dates', `${ex.start_date} to ${ex.end_date}`], ['Objective', ex.objective]]" /></template>
+      <DataList v-else-if="tab === 'content'" :rows="content" row-key="title" :columns="[{ key: 'title', label: 'Title' }]" empty="Nothing posted yet." />
+      <DataList v-else-if="tab === 'ooh'" :rows="ooh" row-key="site" empty="No live sites yet." :columns="[{ key: 'site', label: 'Site' }, { key: 'start_date', label: 'Starts', width: '9rem' }, { key: 'end_date', label: 'Ends', width: '9rem' }, { key: 'status', label: 'Status', width: '8rem', badge: true }]" />
+      <StatStrip v-else-if="tab === 'results'" :items="[{ label: 'Leads', value: results?.leads }]" />
+      <StatStrip v-else :items="[{ label: 'Spent', value: money(spend?.spent) }, { label: 'Budget', value: money(spend?.budget) }]" />
     </div>
   </div>
 </template>
@@ -16,6 +16,9 @@
 <script setup>
 import { computed, ref } from "vue"
 import { Badge, Breadcrumbs, Tabs, useCall } from "frappe-ui"
+import StatStrip from "@/components/StatStrip.vue"
+import DataList from "@/components/DataList.vue"
+import FieldRows from "@/components/FieldRows.vue"
 import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import { badgeTheme } from "@/lib/status"

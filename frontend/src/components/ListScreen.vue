@@ -17,7 +17,7 @@
           <ErrorState v-else-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
           <ErrorState v-else-if="!isFetching && !rows.length" icon="lucide-folder" :title="emptyTitle" :text="emptyText" :action-label="canAct ? action.label : undefined" @action="$router.push(action.to)" />
 
-          <List v-else class="w-full list-row-px-3" :columns="template" :row-height="60" :active="active">
+          <List v-else class="w-full list-row-px-3" :columns="template" :row-height="rowHeight(!!subs.length || compact)" :active="active">
             <ListHeader v-if="!compact">
               <ListHeaderCell>{{ cols[0].label }}</ListHeaderCell>
               <ListHeaderCell v-for="c in tableCols" :key="c.field" :class="c.currency && 'justify-end'">{{ c.label }}</ListHeaderCell>
@@ -62,6 +62,7 @@ import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "f
 import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "@/pages/ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
+import { rowHeight } from "@/lib/tweaks"
 import { isMobile } from "@/lib/viewport"
 
 const props = defineProps({

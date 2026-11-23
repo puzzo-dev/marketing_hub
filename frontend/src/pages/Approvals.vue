@@ -8,15 +8,20 @@
         <div v-if="isFetching && !rows.length" class="flex flex-col gap-2 px-3 py-3 sm:px-5" aria-busy="true"><Skeleton v-for="n in 5" :key="n" class="h-[60px] w-full" /></div>
         <ErrorState v-else-if="queueError" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="queue.reload?.()" />
         <ErrorState v-else-if="!rows.length" icon="lucide-circle-check" title="Nothing is waiting for you" text="Requests for your exercises appear here as they come in." />
-        <div v-else class="flex flex-col px-3 py-1 sm:px-5">
-          <button v-for="row in rows" :key="row.name" type="button" class="-mx-2 flex h-[60px] items-center gap-3 rounded-4 border-b px-2 text-start hover:bg-surface-gray-1" :class="row.name === selected?.name && 'bg-surface-gray-2'" :aria-current="row.name === selected?.name ? 'true' : undefined" @click="selected = row">
-            <Avatar :label="row.reference_doctype" size="sm" />
-            <span class="flex min-w-0 flex-1 flex-col gap-1.5">
-              <span class="truncate text-base text-ink-gray-8">{{ row.reference_name }}</span>
-              <span class="truncate text-sm text-ink-gray-6">{{ row.reference_doctype }}</span>
-            </span>
-          </button>
-        </div>
+        <List v-else class="list-row-px-3 px-3 pb-10 pt-3 sm:px-5" :row-height="rowHeight(true)" :active="selected?.name">
+          <ListRows :items="rows" row-key="name" v-slot="{ item, value }">
+            <ListRow :value="value" @click="selected = item">
+              <ListCell><Avatar :label="item.reference_doctype" size="md" /></ListCell>
+              <ListCell>
+                <div class="min-w-0">
+                  <div class="truncate text-base text-ink-gray-8">{{ item.reference_name }}</div>
+                  <div class="mt-1.5 truncate text-sm text-ink-gray-5">{{ item.reference_doctype }}</div>
+                </div>
+              </ListCell>
+              <ListCell class="justify-end"><span class="text-sm text-ink-gray-5">{{ ago(item.creation) }}</span></ListCell>
+            </ListRow>
+          </ListRows>
+        </List>
       </div>
     </section>
 
@@ -61,6 +66,8 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 import { Avatar, Badge, Button, ErrorMessage, PageHeaderTitle, Skeleton, toast, useCall, useList } from "frappe-ui"
+import { List, ListCell, ListRow, ListRows } from "frappe-ui/list"
+import { rowHeight } from "@/lib/tweaks"
 import PaneHeader from "@/components/PaneHeader.vue"
 import { isMobile } from "@/lib/viewport"
 import ErrorState from "./ErrorState.vue"
@@ -68,6 +75,10 @@ import ErrorState from "./ErrorState.vue"
 // The queue is Frappe's own Workflow Action list. Frappe sends an action only to
 // users who hold the transition's role and can read the document, which is how a
 // request reaches just the exercise's assigned Brand Manager.
+const ago = (t) => {
+  const m = Math.max(0, Math.round((Date.now() - new Date(t.replace(" ", "T")).getTime()) / 60000))
+  return m < 60 ? `${m} m` : m < 1440 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`
+}
 const queue = useList({
   doctype: "Workflow Action",
   fields: ["name", "reference_doctype", "reference_name", "creation"],

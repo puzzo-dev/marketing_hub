@@ -2,52 +2,64 @@
   <AppHeader title="Home">
     <template #actions>
       <div class="w-56"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="All exercises" v-model="exercise" /></div>
-      <Select v-model="period" :options="periods" size="sm" />
+      <Select v-model="period" :options="periods" />
     </template>
   </AppHeader>
 
   <ErrorState v-if="call.error.value" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="call.reload?.() || call.execute?.()" />
 
-  <div v-else class="flex flex-col gap-4 px-3 py-4 sm:px-5">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-      <NumberCard v-for="k in cards" :key="k.title" v-bind="k" />
-    </div>
-
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <section :class="[card, 'h-80 lg:col-span-2']">
-        <AreaChart v-bind="trendChart" />
-      </section>
-      <section :class="[card, 'h-80']">
-        <DonutChart v-bind="channelShare" />
-      </section>
-
-      <section :class="[card, 'h-96 lg:col-span-2']">
-        <BarChart v-bind="exerciseChart" />
-      </section>
-      <section :class="[card, 'h-96']">
-        <BarChart v-bind="channelChart" />
-      </section>
-    </div>
-
-    <section :class="[card, 'overflow-hidden']">
-      <h3 class="pb-2 text-lg-medium text-ink-gray-9">Exercises</h3>
-      <div class="grid h-8 grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))] items-center gap-3 rounded-4 bg-surface-gray-2 px-3 text-sm text-ink-gray-6">
-        <span>Exercise</span><span>Spend</span><span>Impressions</span><span>Clicks</span><span>Conversions</span>
+  <div v-else class="flex flex-col gap-8 px-3 pb-10 pt-5 sm:px-5">
+    <!-- One row of figures divided by thin rules, no card per figure (the frappe-ui accounting recipe). -->
+    <div class="grid grid-cols-2 gap-y-4 divide-outline-gray-2 sm:grid-cols-3 sm:divide-x xl:grid-cols-5">
+      <div v-for="k in strip" :key="k.key" class="px-4 first:pl-0 last:pr-0">
+        <div class="text-xs text-ink-gray-5">{{ k.label }}</div>
+        <Skeleton v-if="loading" class="mt-1 h-8 w-24" />
+        <div v-else class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ k.format(k.value) }}</div>
+        <div class="mt-1 flex h-4 items-center gap-1 text-xs" :class="k.change == null ? 'text-ink-gray-4' : (k.change >= 0) !== !!k.lowerIsBetter ? 'text-ink-green-5' : 'text-ink-red-5'">
+          <template v-if="k.change != null">
+            <span :class="k.change >= 0 ? 'lucide-arrow-up' : 'lucide-arrow-down'" class="size-3" aria-hidden="true" />
+            <span>{{ Math.abs(k.change) }}% {{ caption }}</span>
+          </template>
+          <span v-else>No change to compare</span>
+        </div>
       </div>
-      <router-link v-for="r in data.by_exercise" :key="r.exercise" :to="{ name: 'Exercise', params: { name: r.exercise } }" class="grid h-11 grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))] items-center gap-3 border-b px-3 text-base hover:bg-surface-gray-1">
-        <span class="truncate text-ink-gray-8">{{ r.name }}</span><span class="text-ink-gray-8">{{ money(r.spend) }}</span><span class="text-ink-gray-6">{{ num(r.impressions) }}</span><span class="text-ink-gray-6">{{ num(r.clicks) }}</span><span class="text-ink-gray-6">{{ num(r.conversions) }}</span>
-      </router-link>
-      <p v-if="!data.by_exercise.length" class="py-3 text-base text-ink-gray-6">No analytics in this period. Numbers appear once an analytics connector has synced.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-x-10 gap-y-8 lg:grid-cols-3">
+      <section class="h-80 min-w-0 lg:col-span-2"><AreaChart v-bind="trendChart" /></section>
+      <section class="h-80 min-w-0"><DonutChart v-bind="channelShare" /></section>
+      <section class="h-80 min-w-0 lg:col-span-2"><BarChart v-bind="exerciseChart" /></section>
+      <section class="h-80 min-w-0"><BarChart v-bind="channelChart" /></section>
+    </div>
+
+    <section class="flex flex-col gap-2">
+      <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Exercises</h3></div>
+      <List v-if="data.by_exercise.length" class="list-row-px-0" :columns="['minmax(0,1fr)', '8rem', '8rem', '6rem', '7rem']" :row-height="52">
+        <ListHeader>
+          <ListHeaderCell>Exercise</ListHeaderCell><ListHeaderCell class="justify-end">Spend</ListHeaderCell><ListHeaderCell class="justify-end">Impressions</ListHeaderCell><ListHeaderCell class="justify-end">Clicks</ListHeaderCell><ListHeaderCell class="justify-end">Conversions</ListHeaderCell>
+        </ListHeader>
+        <ListRows :items="data.by_exercise" row-key="exercise" v-slot="{ item, value }">
+          <ListRow :value="value" :route="{ name: 'Exercise', params: { name: item.exercise } }">
+            <ListCell><span class="truncate text-base text-ink-gray-8">{{ item.name }}</span></ListCell>
+            <ListCell class="justify-end"><span class="text-base text-ink-gray-8">{{ money(item.spend) }}</span></ListCell>
+            <ListCell class="justify-end"><span class="text-base text-ink-gray-7">{{ num(item.impressions) }}</span></ListCell>
+            <ListCell class="justify-end"><span class="text-base text-ink-gray-7">{{ num(item.clicks) }}</span></ListCell>
+            <ListCell class="justify-end"><span class="text-base text-ink-gray-7">{{ num(item.conversions) }}</span></ListCell>
+          </ListRow>
+        </ListRows>
+      </List>
+      <p v-else class="text-base text-ink-gray-6">No analytics in this period. Numbers appear once an analytics connector has synced.</p>
     </section>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue"
-import { Select, useCall } from "frappe-ui"
+import { Select, Skeleton, useCall } from "frappe-ui"
+import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list"
 import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
-import { AreaChart, BarChart, DonutChart, NumberCard } from "frappe-ui/charts"
+import { AreaChart, BarChart, DonutChart } from "frappe-ui/charts"
 import LinkSelect from "@/components/LinkSelect.vue"
 
 const period = ref("30d")
@@ -72,24 +84,13 @@ const money = (v) => (v == null ? "—" : new Intl.NumberFormat(undefined, { sty
 const num = (v) => (v == null ? "—" : new Intl.NumberFormat().format(v))
 const caption = computed(() => `vs the ${period.value.replace("d", "")} days before`)
 
-const card = "flex min-w-0 flex-col rounded-xl border border-outline-gray-1 bg-surface-elevation-2 px-4 py-3"
-const kpi = (title, key, format, extra = {}) => ({
-  title,
-  loading: loading.value,
-  value: data.value.kpis[key]?.value ?? null,
-  format,
-  delta: data.value.kpis[key]?.change ?? null,
-  deltaSuffix: "%",
-  deltaCaption: caption.value,
-  ...extra,
-})
-const cards = computed(() => [
-  kpi("Spend", "spend", money),
-  kpi("Impressions", "impressions", num),
-  kpi("Clicks", "clicks", num),
-  kpi("Leads", "leads", num),
-  kpi("Cost per lead", "cost_per_lead", money, { delta: null, negativeIsBetter: true }),
-])
+const strip = computed(() => [
+  { label: "Spend", key: "spend", format: money },
+  { label: "Impressions", key: "impressions", format: num },
+  { label: "Clicks", key: "clicks", format: num },
+  { label: "Leads", key: "leads", format: num },
+  { label: "Cost per lead", key: "cost_per_lead", format: money, lowerIsBetter: true },
+].map((k) => ({ ...k, value: data.value.kpis[k.key]?.value ?? null, change: data.value.kpis[k.key]?.change ?? null })))
 
 const loading = computed(() => call.isFetching?.value ?? false)
 const trendChart = computed(() => ({

@@ -11,24 +11,19 @@
 
   <div v-else-if="doc" class="flex flex-col">
     <Tabs v-model="tab" :tabs="tabs" variant="underline" class="px-3 sm:px-5" />
-    <div class="flex flex-col gap-4 px-3 py-4 sm:px-5">
-      <template v-if="tab === 'plan'">
-        <Row v-for="t in tasks" :key="t.name" :a="t.subject" :b="t.status" :c="t.exp_end_date" />
-        <p v-if="!tasks.length" class="text-base text-ink-gray-6">No tasks yet. Tasks live on the exercise's ERPNext Project.</p>
-      </template>
+    <div class="flex flex-col gap-6 px-3 pb-10 pt-5 sm:px-5">
+      <FieldRows v-if="tab === 'plan'" :rows="[['Brand', doc.brand], ['Brand Manager', doc.brand_manager], ['Dates', `${doc.start_date} to ${doc.end_date}`], ['Status', doc.status], ['Objective', doc.objective]]" />
+      <DataList v-if="tab === 'plan'" :rows="tasks" empty="No tasks yet. Tasks live on the exercise's ERPNext Project."
+        :columns="[{ key: 'subject', label: 'Task' }, { key: 'status', label: 'Status', width: '9rem', badge: true }, { key: 'exp_end_date', label: 'Due', width: '9rem' }]" />
       <template v-else-if="tab === 'budget'">
-        <Row a="Planned budget" :b="money(doc.budget)" />
-        <Row a="Spent so far" :b="money(doc.total_spent)" />
+        <StatStrip :items="[{ label: 'Planned budget', value: money(doc.budget) }, { label: 'Spent so far', value: money(doc.total_spent) }, { label: 'Left', value: money((doc.budget || 0) - (doc.total_spent || 0)) }]" />
         <p class="text-sm text-ink-gray-5">Spend is read from the ledger against the exercise's Project.</p>
       </template>
-      <template v-else-if="tab === 'changes'">
-        <Row v-for="c in changes" :key="c.name" :a="c.name" :b="c.reason" :c="c.workflow_state" />
-        <p v-if="!changes.length" class="text-base text-ink-gray-6">No change requests.</p>
-      </template>
+      <DataList v-else-if="tab === 'changes'" :rows="changes" empty="No change requests."
+        :columns="[{ key: 'name', label: 'Request', width: '10rem' }, { key: 'reason', label: 'Reason' }, { key: 'workflow_state', label: 'State', width: '9rem', badge: true }]" />
       <template v-else-if="tab === 'email'">
         <p class="max-w-xl text-sm text-ink-gray-5">These are ERPNext Email Campaigns started from this exercise. ERPNext sends each one once a day on its start date, with one message for every recipient.</p>
-        <Row v-for="e in doc.email_campaigns" :key="e.name" :a="e.email_campaign" :b="e.activity" :c="e.start_date" />
-        <p v-if="!doc.email_campaigns?.length" class="text-base text-ink-gray-6">No email campaigns yet.</p>
+        <DataList :rows="doc.email_campaigns || []" empty="No email campaigns yet." :columns="[{ key: 'email_campaign', label: 'Email Campaign' }, { key: 'activity', label: 'Activity', width: '12rem' }, { key: 'start_date', label: 'Starts', width: '9rem' }]" />
       </template>
     </div>
   </div>
@@ -39,9 +34,12 @@
 </template>
 
 <script setup>
-import { computed, h, ref } from "vue"
+import { computed, ref } from "vue"
 import { Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
 import PaneHeader from "@/components/PaneHeader.vue"
+import DataList from "@/components/DataList.vue"
+import FieldRows from "@/components/FieldRows.vue"
+import StatStrip from "@/components/StatStrip.vue"
 import ErrorState from "./ErrorState.vue"
 import RequestChangeDialog from "@/components/RequestChangeDialog.vue"
 import { hasRole, ROLES } from "@/lib/session"
@@ -73,13 +71,4 @@ const changeList = useList({
 })
 const changes = computed(() => changeList.data.value || [])
 const money = (v) => (v == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v))
-
-// A three-cell row, kept here because only this page uses it.
-const Row = (p) =>
-  h("div", { class: "grid min-h-11 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_140px] items-center gap-3 border-b px-3 text-base" }, [
-    h("span", { class: "truncate text-ink-gray-8" }, p.a),
-    h("span", { class: "truncate text-ink-gray-6" }, p.b),
-    h("span", { class: "truncate text-ink-gray-6" }, p.c),
-  ])
-Row.props = ["a", "b", "c"]
 </script>

@@ -10,15 +10,17 @@
 
   <div v-if="!doc && !error" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
   <ErrorState v-else-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another exercise." action-label="Back to content" @action="$router.push({ name: 'Content' })" />
-  <div v-else-if="doc" class="flex flex-col gap-6 px-3 py-4 sm:px-5">
-    <div class="flex items-center gap-2"><h2 class="text-xl-semibold text-ink-gray-9">{{ doc.title }}</h2><Badge :label="doc.status" :theme="badgeTheme(doc.status)" /></div>
-    <div class="flex flex-col">
-      <div v-for="v in [...(doc.versions || [])].reverse()" :key="v.name" class="flex flex-col gap-1 border-b py-3">
-        <div class="flex items-center gap-2 text-sm text-ink-gray-6"><span>Version {{ v.version_no }}</span><Badge v-if="v.approved_on" label="Approved" theme="green" /></div>
+  <div v-else-if="doc" class="flex flex-col gap-6 px-3 pb-10 pt-5 sm:px-5">
+    <div class="flex items-center gap-2"><Badge :label="doc.status" :theme="badgeTheme(doc.status)" /></div>
+    <FieldRows :rows="[['Exercise', doc.campaign], ['Type', doc.type], ['Due', doc.due_date]]" />
+    <section class="flex flex-col gap-2">
+      <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Versions</h3></div>
+      <div v-for="v in [...(doc.versions || [])].reverse()" :key="v.name" class="flex flex-col gap-1.5 border-b py-3">
+        <div class="flex items-center gap-2 text-sm text-ink-gray-5"><span>Version {{ v.version_no }}</span><Badge v-if="v.approved_on" label="Approved" theme="green" /></div>
         <p class="whitespace-pre-wrap text-base text-ink-gray-8">{{ v.body }}</p>
       </div>
       <p v-if="!doc.versions?.length" class="text-base text-ink-gray-6">No version yet.</p>
-    </div>
+    </section>
     <SchedulePlacementDialog v-model:open="showSchedule" :content="doc" />
   </div>
   </div>
@@ -29,6 +31,7 @@
 import { computed, ref } from "vue"
 import { Badge, Button, Skeleton, toast, useCall, useDoc } from "frappe-ui"
 import PaneHeader from "@/components/PaneHeader.vue"
+import FieldRows from "@/components/FieldRows.vue"
 import ErrorState from "./ErrorState.vue"
 import SchedulePlacementDialog from "@/components/SchedulePlacementDialog.vue"
 import { badgeTheme } from "@/lib/status"

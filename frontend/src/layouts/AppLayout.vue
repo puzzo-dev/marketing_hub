@@ -32,6 +32,7 @@
       </template>
     </component>
     </div>
+    <TweakPanel v-if="!isMobile" />
     <SettingsDialog v-model:open="settingsOpen" v-model:tab="settingsTab">
       <SettingsSidebar>
         <SettingsNavGroup label="Your account">
@@ -78,6 +79,7 @@ import {
   SettingsNavGroup, SettingsNavItem, SettingsPanel, SettingsRow, SettingsSidebar, Sidebar, SidebarCollapseToggle, SidebarHeader, SidebarItem,
   SidebarLabel, Switch, useCall, useColorScheme,
 } from "frappe-ui"
+import TweakPanel from "@/components/TweakPanel.vue"
 import NotFound from "@/pages/ErrorState.vue"
 import { hasRole, isAdmin, primaryRole, user } from "@/lib/session"
 import { NAV } from "@/lib/nav"
