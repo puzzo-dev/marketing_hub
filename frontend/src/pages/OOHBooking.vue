@@ -11,7 +11,7 @@
       <li v-for="s in STEPS" :key="s" class="flex h-7 items-center rounded-4 px-2 text-sm" :class="STEPS.indexOf(s) <= STEPS.indexOf(doc.status) ? 'bg-surface-gray-7 text-ink-white' : 'bg-surface-gray-2 text-ink-gray-6'">{{ s }}</li>
     </ol>
     <FieldRows :rows="rows" />
-    <router-link v-if="doc.purchase_order" :to="{ name: 'PurchaseOrders' }" class="text-base text-ink-gray-8 underline">Purchase order {{ doc.purchase_order }}</router-link>
+    <router-link v-if="doc.purchase_order" :to="{ name: 'PurchaseOrder', params: { name: doc.purchase_order } }" class="text-base text-ink-gray-8 underline">Purchase order {{ doc.purchase_order }}</router-link>
     <ErrorMessage :message="error" />
   </div>
   </div>

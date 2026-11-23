@@ -28,7 +28,10 @@ const routes = [
     children: [{ path: ":name", name: "OOHBooking", props: true, component: page("OOHBooking") }],
   },
   { path: "/vendors", name: "Vendors", component: page("Vendors"), meta: { roles: [ooh], fixed: true } },
-  { path: "/purchase-orders", name: "PurchaseOrders", component: page("PurchaseOrders"), meta: { roles: [ooh], fixed: true } },
+  {
+    path: "/purchase-orders", name: "PurchaseOrders", component: page("PurchaseOrders"), meta: { roles: [ooh], fixed: true },
+    children: [{ path: ":name", name: "PurchaseOrder", props: true, component: page("PurchaseOrder") }],
+  },
   { path: "/reports", name: "Reports", component: page("Reports"), meta: { roles: [manager, head] } },
   { path: "/cross-brand", name: "CrossBrand", component: page("CrossBrand"), meta: { roles: [head] } },
   { path: "/channels", name: "Channels", component: page("Channels"), meta: { roles: ["System Manager"] } },
