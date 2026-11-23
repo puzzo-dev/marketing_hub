@@ -9,7 +9,7 @@ app_license = "mit"
 # Apps
 # ------------------
 # frappe_whatsapp is optional — checked at runtime in omni_blast.py
-required_apps = []
+required_apps = ["erpnext"]
 
 add_to_apps_screen = [
     {

@@ -4,6 +4,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils.password import get_decrypted_password
 from frappe.utils import now_datetime, add_to_date, getdate
 import requests
 import json
@@ -198,7 +199,9 @@ class AnalyticsConnector(Document):
 		url = f"https://googleads.googleapis.com/v17/customers/{ad_account.customer_id}/googleAds:searchStream"
 		
 		# Get developer token from settings
-		developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
+		developer_token = get_decrypted_password(
+			"Marketing Hub Settings", "Marketing Hub Settings", "google_ads_developer_token", raise_exception=False
+		)
 		if not developer_token:
 			frappe.throw("Google Ads Developer Token is not configured in Marketing Hub Settings")
 
@@ -420,7 +423,9 @@ class AnalyticsConnector(Document):
 				return {"status": "Success", "campaigns": campaigns}
 			
 			elif self.platform == "Google Ads":
-				developer_token = frappe.db.get_single_value("Marketing Hub Settings", "google_ads_developer_token")
+				developer_token = get_decrypted_password(
+			"Marketing Hub Settings", "Marketing Hub Settings", "google_ads_developer_token", raise_exception=False
+		)
 				if not developer_token:
 					return {"status": "Error", "message": "Google Ads Developer Token not configured"}
 				

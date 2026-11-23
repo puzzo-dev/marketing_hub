@@ -297,10 +297,7 @@ def validate_campaign_limits(doc, method):
 	# Import here to avoid circular dependency
 	from marketing_hub.utils.agency_mode import check_client_subscription
 	
-	try:
-		result = check_client_subscription(doc.client, doc.name)
-		
-		if not result.get("valid"):
-			frappe.throw(_(result.get("message", "Campaign limit exceeded")))
-	except Exception as e:
-		frappe.log_error(f"Campaign limit validation error: {str(e)}", "Marketing Hub Permissions")
+	result = check_client_subscription(doc.client, doc.name)
+
+	if not result.get("valid"):
+		frappe.throw(_(result.get("message", "Campaign limit exceeded")))

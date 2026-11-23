@@ -229,7 +229,7 @@
         },
         {
             "fieldname": "google_ads_developer_token",
-            "fieldtype": "Data",
+            "fieldtype": "Password",
             "label": "Google Ads Developer Token",
             "description": "Required for Google Ads API access"
         },

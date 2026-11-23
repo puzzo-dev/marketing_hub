@@ -11,6 +11,33 @@ from frappe import _
 from frappe.utils import flt, nowdate, get_link_to_form
 
 
+def _gl_dict(doc, args):
+	"""Build a GL Entry dict for a Marketing Expense.
+
+	Marketing Expense is a plain Document, so it has no get_gl_dict like ERPNext's
+	AccountsController. Interim shim until phase 5 retires this doctype.
+	"""
+	from erpnext.accounts.utils import get_fiscal_year
+
+	posting_date = args.get("posting_date") or doc.posting_date
+	entry = frappe._dict(
+		{
+			"company": doc.company,
+			"posting_date": posting_date,
+			"fiscal_year": get_fiscal_year(posting_date, company=doc.company)[0],
+			"voucher_type": doc.doctype,
+			"voucher_no": doc.name,
+			"is_opening": "No",
+			"debit": 0,
+			"credit": 0,
+			"debit_in_account_currency": 0,
+			"credit_in_account_currency": 0,
+		}
+	)
+	entry.update(args)
+	return entry
+
+
 def make_gl_entries(doc, cancel=False):
 	"""
 	Create General Ledger entries for Marketing Expense
@@ -35,7 +62,7 @@ def make_gl_entries(doc, cancel=False):
 	
 	# Debit Entry - Expense Account
 	gl_entries.append(
-		doc.get_gl_dict({
+		_gl_dict(doc, {
 			"account": doc.expense_account,
 			"debit": flt(doc.amount),
 			"debit_in_account_currency": flt(doc.amount),
@@ -44,14 +71,14 @@ def make_gl_entries(doc, cancel=False):
 			"project": doc.project,
 			"remarks": get_remarks(doc),
 			"posting_date": doc.posting_date,
-		}, item=doc)
+		})
 	)
 	
 	# Credit Entry - Payment Account (if paid) or Payable Account
 	if doc.is_paid and doc.payment_account:
 		# Direct payment - credit the payment account
 		gl_entries.append(
-			doc.get_gl_dict({
+			_gl_dict(doc, {
 				"account": doc.payment_account,
 				"credit": flt(doc.amount),
 				"credit_in_account_currency": flt(doc.amount),
@@ -60,13 +87,13 @@ def make_gl_entries(doc, cancel=False):
 				"project": doc.project,
 				"remarks": get_remarks(doc),
 				"posting_date": doc.posting_date,
-			}, item=doc)
+			})
 		)
 	else:
 		# Accrued expense - credit payable account
 		payable_account = get_default_payable_account(doc.company)
 		gl_entries.append(
-			doc.get_gl_dict({
+			_gl_dict(doc, {
 				"account": payable_account,
 				"credit": flt(doc.amount),
 				"credit_in_account_currency": flt(doc.amount),
@@ -75,7 +102,7 @@ def make_gl_entries(doc, cancel=False):
 				"project": doc.project,
 				"remarks": get_remarks(doc),
 				"posting_date": doc.posting_date,
-			}, item=doc)
+			})
 		)
 	
 	if gl_entries:
