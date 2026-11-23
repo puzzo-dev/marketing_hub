@@ -10,6 +10,14 @@ def after_install():
     set_default_attribution_model()
     setup_file_folder()
     setup_notifications()
+    setup_redesign()
+
+
+def setup_redesign():
+    """Roles, custom fields and approval workflows for the exercise model."""
+    from marketing_hub.setup_roles_workflows import run
+
+    run()
 
 
 def set_default_attribution_model():

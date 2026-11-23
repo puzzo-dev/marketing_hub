@@ -38,6 +38,12 @@ def has_campaign_permission(doc, ptype, user):
 	"""Check if user has specific permission on campaign"""
 	if not user:
 		user = frappe.session.user
+
+	# A Brand Manager works only on the exercises they are assigned to.
+	from marketing_hub.utils.exercise_access import is_scoped_manager
+
+	if is_scoped_manager(user):
+		return doc.get("brand_manager") == user
 	
 	# System Manager has full access
 	if "System Manager" in frappe.get_roles(user):
@@ -86,6 +92,11 @@ def get_campaign_activity_permission_query_conditions(user):
 	"""Filter campaign activities based on parent campaign permissions"""
 	if not user:
 		user = frappe.session.user
+
+	from marketing_hub.utils.exercise_access import exercise_conditions, is_scoped_manager
+
+	if is_scoped_manager(user):
+		return exercise_conditions("Campaign Activity", "campaign")(user)
 	
 	# System Manager and Marketing Manager see all
 	if "System Manager" in frappe.get_roles(user) or "Marketing Manager" in frappe.get_roles(user):

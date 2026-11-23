@@ -171,6 +171,7 @@ after_install = "marketing_hub.install.after_install"
 # after_app_uninstall = "marketing_hub.utils.after_app_uninstall"
 
 after_migrate = [
+    "marketing_hub.install.setup_redesign",
     "marketing_hub.install.setup_file_folder",
     "marketing_hub.install.setup_notifications",
 ]
@@ -186,13 +187,25 @@ after_migrate = [
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"Marketing Campaign": "marketing_hub.utils.permissions.get_campaign_permission_query_conditions",
+	"Marketing Campaign": "marketing_hub.utils.exercise_access.campaign_conditions",
+	"Content Item": "marketing_hub.utils.exercise_access.content_conditions",
+	"Placement": "marketing_hub.utils.exercise_access.placement_conditions",
+	"OOH Booking": "marketing_hub.utils.exercise_access.booking_conditions",
+	"Campaign Change Request": "marketing_hub.utils.exercise_access.campaign_cr_conditions",
+	"Content Change Request": "marketing_hub.utils.exercise_access.content_cr_conditions",
+	"OOH Booking Change Request": "marketing_hub.utils.exercise_access.booking_cr_conditions",
+	"Project": "marketing_hub.utils.exercise_access.project_conditions",
+	"Task": "marketing_hub.utils.exercise_access.task_conditions",
 	"Campaign Activity": "marketing_hub.utils.permissions.get_campaign_activity_permission_query_conditions",
 	"Marketing Segment": "marketing_hub.utils.permissions.get_marketing_segment_permission_query_conditions",
 }
 
 has_permission = {
-	"Marketing Campaign": "marketing_hub.utils.permissions.has_campaign_permission",
+	"Marketing Campaign": "marketing_hub.utils.exercise_access.campaign_permission",
+	"Content Item": "marketing_hub.utils.exercise_access.content_permission",
+	"Placement": "marketing_hub.utils.exercise_access.content_permission",
+	"OOH Booking": "marketing_hub.utils.exercise_access.content_permission",
+	"Project": "marketing_hub.utils.exercise_access.project_permission",
 	"Campaign Activity": "marketing_hub.utils.permissions.has_campaign_activity_permission",
 }
 
