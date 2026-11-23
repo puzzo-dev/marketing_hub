@@ -1,4 +1,7 @@
 # 🚀 The Epic Marketing Hub User Story
+
+> **Superseded in part.** Email is not sent by this app directly. It goes through ERPNext Campaign and Email Campaign, and the exercise records the Email Campaign IDs. Where this document says otherwise, `docs/FRONTEND.md` and the code are right.
+
 ## "From Zero to Marketing Hero: A Day in the Life of Sarah, CMO at TechCorp"
 
 **Date**: January 26, 2026  

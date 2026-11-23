@@ -14,7 +14,7 @@
           <h3 class="h-7 text-sm font-semibold text-ink-gray-8">Progress</h3>
           <div v-for="s in steps" :key="s.label" class="flex min-h-9 items-center gap-3">
             <span class="flex size-5 items-center justify-center rounded-full" :class="s.done ? 'bg-surface-gray-10 text-ink-white' : 'border border-outline-gray-3'">
-              <FeatherIcon v-if="s.done" name="check" class="size-3" />
+              <svg v-if="s.done" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
             </span>
             <span class="text-base" :class="s.done ? 'text-ink-gray-8' : 'text-ink-gray-6'">{{ s.label }}</span>
           </div>
@@ -27,7 +27,7 @@
 
 <script setup>
 import { computed } from "vue"
-import { Badge, Button, FeatherIcon, Skeleton, useDoc } from "frappe-ui"
+import { Badge, Button, Skeleton, useDoc } from "frappe-ui"
 import PaneHeader from "@/components/PaneHeader.vue"
 import FieldRows from "@/components/FieldRows.vue"
 import { badgeTheme } from "@/lib/status"

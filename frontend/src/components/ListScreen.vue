@@ -7,6 +7,7 @@
             <TabButtons v-if="!compact" v-model="status" :options="statusButtons" />
             <Select v-else v-model="status" variant="ghost" :options="statusButtons" />
           </template>
+          <Button v-if="secondary && !compact" :label="secondary.label" @click="$router.push(secondary.to)" />
           <Button v-if="canAct" variant="solid" :label="action.label" icon-left="lucide-plus" @click="$router.push(action.to)" />
         </template>
       </PaneHeader>
@@ -74,6 +75,7 @@ const props = defineProps({
   filters: { type: Object, default: () => ({}) },
   orderBy: { type: String, default: "modified desc" },
   action: Object, // { label, to }
+  secondary: Object, // { label, to }: a plain button beside the one primary action
   rowRoute: String, // route name, receives { name }
   emptyTitle: String,
   emptyText: String,

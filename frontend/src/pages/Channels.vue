@@ -1,5 +1,6 @@
 <template>
-  <AppHeader title="Channels" />
+  <AppHeader title="Channels"><template #actions><Button variant="solid" label="Add channel" icon-left="lucide-plus" @click="adding = true" /></template></AppHeader>
+  <AddChannelDialog v-model="adding" :channels="channels" />
   <div class="flex flex-col gap-8 px-3 pb-10 pt-5 sm:px-5">
     <section class="flex flex-col gap-2">
       <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Built in</h3></div>
@@ -16,10 +17,13 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import { Badge, Button, useCall } from "frappe-ui"
 import DataList from "@/components/DataList.vue"
 import AppHeader from "@/components/AppHeader.vue"
+import AddChannelDialog from "@/components/AddChannelDialog.vue"
+
+const adding = ref(false)
 
 // Email goes through ERPNext Campaigns and SMS through SMS Settings, so neither is connected here.
 const builtIn = [

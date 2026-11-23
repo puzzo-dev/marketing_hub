@@ -1,6 +1,6 @@
 <template>
   <ListScreen
-    title="Out of home" doctype="OOH Booking" row-route="OOHBooking"
+    title="Out of home" doctype="OOH Booking" row-route="OOHBooking" :secondary="{ label: 'Map', to: { name: 'OOHMap' } }"
     :columns="[
       { label: 'Site', field: 'site', width: 'minmax(0, 1.6fr)', strong: true },
       { label: 'Exercise', field: 'campaign', sub: true },

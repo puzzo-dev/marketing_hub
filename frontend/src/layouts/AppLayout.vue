@@ -65,6 +65,7 @@
           <SettingsHeader title="Desk setup" description="Brands, channels, roles and accounting are set up in Desk." />
           <SettingsBody>
             <SettingsRow title="Marketing Hub Settings" description="Channels, the OOH purchase item and defaults."><Button label="Open" @click="go('/app/marketing-hub-settings')" /></SettingsRow>
+            <SettingsRow title="Setup guide" description="Brand, team and first exercise, step by step."><Button label="Open" @click="settingsOpen = false; $router.push({ name: 'Setup' })" /></SettingsRow>
             <SettingsRow title="Desk" description="The full ERPNext workspace."><Button label="Open Desk" @click="go('/app')" /></SettingsRow>
           </SettingsBody>
         </SettingsPanel>

@@ -1,5 +1,8 @@
 # Marketing Hub - Implementation Summary
 
+> **Superseded in part.** Email is not sent by this app directly. It goes through ERPNext Campaign and Email Campaign, and the exercise records the Email Campaign IDs. Where this document says otherwise, `docs/FRONTEND.md` and the code are right.
+
+
 ## ✅ What's Been Created
 
 ### Core Files Structure

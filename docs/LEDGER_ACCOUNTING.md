@@ -1,5 +1,8 @@
 # Marketing Hub Ledger & Accounting Integration
 
+> **Superseded in part.** Email is not sent by this app directly. It goes through ERPNext Campaign and Email Campaign, and the exercise records the Email Campaign IDs. Where this document says otherwise, `docs/FRONTEND.md` and the code are right.
+
+
 ## Overview
 This document describes the ledger and accounting functionality added to Marketing Hub, enabling proper financial tracking of all marketing expenses and integration with ERPNext's General Ledger system.
 

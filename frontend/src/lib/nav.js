@@ -6,7 +6,7 @@ const I = (label, icon, route) => ({ label, icon: `lucide-${icon}`, route })
 export const NAV = {
   [ROLES.manager]: [
     { items: [I("Home", "house", "Home"), I("Approvals", "circle-check", "Approvals")] },
-    { label: "Plan", items: [I("Exercises", "folder", "Exercises"), I("Content", "file-text", "Content")] },
+    { label: "Plan", items: [I("Exercises", "folder", "Exercises"), I("Content", "file-text", "Content"), I("Calendar", "calendar", "Calendar")] },
     { label: "Deliver", items: [I("Placements", "send", "Placements"), I("Out of home", "map-pin", "OutOfHome"), I("Leads", "inbox", "Leads")] },
     { label: "Measure", items: [I("Reports", "chart-column", "Reports")] },
     { label: "Setup", items: [I("Channels", "plug", "Channels")] },

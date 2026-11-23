@@ -40,3 +40,14 @@ Lists show skeleton rows while loading; charts and number cards use their own `l
 The pages have not been built or opened in a browser. The review in `review-ui-states` (Playwright
 capture of every state) needs a running site and has not been run. Run `yarn install && yarn build`
 in `frontend/`, then `bench migrate`, before the first look.
+
+## Screens beyond the lists
+
+- **Purchase orders, leads, placements, exercises, content, out-of-home:** a record opens beside its list (nested route `:name`); the list narrows to 400px and goes full width again on close. Nothing opens on a page of its own except the "new" forms.
+- **Calendar** (`/calendar`): placements by scheduled day, a month at a time.
+- **Out of home map** (`/out-of-home-map`): Leaflet with OpenStreetMap tiles; a booking is drawn where its OOH Site's latitude and longitude are. Needs `yarn install` for `leaflet`.
+- **Proof of posting** (`/proof/:name`): a phone page; day and night photos attach to the OOH Booking as files.
+- **Setup guide** (`/setup`, System Manager): brand, team, channels, first exercise. Opened from Settings, Desk setup.
+- **Add channel** dialog on Channels lists each Social Media Network and whether a sender is installed.
+
+None of these has been run: there is no bench or `node_modules` in the session that wrote them.

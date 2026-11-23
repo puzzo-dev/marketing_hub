@@ -21,7 +21,11 @@ const routes = [
     path: "/content", name: "Content", component: page("Content"), meta: { roles: [manager, planner, contentLead, publisher], fixed: true },
     children: [{ path: ":name", name: "ContentDetail", props: true, component: page("ContentDetail") }],
   },
-  { path: "/placements", name: "Placements", component: page("Placements"), meta: { roles: [manager, publisher], fixed: true } },
+  {
+    path: "/placements", name: "Placements", component: page("Placements"), meta: { roles: [manager, publisher], fixed: true },
+    children: [{ path: ":name", name: "Placement", props: true, component: page("Placement") }],
+  },
+  { path: "/calendar", name: "Calendar", component: page("Calendar"), meta: { roles: [manager, publisher] } },
   { path: "/out-of-home/new", name: "NewOOHBooking", component: page("NewOOHBooking"), meta: { roles: [manager, ooh] } },
   {
     path: "/out-of-home", name: "OutOfHome", component: page("OutOfHome"), meta: { roles: [manager, ooh], fixed: true },
@@ -35,7 +39,13 @@ const routes = [
   { path: "/reports", name: "Reports", component: page("Reports"), meta: { roles: [manager, head] } },
   { path: "/cross-brand", name: "CrossBrand", component: page("CrossBrand"), meta: { roles: [head] } },
   { path: "/channels", name: "Channels", component: page("Channels"), meta: { roles: ["System Manager"] } },
-  { path: "/leads", name: "Leads", component: page("Leads"), meta: { roles: [manager], fixed: true } },
+  {
+    path: "/leads", name: "Leads", component: page("Leads"), meta: { roles: [manager], fixed: true },
+    children: [{ path: ":name", name: "Lead", props: true, component: page("Lead") }],
+  },
+  { path: "/out-of-home-map", name: "OOHMap", component: page("OOHMap"), meta: { roles: [manager, ooh] } },
+  { path: "/proof/:name", name: "OOHProof", props: true, component: page("OOHProof"), meta: { roles: [ooh] } },
+  { path: "/setup", name: "Setup", component: page("Setup"), meta: { roles: ["System Manager"] } },
   { path: "/no-access", name: "NoAccess", component: page("NoAccessPage") },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: page("NotFoundPage") },
 ]
