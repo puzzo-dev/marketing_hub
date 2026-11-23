@@ -9,7 +9,7 @@
       { label: 'Budget', field: 'budget', width: '120px', currency: 'NGN' },
       { label: 'Status', field: 'status', width: '120px', badge: true },
     ]"
-    status-field="status" :statuses="['Draft', 'Planned', 'Live', 'Completed']"
+    status-field="status" :statuses="['Draft', 'Active', 'Completed']"
     :action="canCreate ? { label: 'New exercise', to: { name: 'NewExercise' } } : null"
     empty-title="No exercises yet" empty-text="An exercise is one marketing push, with its own plan, content, placements and budget."
   />

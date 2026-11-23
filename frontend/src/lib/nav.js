@@ -9,6 +9,7 @@ export const NAV = {
     { label: "Plan", items: [I("Exercises", "folder", "Exercises"), I("Content", "file-text", "Content")] },
     { label: "Deliver", items: [I("Placements", "send", "Placements"), I("Out of home", "map-pin", "OutOfHome"), I("Leads", "inbox", "Leads")] },
     { label: "Measure", items: [I("Reports", "chart-column", "Reports")] },
+    { label: "Setup", items: [I("Channels", "plug", "Channels")] },
   ],
   [ROLES.head]: [
     { items: [I("Home", "house", "Home"), I("Approvals", "circle-check", "Approvals")] },
@@ -23,6 +24,5 @@ export const NAV = {
   ],
   [ROLES.client]: [
     { items: [I("Overview", "house", "Home"), I("Exercises", "folder", "Exercises")] },
-    { label: "Results", items: [I("Out of home", "map-pin", "OutOfHome"), I("Results", "chart-column", "Reports"), I("Spend", "wallet", "Spend")] },
   ],
 }
