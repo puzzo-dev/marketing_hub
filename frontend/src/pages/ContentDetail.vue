@@ -39,7 +39,7 @@ import { badgeTheme } from "@/lib/status"
 import { hasRole, ROLES } from "@/lib/session"
 
 const props = defineProps({ name: String })
-const { doc: docRef, error } = useDoc({ doctype: "Content Item", name: props.name })
+const { doc: docRef, error, reload } = useDoc({ doctype: "Content Item", name: props.name })
 const doc = computed(() => docRef.value || docRef)
 const showSchedule = ref(false)
 const busy = ref(false)
@@ -54,7 +54,7 @@ async function sendForApproval() {
   try {
     await setValue.submit({ doctype: "Content Item", name: props.name, fieldname: "status", value: "In review" })
     toast.success("Sent for approval")
-    location.reload()
+    await reload?.()
   } catch (e) {
     toast.error(e?.message || "That did not go through.")
   } finally {
@@ -68,7 +68,7 @@ async function approve() {
   try {
     await run.submit({ docs: JSON.stringify(doc.value), method: "approve_latest" })
     toast.success("Approved")
-    location.reload()
+    await reload?.()
   } catch (e) {
     toast.error(e?.message || "Only the exercise's Brand Manager can approve.")
   } finally {

@@ -3,7 +3,7 @@
   <ErrorState v-if="call.error.value" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="call.reload?.()" />
   <div v-else class="flex flex-col gap-3 px-3 pb-10 pt-5 sm:px-5">
     <p v-if="cfg.note" class="text-sm text-ink-gray-6">{{ cfg.note }}</p>
-    <DataList :rows="rows" row-key="name" :columns="cfg.columns" :route="(r) => ({ name: 'Exercise', params: { name: r.campaign || r.name } })" :empty="cfg.empty" />
+    <DataList :rows="rows" row-key="name" :columns="cfg.columns" :route="(r) => ({ name: 'Exercise', params: { name: r.campaign || r.name } })" :empty="cfg.empty" :loading="call.isFetching?.value" />
   </div>
 </template>
 

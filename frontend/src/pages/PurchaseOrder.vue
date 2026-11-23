@@ -7,7 +7,8 @@
       </template>
     </PaneHeader>
     <div class="min-h-0 flex-1 overflow-y-auto">
-      <div v-if="!doc" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-24 w-full" /></div>
+      <ErrorState v-if="error" icon="lucide-lock" title="You cannot open this purchase order" text="It may belong to another exercise, or it may have been removed." action-label="Back to purchase orders" @action="$router.push({ name: 'PurchaseOrders' })" />
+      <div v-else-if="!doc" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-24 w-full" /></div>
       <div v-else class="flex flex-col gap-6 px-3 pb-10 pt-5 sm:px-5">
         <FieldRows :rows="rows" />
         <div class="flex flex-col gap-1">
@@ -28,13 +29,15 @@
 <script setup>
 import { computed } from "vue"
 import { Badge, Button, Skeleton, useDoc } from "frappe-ui"
+import ErrorState from "./ErrorState.vue"
 import PaneHeader from "@/components/PaneHeader.vue"
 import FieldRows from "@/components/FieldRows.vue"
 import { badgeTheme } from "@/lib/status"
 
 const props = defineProps({ name: String })
-const { doc: docRef } = useDoc({ doctype: "Purchase Order", name: props.name })
+const { doc: docRef, error: loadError } = useDoc({ doctype: "Purchase Order", name: props.name })
 const doc = computed(() => docRef.value || null)
+const error = computed(() => !!loadError?.value)
 const rows = computed(() => [
   ["Vendor", doc.value.supplier_name],
   ["Booking", doc.value.mkt_booking],

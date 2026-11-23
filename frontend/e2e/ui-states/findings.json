@@ -1,9 +1,63 @@
 {
-  "exercises": [
-    { "title": "Open record and Tweak 'A record opens' are two layouts of one machine", "detail": "ListScreen derives split/compact from route child, viewport and the openIn tweak; no single state value exists.", "fix": "Keep the derivation in one computed (stacked/split) as now; tests should assert on it." }
-  ],
-  "approvals": [
-    { "title": "Approve and Reject have no distinct in-flight state per button", "detail": "`acting` disables Reject while Approve loads but a second action can follow a failure with stale doc.", "fix": "Clear `doc` and refetch after a failed action." },
-    { "title": "Selected request can outlive its queue row", "detail": "After queue.reload the selected row may no longer exist while the pane stays open.", "fix": "Close the pane when the selected row is absent from the refreshed list." }
-  ]
+ "exercises": [
+  {
+   "title": "Open record and Tweak 'A record opens' are two layouts of one machine",
+   "detail": "ListScreen derives split/compact from route child, viewport and the openIn tweak; no single state value exists.",
+   "fix": "Keep the derivation in one computed (stacked/split) as now; tests should assert on it."
+  }
+ ],
+ "approvals": [
+  {
+   "title": "Approve and Reject have no distinct in-flight state per button",
+   "detail": "`acting` disables Reject while Approve loads but a second action can follow a failure with stale doc.",
+   "fix": "Clear `doc` and refetch after a failed action."
+  },
+  {
+   "title": "Selected request can outlive its queue row",
+   "detail": "After queue.reload the selected row may no longer exist while the pane stays open.",
+   "fix": "Close the pane when the selected row is absent from the refreshed list."
+  }
+ ],
+ "screens-by-role": [
+  {
+   "title": "Detail pages decided their screen from a doc ref alone",
+   "detail": "PurchaseOrder.vue and OOHBooking.vue showed a skeleton for ever when useDoc failed (no permission, deleted record), because only `!doc` was checked. Fixed: both now have an explicit error state beside loading and loaded.",
+   "fix": "Fixed in this change. The pages now branch on error, then loading, then doc."
+  },
+  {
+   "title": "DataList showed its empty text while loading",
+   "detail": "components/DataList.vue rendered 'Nothing here yet' whenever rows was empty, so the Client pages and the Exercise tabs flashed the empty state before data arrived. Fixed: a `loading` prop shows skeleton rows; ClientList.vue and the Exercise tabs pass isFetching.",
+   "fix": "Fixed. Remaining callers of DataList without a loading source (Reports, CrossBrand) still show the empty text first."
+  },
+  {
+   "title": "Client exercise tabs: one failed call looked like an empty tab",
+   "detail": "ClientExercise.vue made five calls and handled only the first call's error, so a failed posted_content, out_of_home, results or spend call showed 'Nothing posted yet' and so on.",
+   "fix": "Fixed: the active tab's own error shows an ErrorMessage."
+  },
+  {
+   "title": "Full page reload used as a state transition",
+   "detail": "ContentDetail.vue (approve, send for approval) and OOHBooking.vue (advance) called location.reload() after the server call, which throws away list selection and scroll and flashes the whole shell.",
+   "fix": "Fixed: they await useDoc's reload()."
+  },
+  {
+   "title": "Approvals decides its pane from five loose refs",
+   "detail": "pages/Approvals.vue: selected, doc, docError, acting and actionError together decide whether the right pane shows nothing, a loading skeleton, an error, the request, or a decided request. They can disagree (docError true while acting). Not fixed here.",
+   "fix": "Introduce one status: 'idle' | 'loading' | 'failed' | 'ready' | 'acting' | 'decided', set only in the watch(selected) and act() handlers."
+  },
+  {
+   "title": "Booking Approve button shown to people who cannot approve",
+   "detail": "OOHBooking.vue offered 'Move to Approved' to every role that opened a booking; the server refuses anyone but the exercise's Brand Manager. Fixed: canAdvance hides the approval step for everyone else.",
+   "fix": "Fixed."
+  },
+  {
+   "title": "Placement had no approve or reject",
+   "detail": "Placement.vue was read-only, so a Brand Manager could not act on a Pending placement from its record. Fixed: Approve and Reject run the Placement approval workflow for the assigned Brand Manager, and for a Marketing Head, who the workflow lets cover.",
+   "fix": "Fixed. Untested: transition names assume 'Approve' and 'Reject' as in setup_roles_workflows.py."
+  },
+  {
+   "title": "Design vocabulary does not match the Placement doctype",
+   "detail": "The canvas shows placement statuses 'Needs scheduling', 'Queued' and 'Not queued'. Placement.status is Scheduled, Posted or Failed, with approval_state Pending, Approved or Rejected. The Vue pages use the doctype's words.",
+   "fix": "Redraw the placement boards with the doctype's states, or add the states to the doctype. Decide with the user."
+  }
+ ]
 }

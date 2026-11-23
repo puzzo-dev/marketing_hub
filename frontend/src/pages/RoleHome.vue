@@ -17,6 +17,7 @@
       </div>
     </div>
 
+    <div v-if="!data" class="flex flex-col gap-2" aria-busy="true"><Skeleton v-for="n in 3" :key="n" class="h-12 w-full" /></div>
     <section v-for="l in data?.lists || []" :key="l.title" class="flex flex-col gap-2">
       <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">{{ l.title }}</h3></div>
       <List v-if="l.rows.length" class="list-row-px-0" :columns="['minmax(0,1fr)', '8rem']" :row-height="52">

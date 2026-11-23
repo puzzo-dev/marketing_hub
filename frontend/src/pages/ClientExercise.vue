@@ -4,7 +4,8 @@
   <div v-else-if="ex" class="flex flex-col">
     <Tabs v-model="tab" :tabs="[{ value: 'overview', label: 'Overview' }, { value: 'content', label: 'Posted content' }, { value: 'ooh', label: 'Out of home' }, { value: 'results', label: 'Results' }, { value: 'spend', label: 'Spend' }]" variant="underline" class="px-3 sm:px-5" />
     <div class="flex flex-col gap-4 px-3 pb-10 pt-5 sm:px-5">
-      <template v-if="tab === 'overview'"><FieldRows :rows="[['Status', ex.status], ['Dates', `${ex.start_date} to ${ex.end_date}`], ['Objective', ex.objective]]" /></template>
+      <ErrorMessage v-if="tabFailed" message="This could not be loaded. Try again in a moment." />
+      <template v-else-if="tab === 'overview'"><FieldRows :rows="[['Status', ex.status], ['Dates', `${ex.start_date} to ${ex.end_date}`], ['Objective', ex.objective]]" /></template>
       <DataList v-else-if="tab === 'content'" :rows="content" row-key="title" :columns="[{ key: 'title', label: 'Title' }]" empty="Nothing posted yet." />
       <DataList v-else-if="tab === 'ooh'" :rows="ooh" row-key="site" empty="No live sites yet." :columns="[{ key: 'site', label: 'Site' }, { key: 'start_date', label: 'Starts', width: '9rem' }, { key: 'end_date', label: 'Ends', width: '9rem' }, { key: 'status', label: 'Status', width: '8rem', badge: true }]" />
       <StatStrip v-else-if="tab === 'results'" :items="[{ label: 'Leads', value: results?.leads }]" />
@@ -15,7 +16,7 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { Badge, Breadcrumbs, Tabs, useCall } from "frappe-ui"
+import { Badge, Breadcrumbs, ErrorMessage, Tabs, useCall } from "frappe-ui"
 import StatStrip from "@/components/StatStrip.vue"
 import DataList from "@/components/DataList.vue"
 import FieldRows from "@/components/FieldRows.vue"
@@ -31,9 +32,11 @@ const get = (method) => {
   return [c, computed(() => c.data.value?.message ?? c.data.value)]
 }
 const [call, ex] = get("exercise")
-const [, content] = [0, get("posted_content")[1]]
-const ooh = get("out_of_home")[1]
-const results = get("results")[1]
-const spend = get("spend")[1]
+const [contentCall, content] = get("posted_content")
+const [oohCall, ooh] = get("out_of_home")
+const [resultsCall, results] = get("results")
+const [spendCall, spend] = get("spend")
+// A tab whose own call failed says so, instead of showing the empty text.
+const tabFailed = computed(() => ({ content: contentCall, ooh: oohCall, results: resultsCall, spend: spendCall })[tab.value]?.error?.value)
 const money = (v) => (v == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v))
 </script>

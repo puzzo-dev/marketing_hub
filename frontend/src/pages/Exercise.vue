@@ -20,11 +20,11 @@
         <FieldRows :rows="[['Brand', doc.brand], ['Brand Manager', doc.brand_manager], ['Dates', `${doc.start_date} to ${doc.end_date}`], ['Status', doc.status], ['Objective', doc.objective]]" />
         <StatStrip :items="[{ label: 'Tasks done', value: taskCount('Completed') }, { label: 'In progress', value: taskCount('Working') + taskCount('Open') }, { label: 'Tasks in all', value: tasks.length }]" />
       </template>
-      <DataList v-else-if="tab === 'content'" :rows="content" empty="No content for this exercise yet." :route="(r) => ({ name: 'ContentDetail', params: { name: r.name } })"
+      <DataList v-else-if="tab === 'content'" :loading="contentList.isFetching?.value" :rows="content" empty="No content for this exercise yet." :route="(r) => ({ name: 'ContentDetail', params: { name: r.name } })"
         :columns="[{ key: 'title', label: 'Title' }, { key: 'type', label: 'Type', width: '8rem' }, { key: 'due_date', label: 'Due', width: '9rem' }, { key: 'status', label: 'Status', width: '9rem', badge: true }]" />
-      <DataList v-else-if="tab === 'placements'" :rows="placements" empty="No placements for this exercise yet." :route="(r) => ({ name: 'Placement', params: { name: r.name } })"
+      <DataList v-else-if="tab === 'placements'" :loading="placementList.isFetching?.value" :rows="placements" empty="No placements for this exercise yet." :route="(r) => ({ name: 'Placement', params: { name: r.name } })"
         :columns="[{ key: 'content_item', label: 'Content' }, { key: 'channel', label: 'Channel', width: '9rem' }, { key: 'scheduled_for', label: 'Send time', width: '11rem' }, { key: 'approval_state', label: 'Approval', width: '9rem', badge: true }, { key: 'status', label: 'Status', width: '8rem', badge: true }]" />
-      <DataList v-else-if="tab === 'ooh'" :rows="bookings" empty="No billboards booked for this exercise yet." :route="(r) => ({ name: 'OOHBooking', params: { name: r.name } })"
+      <DataList v-else-if="tab === 'ooh'" :loading="bookingList.isFetching?.value" :rows="bookings" empty="No billboards booked for this exercise yet." :route="(r) => ({ name: 'OOHBooking', params: { name: r.name } })"
         :columns="[{ key: 'site', label: 'Site' }, { key: 'start_date', label: 'Starts', width: '9rem' }, { key: 'end_date', label: 'Ends', width: '9rem' }, { key: 'status', label: 'Status', width: '9rem', badge: true }]" />
       <DataList v-else-if="tab === 'plan'" :rows="tasks" empty="No tasks yet. Tasks live on the exercise's ERPNext Project."
         :columns="[{ key: 'subject', label: 'Task' }, { key: 'status', label: 'Status', width: '9rem', badge: true }, { key: 'exp_end_date', label: 'Due', width: '9rem' }]" />

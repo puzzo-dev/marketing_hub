@@ -1,5 +1,6 @@
 <template>
-  <List v-if="rows.length" class="list-row-px-0" :columns="columns.map((c) => c.width || 'minmax(0,1fr)')" :row-height="rowHeight(false)">
+  <div v-if="loading && !rows.length" class="flex flex-col gap-2" aria-busy="true"><Skeleton v-for="n in 4" :key="n" class="h-12 w-full" /></div>
+  <List v-else-if="rows.length" class="list-row-px-0" :columns="columns.map((c) => c.width || 'minmax(0,1fr)')" :row-height="rowHeight(false)">
     <ListHeader>
       <ListHeaderCell v-for="c in columns" :key="c.key" :class="c.end && 'justify-end'">{{ c.label }}</ListHeaderCell>
     </ListHeader>
@@ -18,7 +19,7 @@
 <script setup>
 // A plain table for detail pages and reports, built from frappe-ui's List. `columns` is
 // [{ key, label, width, end, badge, money }]; `route(item)` makes a row a link.
-import { Badge } from "frappe-ui"
+import { Badge, Skeleton } from "frappe-ui"
 import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list"
 import { rowHeight } from "@/lib/tweaks"
 import { badgeTheme } from "@/lib/status"
@@ -29,6 +30,7 @@ defineProps({
   rowKey: { type: String, default: "name" },
   
   route: Function,
+  loading: Boolean,
   empty: { type: String, default: "Nothing here yet." },
 })
 
