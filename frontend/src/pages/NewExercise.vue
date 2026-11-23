@@ -1,7 +1,5 @@
 <template>
-  <PageHeader>
-    <Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: 'New exercise' }]" />
-  </PageHeader>
+  <AppHeader title="New exercise" :back="{ name: 'Exercises' }"><template #title><Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: 'New exercise' }]" /></template></AppHeader>
 
   <form class="flex max-w-xl flex-col gap-4 p-5" @submit.prevent="save">
     <FormControl label="Exercise name" v-model="form.campaign_name" required />
@@ -26,7 +24,8 @@
 <script setup>
 import { reactive, ref } from "vue"
 import { useRouter } from "vue-router"
-import { Breadcrumbs, Button, ErrorMessage, FormControl, PageHeader, toast, useNewDoc } from "frappe-ui"
+import { Breadcrumbs, Button, ErrorMessage, FormControl, toast, useNewDoc } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import LinkSelect from "@/components/LinkSelect.vue"
 
 const router = useRouter()

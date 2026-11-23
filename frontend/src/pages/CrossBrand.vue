@@ -1,5 +1,5 @@
 <template>
-  <PageHeader><PageHeaderTitle title="Cross-brand report" /></PageHeader>
+  <AppHeader title="Cross-brand report" />
   <div class="flex max-w-4xl flex-col gap-6 p-5">
     <div class="flex flex-col gap-2">
       <h3 class="text-lg-medium text-ink-gray-9">By brand</h3>
@@ -15,7 +15,8 @@
 
 <script setup>
 import { computed } from "vue"
-import { PageHeader, PageHeaderTitle, useList } from "frappe-ui"
+import { useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 
 const { data } = useList({ doctype: "Marketing Campaign", fields: ["brand", "count(name) as exercises", "sum(budget) as budget", "sum(total_spent) as spent"], groupBy: "brand", limit: 100 })
 const rows = computed(() => data.value || [])

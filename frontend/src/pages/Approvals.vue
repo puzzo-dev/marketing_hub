@@ -1,13 +1,19 @@
 <template>
-  <PageHeader>
-    <div class="flex items-center gap-2">
-      <PageHeaderTitle title="Approvals" />
-      <Badge v-if="rows.length" :label="`${rows.length} waiting`" theme="amber" />
-    </div>
-  </PageHeader>
+  <AppHeader :title="isMobile && selected ? 'Request' : 'Approvals'">
+    <template #title>
+      <div class="flex items-center gap-2">
+        <PageHeaderTitle title="Approvals" />
+        <Badge v-if="rows.length" :label="`${rows.length} waiting`" theme="amber" />
+      </div>
+    </template>
+  </AppHeader>
 
-  <div class="flex min-h-0 flex-1">
-    <section aria-label="Waiting for you" class="flex w-[352px] shrink-0 flex-col overflow-y-auto border-e">
+  <div v-if="isFetching && !rows.length" class="flex flex-col gap-2 p-5" aria-busy="true"><Skeleton v-for="n in 5" :key="n" class="h-[60px] w-full" /></div>
+  <ErrorState v-else-if="queueError" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="queue.reload?.()" />
+  <ErrorState v-else-if="!rows.length" icon="lucide-circle-check" title="Nothing is waiting for you" text="Requests for your exercises appear here as they come in." />
+
+  <div v-else class="flex min-h-0 flex-1">
+    <section v-show="!isMobile || !selected" aria-label="Waiting for you" class="flex shrink-0 flex-col overflow-y-auto border-e" :class="isMobile ? 'w-full border-e-0' : 'w-[352px]'">
       <button v-for="row in rows" :key="row.name" type="button" class="flex h-[60px] items-center gap-3 border-b px-5 text-start hover:bg-surface-gray-1" :class="row.name === selected?.name && 'bg-surface-gray-2'" @click="selected = row">
         <Avatar :label="row.reference_doctype" size="sm" />
         <span class="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -15,16 +21,22 @@
           <span class="truncate text-sm text-ink-gray-6">{{ row.reference_doctype }}</span>
         </span>
       </button>
-      <ErrorState v-if="!isFetching && !rows.length" icon="lucide-circle-check" title="Nothing is waiting for you" text="Requests for your exercises appear here." />
     </section>
 
-    <section aria-label="Request detail" class="min-w-0 flex-1 overflow-y-auto px-10 pb-20 pt-5">
-      <div v-if="selected && doc" class="flex max-w-[700px] flex-col gap-6">
+    <section v-show="!isMobile || selected" aria-label="Request detail" class="min-w-0 flex-1 overflow-y-auto px-5 pb-20 pt-5 sm:px-10">
+      <Button v-if="isMobile" variant="ghost" iconLeft="lucide-arrow-left" label="Back to the list" class="mb-3" @click="selected = null" />
+      <div v-if="selected && !doc && !docError" class="flex flex-col gap-3" aria-busy="true"><Skeleton class="h-6 w-1/2" /><Skeleton class="h-32 w-full" /></div>
+      <ErrorState v-else-if="selected && docError" icon="lucide-lock" title="You cannot open this request" text="It may belong to another exercise." />
+      <div v-else-if="selected && doc" class="flex max-w-[700px] flex-col gap-6">
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2 text-sm text-ink-gray-6">
             <Badge :label="selected.reference_doctype" /><span>{{ selected.reference_name }}</span>
           </div>
           <h2 class="text-xl-semibold text-ink-gray-9">{{ doc.reason || doc.name }}</h2>
+        </div>
+
+        <div v-if="summary.length" class="flex flex-col">
+          <div v-for="[k, v] in summary" :key="k" class="flex min-h-9 items-center gap-4"><span class="w-32 shrink-0 text-sm text-ink-gray-6">{{ k }}</span><span class="min-w-0 flex-1 text-base text-ink-gray-8">{{ v }}</span></div>
         </div>
 
         <div v-if="doc.items?.length" class="flex flex-col gap-2">
@@ -48,7 +60,9 @@
 
 <script setup>
 import { computed, ref, watch } from "vue"
-import { Avatar, Badge, Button, ErrorMessage, PageHeader, PageHeaderTitle, toast, useCall, useList } from "frappe-ui"
+import { Avatar, Badge, Button, ErrorMessage, PageHeaderTitle, Skeleton, toast, useCall, useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
+import { isMobile } from "@/lib/viewport"
 import ErrorState from "./ErrorState.vue"
 
 // The queue is Frappe's own Workflow Action list. Frappe sends an action only to
@@ -61,20 +75,29 @@ const queue = useList({
   orderBy: "creation desc",
   limit: 100,
 })
-const { data, isFetching } = queue
+const { data, isFetching, error: queueError } = queue
 const rows = computed(() => data.value || [])
 const selected = ref(null)
 const doc = ref(null)
 const acting = ref(false)
 const actionError = ref("")
 
+const docError = ref(false)
+// The few fields that say what a request is about, whichever kind of document it is.
+const SUMMARY = [["campaign", "Exercise"], ["content_item", "Content"], ["channel", "Channel"], ["scheduled_for", "Scheduled for"], ["booking", "Booking"], ["target_name", "Changes"], ["owner", "Requested by"]]
+const summary = computed(() => SUMMARY.filter(([f]) => doc.value?.[f]).map(([f, label]) => [label, doc.value[f]]))
 const getDoc = useCall({ url: "/api/method/frappe.client.get", method: "GET", immediate: false })
 watch(selected, async (row) => {
   doc.value = null
   actionError.value = ""
   if (!row) return
-  const res = await getDoc.submit({ doctype: row.reference_doctype, name: row.reference_name })
-  doc.value = res?.message || res
+  docError.value = false
+  try {
+    const res = await getDoc.submit({ doctype: row.reference_doctype, name: row.reference_name })
+    doc.value = res?.message || res
+  } catch {
+    docError.value = true
+  }
 })
 
 const apply = useCall({ url: "/api/method/frappe.model.workflow.apply_workflow", method: "POST", immediate: false })

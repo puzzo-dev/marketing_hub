@@ -1,5 +1,5 @@
 <template>
-  <PageHeader><Breadcrumbs :items="[{ label: 'Overview', route: { name: 'Home' } }, { label: ex?.campaign_name || name }]" /></PageHeader>
+  <AppHeader :title="ex?.campaign_name || name" :back="{ name: 'Home' }"><template #title><Breadcrumbs :items="[{ label: 'Overview', route: { name: 'Home' } }, { label: ex?.campaign_name || name }]" /></template></AppHeader>
   <ErrorState v-if="call.error.value" icon="lucide-lock" title="You do not have access to this" text="Ask your agency to share this exercise with you." />
   <div v-else-if="ex" class="flex flex-col">
     <Tabs v-model="tab" :tabs="[{ value: 'overview', label: 'Overview' }, { value: 'content', label: 'Posted content' }, { value: 'ooh', label: 'Out of home' }, { value: 'results', label: 'Results' }, { value: 'spend', label: 'Spend' }]" variant="underline" class="px-3 sm:px-5" />
@@ -15,7 +15,8 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { Badge, Breadcrumbs, PageHeader, Tabs, useCall } from "frappe-ui"
+import { Badge, Breadcrumbs, Tabs, useCall } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
 

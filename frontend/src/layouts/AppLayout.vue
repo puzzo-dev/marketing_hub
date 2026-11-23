@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref } from "vue"
+import { computed } from "vue"
 import {
   DesktopShell, MobileShell, MobileNav, MobileNavItem, Sidebar, SidebarHeader, SidebarItem, SidebarLabel, SidebarCollapseToggle,
 } from "frappe-ui"
@@ -32,6 +32,7 @@ import NotFound from "@/pages/ErrorState.vue"
 import { useRouter } from "vue-router"
 import { hasRole, primaryRole, user } from "@/lib/session"
 import { NAV } from "@/lib/nav"
+import { isMobile } from "@/lib/viewport"
 
 const role = computed(() => primaryRole.value)
 const router = useRouter()
@@ -45,17 +46,11 @@ const canOpen = (name) => {
   const allowed = router.getRoutes().find((r) => r.name === name)?.meta.roles
   return !allowed || hasRole(...allowed)
 }
-const company = computed(() => window.frappe?.boot?.sitename?.split(".")[0] || "Marketing Hub")
+const company = "Marketing Hub"
 const accountMenu = computed(() => [
   { label: user.value.fullName || "Account", disabled: true },
   { label: "Open Desk", icon: "lucide-settings-2", onClick: () => (window.location.href = "/app") },
   { label: "Log out", icon: "lucide-log-out", onClick: () => (window.location.href = "/api/method/logout") },
 ])
 
-// One shell per viewport: the sidebar on a desktop, a tab bar on a phone.
-const query = window.matchMedia("(max-width: 639px)")
-const isMobile = ref(query.matches)
-const onChange = (e) => (isMobile.value = e.matches)
-query.addEventListener("change", onChange)
-onBeforeUnmount(() => query.removeEventListener("change", onChange))
 </script>

@@ -1,10 +1,12 @@
 <template>
-  <PageHeader>
-    <Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: doc?.campaign_name || name }]" />
-    <Button v-if="!canEditDirectly" label="Request a change" @click="showRequest = true" />
-  </PageHeader>
+  <AppHeader :title="doc?.campaign_name || name" :back="{ name: 'Exercises' }">
+    <template #title><Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: doc?.campaign_name || name }]" /></template>
+    <template v-if="!canEditDirectly" #actions><Button label="Request a change" @click="showRequest = true" /></template>
+  </AppHeader>
 
-  <ErrorState v-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another brand or exercise. Ask its Brand Manager to add you." action-label="Back to exercises" @action="$router.push({ name: 'Exercises' })" />
+  <div v-if="!doc && !error" class="flex flex-col gap-3 p-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
+
+  <ErrorState v-else-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another brand or exercise. Ask its Brand Manager to add you." action-label="Back to exercises" @action="$router.push({ name: 'Exercises' })" />
 
   <div v-else-if="doc" class="flex flex-col">
     <Tabs v-model="tab" :tabs="tabs" variant="underline" class="px-3 sm:px-5" />
@@ -35,7 +37,8 @@
 
 <script setup>
 import { computed, h, ref } from "vue"
-import { Breadcrumbs, Button, PageHeader, Tabs, useDoc, useList } from "frappe-ui"
+import { Breadcrumbs, Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import RequestChangeDialog from "@/components/RequestChangeDialog.vue"
 import { hasRole, ROLES } from "@/lib/session"

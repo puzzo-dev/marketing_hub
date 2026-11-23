@@ -1,13 +1,14 @@
 <template>
-  <PageHeader>
-    <Breadcrumbs :items="[{ label: 'Content', route: { name: 'Content' } }, { label: doc?.title || name }]" />
-    <div class="flex items-center gap-2">
+  <AppHeader :title="doc?.title || name" :back="{ name: 'Content' }">
+    <template #title><Breadcrumbs :items="[{ label: 'Content', route: { name: 'Content' } }, { label: doc?.title || name }]" /></template>
+    <template #actions>
       <Button v-if="canApprove && doc?.status !== 'Approved'" label="Approve latest version" @click="approve" :loading="busy" />
       <Button variant="solid" label="Schedule" @click="showSchedule = true" />
-    </div>
-  </PageHeader>
+    </template>
+  </AppHeader>
 
-  <ErrorState v-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another exercise." action-label="Back to content" @action="$router.push({ name: 'Content' })" />
+  <div v-if="!doc && !error" class="flex flex-col gap-3 p-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
+  <ErrorState v-else-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another exercise." action-label="Back to content" @action="$router.push({ name: 'Content' })" />
   <div v-else-if="doc" class="flex max-w-3xl flex-col gap-6 p-5">
     <div class="flex items-center gap-2"><h2 class="text-xl-semibold text-ink-gray-9">{{ doc.title }}</h2><Badge :label="doc.status" :theme="badgeTheme(doc.status)" /></div>
     <div class="flex flex-col">
@@ -23,7 +24,8 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { Badge, Breadcrumbs, Button, PageHeader, toast, useCall, useDoc } from "frappe-ui"
+import { Badge, Breadcrumbs, Button, Skeleton, toast, useCall, useDoc } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import SchedulePlacementDialog from "@/components/SchedulePlacementDialog.vue"
 import { badgeTheme } from "@/lib/status"

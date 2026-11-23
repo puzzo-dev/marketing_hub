@@ -1,5 +1,5 @@
 <template>
-  <PageHeader><PageHeaderTitle title="Channels" /></PageHeader>
+  <AppHeader title="Channels" />
   <div class="flex max-w-3xl flex-col gap-6 p-5">
     <div class="flex flex-col">
       <h3 class="pb-2 text-lg-medium text-ink-gray-9">Built in</h3>
@@ -21,7 +21,8 @@
 
 <script setup>
 import { computed } from "vue"
-import { Badge, Button, PageHeader, PageHeaderTitle, useCall } from "frappe-ui"
+import { Badge, Button, useCall } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 
 // Email goes through ERPNext Campaigns and SMS through SMS Settings, so neither is connected here.
 const builtIn = [

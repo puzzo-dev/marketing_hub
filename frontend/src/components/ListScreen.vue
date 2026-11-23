@@ -1,16 +1,29 @@
 <template>
-  <PageHeader>
-    <PageHeaderTitle :title="title" />
-    <Button v-if="canAct" variant="solid" :label="action.label" iconLeft="lucide-plus" @click="$router.push(action.to)" />
-  </PageHeader>
+  <AppHeader :title="title">
+    <template #actions>
+      <Button v-if="canAct" variant="solid" :label="action.label" iconLeft="lucide-plus" @click="$router.push(action.to)" />
+    </template>
+  </AppHeader>
 
   <div v-if="statuses.length" class="px-3 pt-3 sm:px-5">
     <TabButtons v-model="status" :options="statusButtons" />
   </div>
 
-  <ErrorState v-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
+  <div v-if="isFetching && !rows.length && !error" class="flex flex-col gap-2 px-3 py-3 sm:px-5" aria-busy="true"><Skeleton v-for="n in 6" :key="n" class="h-11 w-full" /></div>
+
+  <ErrorState v-else-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
 
   <ErrorState v-else-if="!isFetching && !rows.length" icon="lucide-folder" :title="emptyTitle" :text="emptyText" :action-label="canAct ? action.label : undefined" @action="$router.push(action.to)" />
+
+  <div v-else-if="isMobile" class="flex flex-col px-3 py-1">
+    <button v-for="row in rows" :key="row.name" type="button" class="flex min-h-14 items-center gap-3 border-b py-2 text-start" @click="open(row)">
+      <span class="flex min-w-0 flex-1 flex-col gap-1">
+        <span class="truncate text-base text-ink-gray-8">{{ format(row[columns[0].field], columns[0]) }}</span>
+        <span class="truncate text-sm text-ink-gray-6">{{ columns.slice(1, -1).map((c) => format(row[c.field], c)).filter((v) => v !== "—").join(" · ") }}</span>
+      </span>
+      <Badge v-if="columns.at(-1).badge" :label="row[columns.at(-1).field]" :theme="badgeTheme(row[columns.at(-1).field])" />
+    </button>
+  </div>
 
   <div v-else class="px-3 py-3 sm:px-5">
     <div class="grid h-8 items-center gap-3 rounded-4 bg-surface-gray-2 px-3 text-sm text-ink-gray-6" :style="gridStyle">
@@ -29,9 +42,11 @@
 <script setup>
 import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
-import { Badge, Button, PageHeader, PageHeaderTitle, TabButtons, useList } from "frappe-ui"
+import { Badge, Button, Skeleton, TabButtons, useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "@/pages/ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
+import { isMobile } from "@/lib/viewport"
 
 const props = defineProps({
   title: String,

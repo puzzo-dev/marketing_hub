@@ -1,8 +1,7 @@
 <template>
-  <PageHeader>
-    <PageHeaderTitle title="Exercise report" />
-    <div class="w-64"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="Pick an exercise" v-model="exercise" /></div>
-  </PageHeader>
+  <AppHeader title="Exercise report">
+    <template #actions><div class="w-64"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="Pick an exercise" v-model="exercise" /></div></template>
+  </AppHeader>
   <ErrorState v-if="!exercise" icon="lucide-chart-column" title="Pick an exercise" text="Choose an exercise to see its spend, leads and placements." />
   <div v-else class="flex max-w-4xl flex-col gap-6 p-5">
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -18,7 +17,8 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { PageHeader, PageHeaderTitle, useCall, useDoc, useList } from "frappe-ui"
+import { useCall, useDoc, useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import LinkSelect from "@/components/LinkSelect.vue"
 

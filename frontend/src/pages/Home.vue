@@ -1,13 +1,14 @@
 <template>
-  <PageHeader>
-    <PageHeaderTitle title="Home" />
-    <div class="flex items-center gap-2">
+  <AppHeader title="Home">
+    <template #actions>
       <div class="w-56"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="All exercises" v-model="exercise" /></div>
       <Select v-model="period" :options="periods" size="sm" />
-    </div>
-  </PageHeader>
+    </template>
+  </AppHeader>
 
-  <div class="flex flex-col gap-4 p-5">
+  <ErrorState v-if="call.error.value" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="call.reload?.() || call.execute?.()" />
+
+  <div v-else class="flex flex-col gap-4 p-4 sm:p-5">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <NumberCard v-for="k in cards" :key="k.title" v-bind="k" />
     </div>
@@ -43,7 +44,9 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { PageHeader, PageHeaderTitle, Select, useCall } from "frappe-ui"
+import { Select, useCall } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
+import ErrorState from "./ErrorState.vue"
 import { AreaChart, BarChart, DonutChart, NumberCard } from "frappe-ui/charts"
 import LinkSelect from "@/components/LinkSelect.vue"
 
@@ -72,6 +75,7 @@ const caption = computed(() => `vs the ${period.value.replace("d", "")} days bef
 const card = "flex min-w-0 flex-col rounded-xl border border-outline-gray-1 bg-surface-elevation-2 px-4 py-3"
 const kpi = (title, key, format, extra = {}) => ({
   title,
+  loading: loading.value,
   value: data.value.kpis[key]?.value ?? null,
   format,
   delta: data.value.kpis[key]?.change ?? null,
@@ -87,7 +91,9 @@ const cards = computed(() => [
   kpi("Cost per lead", "cost_per_lead", money, { delta: null, negativeIsBetter: true }),
 ])
 
+const loading = computed(() => call.isFetching?.value ?? false)
 const trendChart = computed(() => ({
+  loading: loading.value,
   data: data.value.trend,
   x: "date",
   y: ["clicks", "impressions"],
@@ -96,6 +102,7 @@ const trendChart = computed(() => ({
   subtitle: data.value.period ? `${data.value.period.from} to ${data.value.period.to}` : "",
 }))
 const channelShare = computed(() => ({
+  loading: loading.value,
   data: data.value.by_channel,
   category: "channel",
   value: "spend",
@@ -105,6 +112,7 @@ const channelShare = computed(() => ({
   subtitle: "Share of the period's spend",
 }))
 const exerciseChart = computed(() => ({
+  loading: loading.value,
   data: data.value.by_exercise,
   x: "name",
   y: ["spend"],
@@ -113,6 +121,7 @@ const exerciseChart = computed(() => ({
   subtitle: "Spend in the period, largest first",
 }))
 const channelChart = computed(() => ({
+  loading: loading.value,
   data: data.value.by_channel,
   x: "channel",
   y: ["clicks", "conversions"],
