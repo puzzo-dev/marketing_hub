@@ -1,1 +1,11 @@
 @import "frappe-ui/style.css";
+
+/* The app is exactly one screen tall. The sidebar and the page header stay put and each
+   pane scrolls on its own; without a height here the shell grows with its content and the
+   whole page, sidebar and collapse toggle included, scrolls away. */
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}

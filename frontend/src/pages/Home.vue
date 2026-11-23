@@ -8,7 +8,7 @@
 
   <ErrorState v-if="call.error.value" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="call.reload?.() || call.execute?.()" />
 
-  <div v-else class="flex flex-col gap-4 p-4 sm:p-5">
+  <div v-else class="flex flex-col gap-4 px-3 py-4 sm:px-5">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <NumberCard v-for="k in cards" :key="k.title" v-bind="k" />
     </div>

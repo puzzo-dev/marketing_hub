@@ -1,6 +1,6 @@
 <template>
   <AppHeader title="New booking" :back="{ name: 'OutOfHome' }"><template #title><Breadcrumbs :items="[{ label: 'Out of home', route: { name: 'OutOfHome' } }, { label: 'New booking' }]" /></template></AppHeader>
-  <form class="flex max-w-xl flex-col gap-4 p-5" @submit.prevent="save">
+  <form class="flex max-w-xl flex-col gap-4 px-3 py-4 sm:px-5" @submit.prevent="save">
     <LinkSelect label="Exercise" doctype="Marketing Campaign" label-field="campaign_name" v-model="form.campaign" />
     <LinkSelect label="Site" doctype="OOH Site" v-model="form.site" />
     <div class="grid grid-cols-2 gap-4">

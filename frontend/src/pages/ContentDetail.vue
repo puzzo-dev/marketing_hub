@@ -1,15 +1,16 @@
 <template>
-  <AppHeader :title="doc?.title || name" :back="{ name: 'Content' }">
-    <template #title><Breadcrumbs :items="[{ label: 'Content', route: { name: 'Content' } }, { label: doc?.title || name }]" /></template>
-    <template #actions>
+  <div class="flex min-h-0 flex-1 flex-col">
+  <PaneHeader :title="doc?.title || name" :close="{ name: 'Content' }">
+      <template #actions>
       <Button v-if="canApprove && doc?.status !== 'Approved'" label="Approve latest version" @click="approve" :loading="busy" />
       <Button variant="solid" label="Schedule" @click="showSchedule = true" />
     </template>
-  </AppHeader>
+    </PaneHeader>
+  <div class="min-h-0 flex-1 overflow-y-auto">
 
-  <div v-if="!doc && !error" class="flex flex-col gap-3 p-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
+  <div v-if="!doc && !error" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
   <ErrorState v-else-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another exercise." action-label="Back to content" @action="$router.push({ name: 'Content' })" />
-  <div v-else-if="doc" class="flex max-w-3xl flex-col gap-6 p-5">
+  <div v-else-if="doc" class="flex flex-col gap-6 px-3 py-4 sm:px-5">
     <div class="flex items-center gap-2"><h2 class="text-xl-semibold text-ink-gray-9">{{ doc.title }}</h2><Badge :label="doc.status" :theme="badgeTheme(doc.status)" /></div>
     <div class="flex flex-col">
       <div v-for="v in [...(doc.versions || [])].reverse()" :key="v.name" class="flex flex-col gap-1 border-b py-3">
@@ -20,12 +21,14 @@
     </div>
     <SchedulePlacementDialog v-model:open="showSchedule" :content="doc" />
   </div>
+  </div>
+  </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue"
-import { Badge, Breadcrumbs, Button, Skeleton, toast, useCall, useDoc } from "frappe-ui"
-import AppHeader from "@/components/AppHeader.vue"
+import { Badge, Button, Skeleton, toast, useCall, useDoc } from "frappe-ui"
+import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import SchedulePlacementDialog from "@/components/SchedulePlacementDialog.vue"
 import { badgeTheme } from "@/lib/status"

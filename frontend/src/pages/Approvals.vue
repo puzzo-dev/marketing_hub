@@ -1,33 +1,33 @@
 <template>
-  <AppHeader :title="isMobile && selected ? 'Request' : 'Approvals'">
-    <template #title>
-      <div class="flex items-center gap-2">
-        <PageHeaderTitle title="Approvals" />
-        <Badge v-if="rows.length" :label="`${rows.length} waiting`" theme="amber" />
+  <div class="flex min-h-0 flex-1">
+    <section v-if="!(isMobile && selected)" aria-label="Waiting for you" class="flex min-h-0 flex-col" :class="selected && !isMobile ? 'w-[400px] shrink-0 border-e' : 'min-w-0 flex-1'">
+      <PaneHeader title="Approvals">
+        <template #title><PageHeaderTitle title="Approvals" /><Badge v-if="rows.length" :label="`${rows.length} waiting`" theme="amber" /></template>
+      </PaneHeader>
+      <div class="min-h-0 flex-1 overflow-y-auto">
+        <div v-if="isFetching && !rows.length" class="flex flex-col gap-2 px-3 py-3 sm:px-5" aria-busy="true"><Skeleton v-for="n in 5" :key="n" class="h-[60px] w-full" /></div>
+        <ErrorState v-else-if="queueError" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="queue.reload?.()" />
+        <ErrorState v-else-if="!rows.length" icon="lucide-circle-check" title="Nothing is waiting for you" text="Requests for your exercises appear here as they come in." />
+        <div v-else class="flex flex-col px-3 py-1 sm:px-5">
+          <button v-for="row in rows" :key="row.name" type="button" class="-mx-2 flex h-[60px] items-center gap-3 rounded-4 border-b px-2 text-start hover:bg-surface-gray-1" :class="row.name === selected?.name && 'bg-surface-gray-2'" :aria-current="row.name === selected?.name ? 'true' : undefined" @click="selected = row">
+            <Avatar :label="row.reference_doctype" size="sm" />
+            <span class="flex min-w-0 flex-1 flex-col gap-1.5">
+              <span class="truncate text-base text-ink-gray-8">{{ row.reference_name }}</span>
+              <span class="truncate text-sm text-ink-gray-6">{{ row.reference_doctype }}</span>
+            </span>
+          </button>
+        </div>
       </div>
-    </template>
-  </AppHeader>
-
-  <div v-if="isFetching && !rows.length" class="flex flex-col gap-2 p-5" aria-busy="true"><Skeleton v-for="n in 5" :key="n" class="h-[60px] w-full" /></div>
-  <ErrorState v-else-if="queueError" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="queue.reload?.()" />
-  <ErrorState v-else-if="!rows.length" icon="lucide-circle-check" title="Nothing is waiting for you" text="Requests for your exercises appear here as they come in." />
-
-  <div v-else class="flex min-h-0 flex-1">
-    <section v-show="!isMobile || !selected" aria-label="Waiting for you" class="flex shrink-0 flex-col overflow-y-auto border-e" :class="isMobile ? 'w-full border-e-0' : 'w-[352px]'">
-      <button v-for="row in rows" :key="row.name" type="button" class="flex h-[60px] items-center gap-3 border-b px-5 text-start hover:bg-surface-gray-1" :class="row.name === selected?.name && 'bg-surface-gray-2'" @click="selected = row">
-        <Avatar :label="row.reference_doctype" size="sm" />
-        <span class="flex min-w-0 flex-1 flex-col gap-1.5">
-          <span class="truncate text-base text-ink-gray-8">{{ row.reference_name }}</span>
-          <span class="truncate text-sm text-ink-gray-6">{{ row.reference_doctype }}</span>
-        </span>
-      </button>
     </section>
 
-    <section v-show="!isMobile || selected" aria-label="Request detail" class="min-w-0 flex-1 overflow-y-auto px-5 pb-20 pt-5 sm:px-10">
-      <Button v-if="isMobile" variant="ghost" iconLeft="lucide-arrow-left" label="Back to the list" class="mb-3" @click="selected = null" />
+    <section v-if="selected" aria-label="Request detail" class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <PaneHeader :title="selected.reference_doctype">
+        <template #actions><Button variant="ghost" icon="lucide-x" aria-label="Close" @click="selected = null" /></template>
+      </PaneHeader>
+      <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5">
       <div v-if="selected && !doc && !docError" class="flex flex-col gap-3" aria-busy="true"><Skeleton class="h-6 w-1/2" /><Skeleton class="h-32 w-full" /></div>
       <ErrorState v-else-if="selected && docError" icon="lucide-lock" title="You cannot open this request" text="It may belong to another exercise." />
-      <div v-else-if="selected && doc" class="flex max-w-[700px] flex-col gap-6">
+      <div v-else-if="selected && doc" class="flex flex-col gap-6">
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2 text-sm text-ink-gray-6">
             <Badge :label="selected.reference_doctype" /><span>{{ selected.reference_name }}</span>
@@ -53,7 +53,7 @@
           <Button label="Reject" :disabled="acting" @click="act('Reject')" />
         </div>
       </div>
-      <ErrorState v-else-if="rows.length" icon="lucide-mouse-pointer-click" title="Pick a request" text="Choose one from the list to see what it changes." />
+      </div>
     </section>
   </div>
 </template>
@@ -61,7 +61,7 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 import { Avatar, Badge, Button, ErrorMessage, PageHeaderTitle, Skeleton, toast, useCall, useList } from "frappe-ui"
-import AppHeader from "@/components/AppHeader.vue"
+import PaneHeader from "@/components/PaneHeader.vue"
 import { isMobile } from "@/lib/viewport"
 import ErrorState from "./ErrorState.vue"
 

@@ -1,16 +1,17 @@
 <template>
-  <AppHeader :title="doc?.campaign_name || name" :back="{ name: 'Exercises' }">
-    <template #title><Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: doc?.campaign_name || name }]" /></template>
-    <template v-if="!canEditDirectly" #actions><Button label="Request a change" @click="showRequest = true" /></template>
-  </AppHeader>
+  <div class="flex min-h-0 flex-1 flex-col">
+  <PaneHeader :title="doc?.campaign_name || name" :close="{ name: 'Exercises' }">
+      <template v-if="!canEditDirectly" #actions><Button label="Request a change" @click="showRequest = true" /></template>
+    </PaneHeader>
+  <div class="min-h-0 flex-1 overflow-y-auto">
 
-  <div v-if="!doc && !error" class="flex flex-col gap-3 p-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
+  <div v-if="!doc && !error" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
 
   <ErrorState v-else-if="error" icon="lucide-lock" title="You do not have access to this" text="It belongs to another brand or exercise. Ask its Brand Manager to add you." action-label="Back to exercises" @action="$router.push({ name: 'Exercises' })" />
 
   <div v-else-if="doc" class="flex flex-col">
     <Tabs v-model="tab" :tabs="tabs" variant="underline" class="px-3 sm:px-5" />
-    <div class="flex max-w-4xl flex-col gap-4 p-5">
+    <div class="flex flex-col gap-4 px-3 py-4 sm:px-5">
       <template v-if="tab === 'plan'">
         <Row v-for="t in tasks" :key="t.name" :a="t.subject" :b="t.status" :c="t.exp_end_date" />
         <p v-if="!tasks.length" class="text-base text-ink-gray-6">No tasks yet. Tasks live on the exercise's ERPNext Project.</p>
@@ -33,12 +34,14 @@
   </div>
 
   <RequestChangeDialog v-if="doc" v-model:open="showRequest" :campaign="doc" :approver="doc.brand_manager" @sent="changeList.reload?.()" />
+  </div>
+  </div>
 </template>
 
 <script setup>
 import { computed, h, ref } from "vue"
-import { Breadcrumbs, Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
-import AppHeader from "@/components/AppHeader.vue"
+import { Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
+import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "./ErrorState.vue"
 import RequestChangeDialog from "@/components/RequestChangeDialog.vue"
 import { hasRole, ROLES } from "@/lib/session"

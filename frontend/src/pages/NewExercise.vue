@@ -1,7 +1,7 @@
 <template>
   <AppHeader title="New exercise" :back="{ name: 'Exercises' }"><template #title><Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: 'New exercise' }]" /></template></AppHeader>
 
-  <form class="flex max-w-xl flex-col gap-4 p-5" @submit.prevent="save">
+  <form class="flex max-w-xl flex-col gap-4 px-3 py-4 sm:px-5" @submit.prevent="save">
     <FormControl label="Exercise name" v-model="form.campaign_name" required />
     <LinkSelect label="Brand" doctype="Brand" label-field="brand_name" v-model="form.brand" />
     <FormControl label="Type" type="select" v-model="form.campaign_type" :options="['Campaign', 'OOH Flight', 'Activation', 'Content Series']" />

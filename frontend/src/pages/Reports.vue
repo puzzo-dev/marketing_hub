@@ -3,7 +3,7 @@
     <template #actions><div class="w-64"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="Pick an exercise" v-model="exercise" /></div></template>
   </AppHeader>
   <ErrorState v-if="!exercise" icon="lucide-chart-column" title="Pick an exercise" text="Choose an exercise to see its spend, leads and placements." />
-  <div v-else class="flex max-w-4xl flex-col gap-6 p-5">
+  <div v-else class="flex flex-col gap-6 px-3 py-4 sm:px-5">
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <div v-for="k in kpis" :key="k.label" class="rounded-6 bg-surface-gray-1 p-4"><div class="text-sm text-ink-gray-6">{{ k.label }}</div><div class="mt-1 text-2xl font-semibold text-ink-gray-9">{{ k.value }}</div></div>
     </div>
