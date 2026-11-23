@@ -24,28 +24,7 @@ def execute_blast(campaign_activity):
     activity.save()
     frappe.db.commit()
 
-    results = {}
-    channels = activity.activity_type.split("\n") if activity.activity_type else []
-
-    for channel in channels:
-        try:
-            if channel == "Email":
-                results[channel] = _execute_email_blast(activity)
-            elif channel == "WhatsApp":
-                results[channel] = _execute_whatsapp_blast(activity)
-            elif channel == "SMS":
-                results[channel] = _execute_sms_blast(activity)
-            elif channel == "Push Notification":
-                results[channel] = _execute_push_blast(activity)
-            elif channel == "Meta Ads":
-                results[channel] = _execute_meta_ads_blast(activity)
-            elif channel in ("Facebook", "Instagram", "LinkedIn", "Twitter", "X"):
-                results[channel] = _execute_social_post_blast(activity, channel)
-            else:
-                results[channel] = {"status": "Not Implemented", "count": 0}
-        except Exception as e:
-            frappe.log_error(title=f"Blast execution error for {channel}", message=frappe.get_traceback())
-            results[channel] = {"status": "Error", "error": str(e)}
+    results = run_channels(activity)
 
     # Update activity with results
     activity.status = "Completed"
@@ -54,6 +33,76 @@ def execute_blast(campaign_activity):
     frappe.db.commit()
 
     return {"message": "Blast executed successfully", "results": results}
+
+
+def _builtin_senders():
+    """Channels the app sends itself. Each sender takes the activity and returns a result dict."""
+    social = lambda name: (lambda activity: _execute_social_post_blast(activity, name))
+    senders = {
+        "Email": _execute_email_blast,
+        "WhatsApp": _execute_whatsapp_blast,
+        "SMS": _execute_sms_blast,
+        "Push Notification": _execute_push_blast,
+        "Meta Ads": _execute_meta_ads_blast,
+    }
+    for name in ("Facebook", "Instagram", "LinkedIn", "Twitter", "X"):
+        senders[name] = social(name)
+    return senders
+
+
+def get_channel_senders():
+    """Return {channel name: sender}. Built-in senders plus any an app registers.
+
+    An app registers a sender in its hooks.py:
+
+        marketing_hub_channel_senders = {"Telegram": "my_app.channels.send_telegram"}
+
+    The sender is called with the Campaign Activity and returns a dict such as
+    {"status": "Sent", "count": 12}. A registered name replaces a built-in one,
+    and the last app in the install order wins.
+    """
+    senders = _builtin_senders()
+    for name, paths in (frappe.get_hooks("marketing_hub_channel_senders") or {}).items():
+        path = paths[-1] if isinstance(paths, (list, tuple)) else paths
+        senders[name] = frappe.get_attr(path)
+    return senders
+
+
+@frappe.whitelist()
+def list_channels():
+    """Channels the Add channel screen can offer: each Social Media Network, and whether the app can send to it."""
+    sender_names = set(get_channel_senders())
+    networks = frappe.get_all(
+        "Social Media Network",
+        filters={"is_active": 1},
+        fields=["network_name", "network_type", "auth_type", "supports_scheduling", "supports_media"],
+        order_by="network_type asc, network_name asc",
+    )
+    for network in networks:
+        network["has_sender"] = network["network_name"] in sender_names
+    return networks
+
+
+def run_channels(activity):
+    """Send one activity through each of its channels and return per-channel results.
+
+    Does not touch the activity status; callers own that.
+    """
+    results = {}
+    channels = activity.activity_type.split("\n") if activity.activity_type else []
+    senders = get_channel_senders()
+
+    for channel in channels:
+        sender = senders.get(channel)
+        if not sender:
+            results[channel] = {"status": "Not Implemented", "count": 0}
+            continue
+        try:
+            results[channel] = sender(activity)
+        except Exception as e:
+            frappe.log_error(title=f"Blast execution error for {channel}", message=frappe.get_traceback())
+            results[channel] = {"status": "Error", "error": str(e)}
+    return results
 
 
 def execute_if_scheduled(doc, method):
@@ -67,36 +116,127 @@ def execute_if_scheduled(doc, method):
 
 
 def _execute_email_blast(activity):
-    """Execute email blast to segment"""
+    """Hand an email blast to ERPNext's Campaign and Email Campaign.
+
+    The app does not send mail itself. It builds the pieces ERPNext's daily
+    scheduler (send_email_to_leads_or_contacts) needs: an Email Template, a Campaign
+    whose schedule sends that template on day 0, an Email Group holding the segment's
+    recipients, and an Email Campaign that enrols the group. ERPNext then renders and
+    queues the mail, adds the unsubscribe link and records unsubscribes.
+
+    Sending happens when ERPNext's daily job runs on the start date, not at an exact
+    time, and the Email Template can only use the Email Group as `doc`, so the mail is
+    the same for every recipient.
+    """
+    from frappe.utils import getdate, today
 
     if not activity.segment:
         return {"status": "Error", "message": "No segment defined"}
 
-    # Get segment recipients
+    existing = frappe.db.get_value("Campaign", {"campaign_name": activity.name})
+    if existing:
+        email_campaign = frappe.db.get_value("Email Campaign", {"campaign_name": existing}, "name")
+        if email_campaign:
+            return {"status": "Scheduled", "via": "ERPNext Email Campaign", "email_campaign": email_campaign}
+
     segment = frappe.get_doc("Marketing Segment", activity.segment)
-    recipients = _get_segment_recipients(segment)
+    recipients = [r for r in _get_segment_recipients(segment) if r.get("email")]
+    if not recipients:
+        return {"status": "Error", "message": "The segment has no recipients with an email address"}
 
-    # Get template
     template = _get_template(activity.campaign, "Email")
-
     if not template:
         return {"status": "Error", "message": "No email template found"}
 
-    sent_count = 0
-    for recipient in recipients:
-        try:
-            frappe.sendmail(
-                recipients=[recipient.get("email")],
-                subject=template.get("subject"),
-                message=template.get("content"),
-                reference_doctype="Campaign Activity",
-                reference_name=activity.name
-            )
-            sent_count += 1
-        except Exception as e:
-            frappe.log_error(f"Email send failed to {recipient.get('email')}", str(e))
+    email_template = _ensure_email_template(activity, template)
+    campaign = _ensure_erpnext_campaign(activity, email_template)
+    group = _ensure_email_group(activity, recipients)
 
-    return {"status": "Completed", "sent": sent_count, "total": len(recipients)}
+    start_date = max(getdate(activity.scheduled_date or today()), getdate(today()))
+    email_campaign = frappe.get_doc(
+        {
+            "doctype": "Email Campaign",
+            "campaign_name": campaign,
+            "email_campaign_for": "Email Group",
+            "recipient": group,
+            "start_date": start_date,
+            "sender": frappe.session.user,
+        }
+    ).insert(ignore_permissions=True)
+
+    _record_on_exercise(activity, email_campaign.name, campaign, start_date)
+
+    return {
+        "status": "Scheduled",
+        "via": "ERPNext Email Campaign",
+        "email_campaign": email_campaign.name,
+        "start_date": str(start_date),
+        "recipients": len(recipients),
+    }
+
+
+def _record_on_exercise(activity, email_campaign, campaign, start_date):
+    """List the Email Campaign on the exercise. ERPNext's Campaign doctypes have no
+    brand, so the exercise is where a brand manager finds and is limited to them."""
+    exercise = frappe.get_doc("Marketing Campaign", activity.campaign)
+    if any(row.email_campaign == email_campaign for row in exercise.get("email_campaigns") or []):
+        return
+    exercise.append(
+        "email_campaigns",
+        {
+            "activity": activity.name,
+            "email_campaign": email_campaign,
+            "erpnext_campaign": campaign,
+            "start_date": start_date,
+        },
+    )
+    exercise.save(ignore_permissions=True)
+
+
+def _ensure_email_template(activity, template):
+    name = f"{activity.name} email"
+    if frappe.db.exists("Email Template", name):
+        return name
+    frappe.get_doc(
+        {
+            "doctype": "Email Template",
+            "__newname": name,
+            "subject": template.get("subject") or activity.activity_name,
+            "use_html": 1,
+            "response_html": template.get("content") or "",
+        }
+    ).insert(ignore_permissions=True)
+    return name
+
+
+def _ensure_erpnext_campaign(activity, email_template):
+    existing = frappe.db.get_value("Campaign", {"campaign_name": activity.name})
+    if existing:
+        return existing
+    return (
+        frappe.get_doc(
+            {
+                "doctype": "Campaign",
+                "campaign_name": activity.name,
+                "campaign_schedules": [{"send_after_days": 0, "email_template": email_template}],
+            }
+        )
+        .insert(ignore_permissions=True)
+        .name
+    )
+
+
+def _ensure_email_group(activity, recipients):
+    title = f"{activity.name} recipients"
+    if not frappe.db.exists("Email Group", title):
+        frappe.get_doc({"doctype": "Email Group", "title": title}).insert(ignore_permissions=True)
+    for recipient in recipients:
+        # Leave existing members alone, so an unsubscribe recorded by ERPNext is kept.
+        if not frappe.db.exists("Email Group Member", {"email_group": title, "email": recipient["email"]}):
+            frappe.get_doc(
+                {"doctype": "Email Group Member", "email_group": title, "email": recipient["email"]}
+            ).insert(ignore_permissions=True)
+    return title
 
 
 def _execute_whatsapp_blast(activity):

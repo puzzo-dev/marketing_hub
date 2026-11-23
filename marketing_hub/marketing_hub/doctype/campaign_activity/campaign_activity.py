@@ -98,25 +98,16 @@ class CampaignActivity(Document):
 			return {"status": "Error", "message": str(e)}
 	
 	def execute_omni_blast(self):
-		"""Execute omni-channel blast"""
-		# Import omni_blast utility
+		"""Run the blast through omni_blast.execute_blast and map its per-channel results."""
 		from marketing_hub.utils import omni_blast
-		
-		channels = [ch.strip() for ch in (self.channels or "").split(",")]
-		
-		result = omni_blast.execute_omni_channel_blast(
-			campaign=self.campaign,
-			channels=channels,
-			segment=self.segment,
-			channel_config=self.channel_config
-		)
-		
-		# Update metrics
-		self.sent_count = result.get("sent_count", 0)
-		self.delivered_count = result.get("delivered_count", 0)
-		self.failed_count = result.get("failed_count", 0)
-		
-		return result
+
+		results = omni_blast.run_channels(self)
+		self.sent_count = sum(r.get("sent", 0) for r in results.values())
+		self.failed_count = sum(1 for r in results.values() if r.get("status") == "Error")
+
+		if results and self.failed_count == len(results):
+			return {"status": "Error", "message": "All channels failed", "results": results}
+		return {"status": "Success", "results": results}
 	
 	def execute_email_blast(self):
 		"""Execute email blast"""

@@ -1,0 +1,43 @@
+{
+ "doctype": "DocType",
+ "name": "Marketing Campaign Email",
+ "module": "Marketing Hub",
+ "istable": 1,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "fields": [
+  {
+   "fieldname": "activity",
+   "fieldtype": "Link",
+   "label": "Activity",
+   "options": "Campaign Activity",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "email_campaign",
+   "fieldtype": "Link",
+   "label": "Email Campaign",
+   "options": "Email Campaign",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "erpnext_campaign",
+   "fieldtype": "Link",
+   "label": "ERPNext Campaign",
+   "options": "Campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start date",
+   "in_list_view": 1,
+   "read_only": 1
+  }
+ ],
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}
