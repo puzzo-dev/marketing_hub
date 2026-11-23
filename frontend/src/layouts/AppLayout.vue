@@ -18,7 +18,7 @@
           </div>
         </Sidebar>
       </template>
-      <router-view />
+      <div class="flex min-h-0 flex-1 flex-col" :class="!fullWidth && !isMobile && 'mx-auto w-full max-w-screen-xl'"><router-view /></div>
       <template v-if="isMobile" #nav>
         <MobileNav>
           <MobileNavItem v-for="item in sections.flatMap((s) => s.items).slice(0, 5)" :key="item.route" :label="item.label" :icon="item.icon" :route="{ name: item.route }" />
@@ -47,6 +47,7 @@
         <SettingsPanel value="appearance">
           <SettingsHeader title="Appearance" />
           <SettingsBody>
+            <SettingsRow title="Full width" description="Off keeps the page in a centered column on a wide screen."><Switch v-model="fullWidth" /></SettingsRow>
             <SettingsRow title="Color scheme" description="System follows your device."><Select :model-value="colorScheme" :options="schemes" @update:model-value="setColorScheme" /></SettingsRow>
           </SettingsBody>
         </SettingsPanel>
@@ -68,12 +69,13 @@ import { useRouter } from "vue-router"
 import {
   Avatar, Button, DesktopShell, MobileShell, MobileNav, MobileNavItem, Select, SettingsBody, SettingsContent, SettingsDialog, SettingsHeader,
   SettingsNavGroup, SettingsNavItem, SettingsPanel, SettingsRow, SettingsSidebar, Sidebar, SidebarCollapseToggle, SidebarHeader, SidebarItem,
-  SidebarLabel, useColorScheme,
+  SidebarLabel, Switch, useColorScheme,
 } from "frappe-ui"
 import NotFound from "@/pages/ErrorState.vue"
 import { hasRole, isAdmin, primaryRole, user } from "@/lib/session"
 import { NAV } from "@/lib/nav"
 import { isMobile } from "@/lib/viewport"
+import { fullWidth } from "@/lib/layout"
 
 const role = computed(() => primaryRole.value)
 const router = useRouter()
@@ -97,6 +99,7 @@ const apps = computed(() => (window.installed_apps || []).filter((a) => a.name !
 const headerMenu = computed(() => [
   ...(apps.value.length ? [{ group: "Switch app", options: apps.value.map((a) => ({ label: a.title, icon: "lucide-layout-grid", onClick: () => go(a.route) })) }] : []),
   { group: user.value.fullName || "Account", options: [
+    { label: fullWidth.value ? "Use a centered column" : "Use full width", icon: "lucide-move-horizontal", onClick: () => (fullWidth.value = !fullWidth.value) },
     { label: "Settings", icon: "lucide-settings", onClick: () => (settingsOpen.value = true) },
     { label: "Open Desk", icon: "lucide-layout-dashboard", onClick: () => go("/app") },
     { label: "Log out", icon: "lucide-log-out", onClick: logout },
