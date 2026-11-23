@@ -26,13 +26,13 @@
         :columns="[{ key: 'content_item', label: 'Content' }, { key: 'channel', label: 'Channel', width: '9rem' }, { key: 'scheduled_for', label: 'Send time', width: '11rem' }, { key: 'approval_state', label: 'Approval', width: '9rem', badge: true }, { key: 'status', label: 'Status', width: '8rem', badge: true }]" />
       <DataList v-else-if="tab === 'ooh'" :loading="bookingList.isFetching?.value" :rows="bookings" empty="No billboards booked for this exercise yet." :route="(r) => ({ name: 'OOHBooking', params: { name: r.name } })"
         :columns="[{ key: 'site', label: 'Site' }, { key: 'start_date', label: 'Starts', width: '9rem' }, { key: 'end_date', label: 'Ends', width: '9rem' }, { key: 'status', label: 'Status', width: '9rem', badge: true }]" />
-      <DataList v-else-if="tab === 'plan'" :rows="tasks" empty="No tasks yet. Tasks live on the exercise's ERPNext Project."
+      <DataList v-else-if="tab === 'plan'" :loading="tasksLoading" :rows="tasks" empty="No tasks yet. Tasks live on the exercise's ERPNext Project."
         :columns="[{ key: 'subject', label: 'Task' }, { key: 'status', label: 'Status', width: '9rem', badge: true }, { key: 'exp_end_date', label: 'Due', width: '9rem' }]" />
       <template v-else-if="tab === 'budget'">
         <StatStrip :items="[{ label: 'Planned budget', value: money(doc.budget) }, { label: 'Spent so far', value: money(doc.total_spent) }, { label: 'Left', value: money((doc.budget || 0) - (doc.total_spent || 0)) }]" />
         <p class="text-sm text-ink-gray-6">Spend is read from the ledger against the exercise's Project.</p>
       </template>
-      <DataList v-else-if="tab === 'changes'" :rows="changes" empty="No change requests."
+      <DataList v-else-if="tab === 'changes'" :loading="changesLoading" :rows="changes" empty="No change requests."
         :columns="[{ key: 'name', label: 'Request', width: '10rem' }, { key: 'reason', label: 'Reason' }, { key: 'workflow_state', label: 'State', width: '9rem', badge: true }]" />
       <template v-else-if="tab === 'email'">
         <p class="max-w-xl text-sm text-ink-gray-6">These are ERPNext Email Campaigns started from this exercise. ERPNext sends each one once a day on its start date, with one message for every recipient.</p>
@@ -80,7 +80,7 @@ const doc = computed(() => docRef.value || docRef)
 const showRequest = ref(false)
 const canEditDirectly = hasRole(ROLES.manager)
 
-const { data: taskData } = useList({
+const { data: taskData, isFetching: tasksLoading } = useList({
   doctype: "Task",
   fields: ["name", "subject", "status", "exp_end_date"],
   filters: () => ({ project: doc.value?.project || "-" }),
@@ -100,5 +100,6 @@ const changeList = useList({
   filters: { campaign: props.name },
 })
 const changes = computed(() => changeList.data.value || [])
+const changesLoading = computed(() => !!changeList.isFetching?.value)
 const money = (v) => (v == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v))
 </script>

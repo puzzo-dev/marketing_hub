@@ -1,7 +1,7 @@
 <template>
   <AppHeader title="Overview" />
   <div class="px-3 pb-10 pt-5 sm:px-5">
-    <DataList :rows="rows" :route="(e) => ({ name: 'Exercise', params: { name: e.name } })" empty="Your agency has not shared an exercise with you yet."
+    <DataList :loading="call.isFetching?.value" :rows="rows" :route="(e) => ({ name: 'Exercise', params: { name: e.name } })" empty="Your agency has not shared an exercise with you yet."
       :columns="[{ key: 'campaign_name', label: 'Exercise' }, { key: 'dates', label: 'Dates', width: '14rem' }, { key: 'status', label: 'Status', width: '8rem', badge: true }]" />
   </div>
 </template>

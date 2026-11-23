@@ -3,11 +3,12 @@
     <template #actions><div class="w-64"><LinkSelect doctype="Marketing Campaign" label-field="campaign_name" placeholder="Pick an exercise" v-model="exercise" /></div></template>
   </AppHeader>
   <ErrorState v-if="!exercise" icon="lucide-chart-column" title="Pick an exercise" text="Choose an exercise to see its spend, leads and placements." />
+  <ErrorState v-else-if="listError || docError" icon="lucide-triangle-alert" title="This report could not be loaded" text="You may not have access to this exercise. Pick another, or try again." />
   <div v-else class="flex flex-col gap-8 px-3 pb-10 pt-5 sm:px-5">
     <StatStrip :items="kpis" />
     <section class="flex flex-col gap-2">
       <div class="flex h-7 items-center"><h3 class="text-sm font-semibold text-ink-gray-8">Placements by channel</h3></div>
-      <DataList :rows="byChannel" row-key="channel" :columns="[{ key: 'channel', label: 'Channel' }, { key: 'count', label: 'Placements', width: '8rem', end: true }]" empty="No placements yet." />
+      <DataList :loading="isFetching" :rows="byChannel" row-key="channel" :columns="[{ key: 'channel', label: 'Channel' }, { key: 'count', label: 'Placements', width: '8rem', end: true }]" empty="No placements yet." />
     </section>
   </div>
 </template>
@@ -22,7 +23,7 @@ import ErrorState from "./ErrorState.vue"
 import LinkSelect from "@/components/LinkSelect.vue"
 
 const exercise = ref(null)
-const { doc } = useDoc({ doctype: "Marketing Campaign", name: () => exercise.value })
+const { doc, error: docErr } = useDoc({ doctype: "Marketing Campaign", name: () => exercise.value })
 const count = (doctype, filters) => {
   const c = useCall({ url: "/api/method/frappe.client.get_count", params: () => ({ doctype, filters: JSON.stringify(filters(exercise.value)) }), immediate: !!exercise.value })
   return computed(() => c.data.value?.message ?? c.data.value)
@@ -37,6 +38,8 @@ const kpis = computed(() => [
   { label: "Budget", value: money(doc.value?.budget) },
   { label: "Spend", value: money(spent.value) },
 ])
-const { data: rows } = useList({ doctype: "Placement", fields: ["channel", "count(name) as count"], filters: () => ({ campaign: exercise.value || "-" }), groupBy: "channel" })
+const { data: rows, isFetching, error: listErr } = useList({ doctype: "Placement", fields: ["channel", "count(name) as count"], filters: () => ({ campaign: exercise.value || "-" }), groupBy: "channel" })
+const docError = computed(() => !!docErr?.value)
+const listError = computed(() => !!listErr?.value)
 const byChannel = computed(() => rows.value || [])
 </script>

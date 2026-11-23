@@ -30,9 +30,9 @@
         <template #actions><Button variant="ghost" icon="lucide-x" aria-label="Close" @click="selected = null" /></template>
       </PaneHeader>
       <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5">
-      <div v-if="selected && !doc && !docError" class="flex flex-col gap-3" aria-busy="true"><Skeleton class="h-6 w-1/2" /><Skeleton class="h-32 w-full" /></div>
-      <ErrorState v-else-if="selected && docError" icon="lucide-lock" title="You cannot open this request" text="It may belong to another exercise." />
-      <div v-else-if="selected && doc" class="flex flex-col gap-6">
+      <div v-if="pane === 'loading'" class="flex flex-col gap-3" aria-busy="true"><Skeleton class="h-6 w-1/2" /><Skeleton class="h-32 w-full" /></div>
+      <ErrorState v-else-if="pane === 'failed'" icon="lucide-lock" title="You cannot open this request" text="It may belong to another exercise." />
+      <div v-else-if="doc" class="flex flex-col gap-6">
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2 text-sm text-ink-gray-6">
             <Badge :label="selected.reference_doctype" /><span>{{ selected.reference_name }}</span>
@@ -54,8 +54,8 @@
 
         <ErrorMessage v-if="actionError" :message="actionError" />
         <div class="flex items-center gap-2">
-          <Button variant="solid" label="Approve and apply" :loading="acting" @click="act('Approve')" />
-          <Button label="Reject" :disabled="acting" @click="act('Reject')" />
+          <Button variant="solid" label="Approve and apply" :loading="pane === 'acting'" @click="act('Approve')" />
+          <Button label="Reject" :disabled="pane === 'acting'" @click="act('Reject')" />
         </div>
       </div>
       </div>
@@ -90,10 +90,11 @@ const { data, isFetching, error: queueError } = queue
 const rows = computed(() => data.value || [])
 const selected = ref(null)
 const doc = ref(null)
-const acting = ref(false)
+// One status decides the right pane: 'idle' (nothing selected), 'loading', 'failed',
+// 'ready' (request shown) or 'acting' (an Approve or Reject is in flight). It is set only
+// in the selection watcher and in act(); the template reads it and nothing else.
+const pane = ref("idle")
 const actionError = ref("")
-
-const docError = ref(false)
 // The few fields that say what a request is about, whichever kind of document it is.
 const SUMMARY = [["campaign", "Exercise"], ["content_item", "Content"], ["channel", "Channel"], ["scheduled_for", "Scheduled for"], ["booking", "Booking"], ["target_name", "Changes"], ["owner", "Requested by"]]
 const summary = computed(() => SUMMARY.filter(([f]) => doc.value?.[f]).map(([f, label]) => [label, doc.value[f]]))
@@ -101,19 +102,21 @@ const getDoc = useCall({ url: "/api/method/frappe.client.get", method: "GET", im
 watch(selected, async (row) => {
   doc.value = null
   actionError.value = ""
-  if (!row) return
-  docError.value = false
+  if (!row) { pane.value = "idle"; return }
+  pane.value = "loading"
   try {
     const res = await getDoc.submit({ doctype: row.reference_doctype, name: row.reference_name })
+    if (selected.value !== row) return // another row was picked while this loaded
     doc.value = res?.message || res
+    pane.value = "ready"
   } catch {
-    docError.value = true
+    if (selected.value === row) pane.value = "failed"
   }
 })
 
 const apply = useCall({ url: "/api/method/frappe.model.workflow.apply_workflow", method: "POST", immediate: false })
 async function act(action) {
-  acting.value = true
+  pane.value = "acting"
   actionError.value = ""
   try {
     // The workflow's transition names are "Approve" and "Reject".
@@ -123,8 +126,7 @@ async function act(action) {
     queue.reload?.()
   } catch (e) {
     actionError.value = e?.message || "That did not go through."
-  } finally {
-    acting.value = false
+    pane.value = "ready"
   }
 }
 </script>

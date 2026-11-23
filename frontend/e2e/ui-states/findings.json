@@ -27,7 +27,7 @@
   {
    "title": "DataList showed its empty text while loading",
    "detail": "components/DataList.vue rendered 'Nothing here yet' whenever rows was empty, so the Client pages and the Exercise tabs flashed the empty state before data arrived. Fixed: a `loading` prop shows skeleton rows; ClientList.vue and the Exercise tabs pass isFetching.",
-   "fix": "Fixed. Remaining callers of DataList without a loading source (Reports, CrossBrand) still show the empty text first."
+   "fix": "Fixed. Reports, CrossBrand, Exercise plan/changes tabs and ClientHome now pass a loading source; Reports and CrossBrand also have an error state. Channels and the Exercise email list read from the loaded doc, so they show the doc skeleton instead."
   },
   {
    "title": "Client exercise tabs: one failed call looked like an empty tab",
@@ -42,7 +42,7 @@
   {
    "title": "Approvals decides its pane from five loose refs",
    "detail": "pages/Approvals.vue: selected, doc, docError, acting and actionError together decide whether the right pane shows nothing, a loading skeleton, an error, the request, or a decided request. They can disagree (docError true while acting). Not fixed here.",
-   "fix": "Introduce one status: 'idle' | 'loading' | 'failed' | 'ready' | 'acting' | 'decided', set only in the watch(selected) and act() handlers."
+   "fix": "Fixed: one `pane` status (idle, loading, failed, ready, acting) set only in the selection watcher and act(); a stale response for a row no longer selected is dropped."
   },
   {
    "title": "Booking Approve button shown to people who cannot approve",
@@ -52,7 +52,7 @@
   {
    "title": "Placement had no approve or reject",
    "detail": "Placement.vue was read-only, so a Brand Manager could not act on a Pending placement from its record. Fixed: Approve and Reject run the Placement approval workflow for the assigned Brand Manager, and for a Marketing Head, who the workflow lets cover.",
-   "fix": "Fixed. Untested: transition names assume 'Approve' and 'Reject' as in setup_roles_workflows.py."
+   "fix": "Fixed. Transition names checked against setup_roles_workflows.py: Approve and Reject exist for Placement (assigned approver, and Marketing Head). Not run on a site."
   },
   {
    "title": "Design vocabulary does not match the Placement doctype",
