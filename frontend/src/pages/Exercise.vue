@@ -29,12 +29,15 @@
       </template>
     </div>
   </div>
+
+  <RequestChangeDialog v-if="doc" v-model:open="showRequest" :campaign="doc" :approver="doc.brand_manager" @sent="changeList.reload?.()" />
 </template>
 
 <script setup>
 import { computed, h, ref } from "vue"
 import { Breadcrumbs, Button, PageHeader, Tabs, useDoc, useList } from "frappe-ui"
 import ErrorState from "./ErrorState.vue"
+import RequestChangeDialog from "@/components/RequestChangeDialog.vue"
 import { hasRole, ROLES } from "@/lib/session"
 
 const props = defineProps({ name: String })
@@ -57,12 +60,12 @@ const { data: taskData } = useList({
   filters: () => ({ project: doc.value?.project || "-" }),
 })
 const tasks = computed(() => taskData.value || [])
-const { data: changeData } = useList({
+const changeList = useList({
   doctype: "Campaign Change Request",
   fields: ["name", "reason", "workflow_state"],
   filters: { campaign: props.name },
 })
-const changes = computed(() => changeData.value || [])
+const changes = computed(() => changeList.data.value || [])
 const money = (v) => (v == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v))
 
 // A three-cell row, kept here because only this page uses it.

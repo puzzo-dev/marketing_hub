@@ -11,6 +11,7 @@ const routes = [
   { path: "/", name: "Home", component: page("Home"), meta: { roles: [...staff, client] } },
   { path: "/approvals", name: "Approvals", component: page("Approvals"), meta: { roles: [manager, head], fixed: true } },
   { path: "/exercises", name: "Exercises", component: page("Exercises"), meta: { roles: [...staff, client] } },
+  { path: "/exercises/new", name: "NewExercise", component: page("NewExercise"), meta: { roles: [manager] } },
   { path: "/exercises/:name", name: "Exercise", component: page("Exercise"), props: true, meta: { roles: [...staff, client] } },
   { path: "/content", name: "Content", component: page("Content"), meta: { roles: [manager, planner, contentLead, publisher] } },
   { path: "/placements", name: "Placements", component: page("Placements"), meta: { roles: [manager, publisher] } },
