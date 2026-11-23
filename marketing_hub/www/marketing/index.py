@@ -91,7 +91,9 @@ def get_apps_for_user():
 @frappe.whitelist()
 def get_context_for_dev():
     return {
-        "session": frappe.session,
+        "user": frappe.session.user,
+        "user_fullname": frappe.utils.get_fullname(frappe.session.user),
+        "user_image": frappe.db.get_value("User", frappe.session.user, "user_image") or "",
         "installed_apps": get_apps_for_user(),
         "user_roles": frappe.get_roles(frappe.session.user),
     }

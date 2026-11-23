@@ -1,39 +1,18 @@
-import path from "path";
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import Icons from "unplugin-icons/vite";
+import path from "path"
+import { defineConfig } from "vite"
+import vue from "@vitejs/plugin-vue"
+import frappeui from "frappe-ui/vite"
 
+// The page that mounts this app is marketing_hub/www/marketing/index.html. It is a
+// Jinja template that lists the built assets, so the build plugin is left off and
+// the output path is set here.
 export default defineConfig({
   base: "/assets/marketing_hub/frontend/",
-  plugins: [
-    vue(),
-    Icons({
-      compiler: "vue3",
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-    },
-  },
+  plugins: [frappeui({ frontendRoute: "/marketing", buildConfig: false, jinjaBootData: false }), vue()],
+  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   build: {
     outDir: `../${path.basename(path.resolve(".."))}/public/frontend`,
     emptyOutDir: true,
-    target: "es2015",
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes("node_modules")) {
-            if (id.includes("frappe-ui")) {
-              return "frappe-ui";
-            }
-            return "vendor";
-          }
-        },
-      },
-    },
+    manifest: true,
   },
-  optimizeDeps: {
-    include: ["feather-icons", "showdown", "engine.io-client"],
-  },
-});
+})

@@ -1,74 +1,28 @@
-import { createApp } from "vue";
-import { createPinia } from "pinia";
-import {
-  Badge,
-  Button,
-  Dialog,
-  ErrorMessage,
-  FeatherIcon,
-  FormControl,
-  frappeRequest,
-  FrappeUI,
-  Input,
-  setConfig,
-  TextInput,
-  toast,
-} from "frappe-ui";
-import App from "./App.vue";
-import "./index.css";
-import { router } from "./router";
+import { createApp } from "vue"
+import { FrappeUI, setConfig, frappeRequest } from "frappe-ui"
+import App from "./App.vue"
+import { router } from "./router"
+import "./index.css"
 
-const globalComponents = {
-  Badge,
-  Button,
-  Dialog,
-  ErrorMessage,
-  FeatherIcon,
-  FormControl,
-  Input,
-  TextInput,
-};
+setConfig("resourceFetcher", frappeRequest)
 
-setConfig("resourceFetcher", frappeRequest);
+const app = createApp(App)
+app.use(FrappeUI)
+app.use(router)
 
-// Configure socket.io to use the correct port from Frappe's boot data
-// In production, socketio runs on the same port as the web server (behind nginx)
-// In dev, it's on the port specified by window.socketio_port (typically 9000)
-if (window.frappe?.boot?.socketio_port) {
-  setConfig("socketio_port", window.frappe.boot.socketio_port);
-}
-
-const app = createApp(App);
-
-// Register Pinia BEFORE any component that uses defineStore is mounted
-const pinia = createPinia();
-app.use(pinia);
-
-app.use(FrappeUI);
-app.use(router);
-
-for (const c in globalComponents) {
-  app.component(c, globalComponents[c]);
+function mount() {
+  app.mount("#app")
+  document.getElementById("splash")?.remove()
 }
 
 if (import.meta.env.DEV) {
-  frappeRequest({
-    url: "/api/method/marketing_hub.www.marketing.index.get_context_for_dev",
-  }).then((values) => {
-    for (let key in values) {
-      window[key] = values[key];
-    }
-    // Ensure boot.user.roles is populated for dev mode
-    if (values.user_roles) {
-      window.frappe = window.frappe || {};
-      window.frappe.boot = window.frappe.boot || {};
-      window.frappe.boot.user = window.frappe.boot.user || {};
-      window.frappe.boot.user.roles = values.user_roles;
-    }
-    app.mount("#app");
-    document.getElementById('splash')?.remove();
-  });
+  // In dev the Jinja page is not served, so fetch the same boot values it would inject.
+  frappeRequest({ url: "/api/method/marketing_hub.www.marketing.index.get_context_for_dev" }).then((values) => {
+    window.frappe = window.frappe || {}
+    window.frappe.boot = { ...(window.frappe.boot || {}), user: { roles: values.user_roles || [] } }
+    window.frappe.session = { user: values.user, user_fullname: values.user_fullname, user_image: values.user_image }
+    mount()
+  })
 } else {
-  app.mount("#app");
-  document.getElementById('splash')?.remove();
+  mount()
 }

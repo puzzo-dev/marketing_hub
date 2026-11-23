@@ -1,109 +1,30 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"
+import { hasRole, ROLES } from "@/lib/session"
 
+const { manager, head, planner, contentLead, publisher, ooh, client } = ROLES
+const staff = [manager, head, planner, contentLead, publisher, ooh]
+const page = (name) => () => import(`./pages/${name}.vue`)
+
+// `roles` lists who may open a route; a System Manager may open all of them.
+// `fixed` stops the shell scrolling the page, for screens whose panes scroll alone.
 const routes = [
-  {
-    path: "/marketing",
-    name: "Dashboard",
-    component: () => import("@/pages/Dashboard.vue"),
-  },
-  {
-    path: "/marketing/campaigns",
-    name: "Campaigns",
-    component: () => import("@/pages/Campaigns.vue"),
-  },
-  {
-    path: "/marketing/campaigns/new",
-    name: "NewCampaign",
-    component: () => import("@/pages/NewCampaign.vue"),
-  },
-  {
-    path: "/marketing/campaigns/:name",
-    name: "CampaignDetail",
-    component: () => import("@/pages/CampaignDetail.vue"),
-  },
-  {
-    path: "/marketing/social",
-    name: "Social",
-    component: () => import("@/pages/Social.vue"),
-  },
-  {
-    path: "/marketing/social/new",
-    name: "NewSocialPost",
-    component: () => import("@/pages/NewSocialPost.vue"),
-  },
-  {
-    path: "/marketing/social/:name",
-    name: "SocialPostDetail",
-    component: () => import("@/pages/SocialPostDetail.vue"),
-  },
-  {
-    path: "/marketing/analytics",
-    name: "Analytics",
-    component: () => import("@/pages/Analytics.vue"),
-  },
-  {
-    path: "/marketing/blast/new",
-    name: "OmniBlast",
-    component: () => import("@/pages/OmniBlast.vue"),
-  },
-  {
-    path: "/marketing/segments",
-    name: "Segments",
-    component: () => import("@/pages/Segments.vue"),
-  },
-  {
-    path: "/marketing/content",
-    name: "Content",
-    component: () => import("@/pages/Content.vue"),
-  },
-  {
-    path: "/marketing/content/new",
-    name: "NewContent",
-    component: () => import("@/pages/ContentEditor.vue"),
-  },
-  {
-    path: "/marketing/content/:name",
-    name: "EditContent",
-    component: () => import("@/pages/ContentEditor.vue"),
-  },
-  {
-    path: "/marketing/expenses",
-    name: "Expenses",
-    component: () => import("@/pages/Expenses.vue"),
-  },
-  {
-    path: "/marketing/tracking",
-    name: "TrackingLinks",
-    component: () => import("@/pages/TrackingLinks.vue"),
-  },
-  {
-    path: "/marketing/leads",
-    name: "Leads",
-    component: () => import("@/pages/Leads.vue"),
-  },
-  {
-    path: "/marketing/clients",
-    name: "Clients",
-    component: () => import("@/pages/Clients.vue"),
-  },
-  {
-    path: "/marketing/clients/:name",
-    name: "ClientDetail",
-    component: () => import("@/pages/ClientDetail.vue"),
-  },
-  {
-    path: "/marketing/settings",
-    name: "Settings",
-    component: () => import("@/pages/Settings.vue"),
-  },
-  // Catch-all: redirect unknown paths to dashboard
-  {
-    path: "/marketing/:pathMatch(.*)*",
-    redirect: "/marketing",
-  },
-];
+  { path: "/", name: "Home", component: page("Home"), meta: { roles: [...staff, client] } },
+  { path: "/approvals", name: "Approvals", component: page("Approvals"), meta: { roles: [manager, head], fixed: true } },
+  { path: "/exercises", name: "Exercises", component: page("Exercises"), meta: { roles: [...staff, client] } },
+  { path: "/exercises/:name", name: "Exercise", component: page("Exercise"), props: true, meta: { roles: [...staff, client] } },
+  { path: "/content", name: "Content", component: page("Content"), meta: { roles: [manager, planner, contentLead, publisher] } },
+  { path: "/placements", name: "Placements", component: page("Placements"), meta: { roles: [manager, publisher] } },
+  { path: "/out-of-home", name: "OutOfHome", component: page("OutOfHome"), meta: { roles: [manager, ooh, client] } },
+  { path: "/vendors", name: "Vendors", component: page("Vendors"), meta: { roles: [ooh] } },
+  { path: "/purchase-orders", name: "PurchaseOrders", component: page("PurchaseOrders"), meta: { roles: [ooh] } },
+  { path: "/leads", name: "Leads", component: page("Leads"), meta: { roles: [manager] } },
+  { path: "/no-access", name: "NoAccess", component: page("NoAccessPage") },
+  { path: "/:pathMatch(.*)*", name: "NotFound", component: page("NotFoundPage") },
+]
 
-export const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+export const router = createRouter({ history: createWebHistory("/marketing"), routes })
+
+router.beforeEach((to) => {
+  const allowed = to.meta.roles
+  if (allowed && !hasRole(...allowed)) return { name: "NoAccess" }
+})
