@@ -89,14 +89,14 @@
 ---
 
 ### 6. Email Blasts
-- ✅ Segment-based email campaigns
-- ✅ Template rendering with variables
-- ✅ Email queue integration
-- ✅ Delivery tracking
-- ✅ Automatic retry on failure
-- ✅ Bulk email support
+Email goes through ERPNext's Campaign and Email Campaign, not directly through `frappe.sendmail`.
 
-**Integration**: ERPNext Email Account, Frappe Email Queue
+- Segment recipients become an Email Group; an Email Template, a Campaign (day 0 schedule) and an Email Campaign are created for the activity
+- ERPNext's daily job queues the mail, adds the unsubscribe link and records unsubscribes
+- Sent on the start date, not at an exact time; every recipient gets the same message
+- Not yet run on a bench
+
+**Integration**: ERPNext Campaign, Email Campaign, Email Template, Email Group; the site's Email Account sends
 
 **Configuration**: Setup → Email → Email Account
 
@@ -176,7 +176,7 @@ bench --site site.local install-app frappe_whatsapp
 
 ### 11. Omni-Channel Blast (40%)
 **Working Channels** (2/5):
-- ✅ Email (via Frappe Email Queue)
+- ✅ Email (via ERPNext Campaign / Email Campaign)
 - ✅ WhatsApp (via frappe_whatsapp)
 
 **Framework Ready** (3/5):
@@ -297,7 +297,7 @@ bench --site site.local install-app frappe_whatsapp
 ## 🔗 Required Integrations
 
 ### ERPNext Integrations
-- ✅ **Email Account** (Setup → Email → Email Account) - For email blasts
+- ✅ **Email Account** (Setup → Email → Email Account) - Sends the mail that ERPNext Campaigns queue
 - ✅ **SMS Settings** (Setup → SMS Settings) - For SMS blasts
 - ✅ **Chart of Accounts** (Accounts → Chart of Accounts) - For GL entries
 - ✅ **Cost Center** (Accounts → Cost Center) - For expense allocation

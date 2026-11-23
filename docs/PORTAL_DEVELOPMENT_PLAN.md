@@ -1,3 +1,5 @@
+> **Out of date (23 Nov 2026).** The Vue code lives in `frontend/`, not `marketing_hub/desk/`, and the page list below predates the redesign. The current plan is in the spec pack and its Screens and UI tab; see `docs/README.md`.
+
 # Marketing Hub Portal Development Plan
 
 ## Current Architecture (Correct!)

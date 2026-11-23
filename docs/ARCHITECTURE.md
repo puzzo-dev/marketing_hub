@@ -36,18 +36,18 @@ Marketing Hub is a comprehensive marketing automation and analytics application 
 | `Analytics Daily Log` | Performance data | Linked to `Campaign`, `Ad Account` |
 
 ## Frontend Architecture
-The application features a modern Single Page Application (SPA) portal for the "Desk" experience, built with:
-- **Vue.js 3**: Progressive JavaScript framework.
-- **Frappe UI**: Component library for consistent design.
-- **TailwindCSS**: Utility-first styling.
-- **Vue Router**: Client-side routing.
+One Vue 3 single-page app at `/marketing` serves every role, clients included (see `DESK_VS_PORTAL.md`). Stack:
+- **Vue.js 3** with **Vue Router** and **Pinia**
+- **frappe-ui**: component library and design tokens (Sidebar, PageHeader, List, Button, Badge)
+- **TailwindCSS**
 
-### Key Pages
-- `Dashboard.vue`: High-level metrics and KPIs.
-- `OmniBlast.vue`: Wizard for creating multi-channel blasts.
-- `Segments.vue`: Visual builder for audience targeting.
-- `Content.vue`: Digital asset management.
-- `Expenses.vue`: Financial tracking usage.
+The sidebar is built from the signed-in role. Screens are being redesigned; the screen list, roles and designs are in the spec pack's Screens and UI tab.
+
+### Existing pages (`frontend/src/pages/`)
+`Dashboard`, `Campaigns`, `CampaignDetail`, `NewCampaign`, `Social`, `NewSocialPost`, `SocialPostDetail`, `Content`, `ContentEditor`, `OmniBlast`, `Segments`, `Leads`, `Clients`, `ClientDetail`, `Expenses`, `TrackingLinks`, `Analytics`, `Settings`.
+
+### Planned
+Approvals, Exercise workspace, Placements, Out of home, change-request dialog, client views, onboarding. Not built yet.
 
 ## Integration Flows
 
