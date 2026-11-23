@@ -3,7 +3,7 @@
     title="Exercises" doctype="Marketing Campaign" row-route="Exercise"
     :columns="[
       { label: 'Exercise', field: 'campaign_name', width: 'minmax(0, 1.6fr)', strong: true },
-      { label: 'Brand', field: 'brand' },
+      { label: 'Brand', field: 'brand', sub: true },
       { label: 'Brand Manager', field: 'brand_manager' },
       { label: 'Dates', field: 'start_date', width: '120px' },
       { label: 'Budget', field: 'budget', width: '120px', currency: 'NGN' },

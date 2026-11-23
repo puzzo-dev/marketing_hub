@@ -3,7 +3,7 @@
     title="Content" doctype="Content Item" row-route="ContentDetail"
     :columns="[
       { label: 'Title', field: 'title', width: 'minmax(0, 1.6fr)', strong: true },
-      { label: 'Exercise', field: 'campaign' },
+      { label: 'Exercise', field: 'campaign', sub: true },
       { label: 'Type', field: 'type', width: '120px' },
       { label: 'Due', field: 'due_date', width: '120px' },
       { label: 'Status', field: 'status', width: '130px', badge: true },

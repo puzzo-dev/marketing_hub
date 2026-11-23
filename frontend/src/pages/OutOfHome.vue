@@ -3,7 +3,7 @@
     title="Out of home" doctype="OOH Booking" row-route="OOHBooking"
     :columns="[
       { label: 'Site', field: 'site', width: 'minmax(0, 1.6fr)', strong: true },
-      { label: 'Exercise', field: 'campaign' },
+      { label: 'Exercise', field: 'campaign', sub: true },
       { label: 'Starts', field: 'start_date', width: '120px' },
       { label: 'Ends', field: 'end_date', width: '120px' },
       { label: 'Status', field: 'status', width: '130px', badge: true },

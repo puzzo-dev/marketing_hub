@@ -2,46 +2,52 @@
   <div class="flex min-h-0 flex-1">
     <section v-if="!(isMobile && hasDetail)" class="flex min-h-0 flex-col" :class="split ? 'w-[400px] shrink-0 border-e' : 'min-w-0 flex-1'" :aria-label="title">
       <PaneHeader :title="title">
-        <template #actions><Button v-if="canAct" variant="solid" :label="action.label" iconLeft="lucide-plus" @click="$router.push(action.to)" /></template>
+        <template #actions>
+          <template v-if="statuses.length">
+            <TabButtons v-if="!compact" v-model="status" :options="statusButtons" />
+            <Select v-else v-model="status" variant="ghost" :options="statusButtons" />
+          </template>
+          <Button v-if="canAct" variant="solid" :label="action.label" icon-left="lucide-plus" @click="$router.push(action.to)" />
+        </template>
       </PaneHeader>
 
-      <div class="min-h-0 flex-1 overflow-y-auto">
-        <div v-if="statuses.length" class="px-3 pt-3 sm:px-5">
-          <TabButtons v-model="status" :options="statusButtons" />
-        </div>
+      <ScrollArea class="min-h-0 flex-1">
+        <div class="px-3 pb-10 pt-3 sm:px-5">
+          <div v-if="isFetching && !rows.length && !error" class="flex flex-col gap-2" aria-busy="true"><Skeleton v-for="n in 6" :key="n" class="h-[60px] w-full" /></div>
+          <ErrorState v-else-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
+          <ErrorState v-else-if="!isFetching && !rows.length" icon="lucide-folder" :title="emptyTitle" :text="emptyText" :action-label="canAct ? action.label : undefined" @action="$router.push(action.to)" />
 
-        <div v-if="isFetching && !rows.length && !error" class="flex flex-col gap-2 px-3 py-3 sm:px-5" aria-busy="true"><Skeleton v-for="n in 6" :key="n" class="h-11 w-full" /></div>
-
-        <ErrorState v-else-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
-
-        <ErrorState v-else-if="!isFetching && !rows.length" icon="lucide-folder" :title="emptyTitle" :text="emptyText" :action-label="canAct ? action.label : undefined" @action="$router.push(action.to)" />
-
-        <div v-else-if="compact" class="flex flex-col px-3 py-1 sm:px-5">
-          <button v-for="row in rows" :key="row.name" type="button" class="-mx-2 flex min-h-14 items-center gap-3 rounded-4 border-b px-2 py-2 text-start hover:bg-surface-gray-1" :class="row.name === $route.params.name && 'bg-surface-gray-2'" :aria-current="row.name === $route.params.name ? 'true' : undefined" @click="open(row)">
-            <span class="flex min-w-0 flex-1 flex-col gap-1">
-              <span class="truncate text-base text-ink-gray-8">{{ format(row[columns[0].field], columns[0]) }}</span>
-              <span class="truncate text-sm text-ink-gray-6">{{ columns.slice(1, -1).map((c) => format(row[c.field], c)).filter((v) => v !== "—").join(" · ") }}</span>
-            </span>
-            <Badge v-if="columns.at(-1).badge" :label="row[columns.at(-1).field]" :theme="badgeTheme(row[columns.at(-1).field])" />
-          </button>
-        </div>
-
-        <div v-else class="px-3 py-3 sm:px-5">
-          <div class="grid h-8 items-center gap-3 rounded-4 bg-surface-gray-2 px-3 text-sm text-ink-gray-6" :style="gridStyle">
-            <span v-for="c in columns" :key="c.field" class="truncate">{{ c.label }}</span>
-          </div>
-          <button v-for="row in rows" :key="row.name" type="button" class="grid h-11 w-full items-center gap-3 border-b px-3 text-start text-base hover:bg-surface-gray-1" :style="gridStyle" @click="open(row)">
-            <template v-for="c in columns" :key="c.field">
-              <span v-if="c.badge" class="min-w-0"><Badge :label="row[c.field]" :theme="badgeTheme(row[c.field])" /></span>
-              <span v-else :class="['truncate', c.strong ? 'text-ink-gray-8' : 'text-ink-gray-6']">{{ format(row[c.field], c) }}</span>
-            </template>
-          </button>
+          <List v-else class="w-full list-row-px-3" :columns="template" :row-height="60" :active="active">
+            <ListHeader v-if="!compact">
+              <ListHeaderCell>{{ cols[0].label }}</ListHeaderCell>
+              <ListHeaderCell v-for="c in tableCols" :key="c.field" :class="c.currency && 'justify-end'">{{ c.label }}</ListHeaderCell>
+            </ListHeader>
+            <ListRows :items="rows" row-key="name" v-slot="{ item, value }">
+              <ListRow :value="value" :route="rowTo(item)">
+                <ListCell>
+                  <div class="min-w-0">
+                    <div class="truncate text-base text-ink-gray-8">{{ format(item[cols[0].field], cols[0]) }}</div>
+                    <div v-if="subtitle(item)" class="mt-1.5 truncate text-sm text-ink-gray-5">{{ subtitle(item) }}</div>
+                  </div>
+                </ListCell>
+                <template v-if="!compact">
+                  <ListCell v-for="c in tableCols" :key="c.field" :class="c.currency && 'justify-end'">
+                    <Badge v-if="c.badge" :label="item[c.field]" :theme="badgeTheme(item[c.field])" />
+                    <span v-else class="truncate text-base text-ink-gray-7">{{ format(item[c.field], c) }}</span>
+                  </ListCell>
+                </template>
+                <ListCell v-else-if="badgeCol" class="justify-end">
+                  <Badge :label="item[badgeCol.field]" :theme="badgeTheme(item[badgeCol.field])" />
+                </ListCell>
+              </ListRow>
+            </ListRows>
+          </List>
           <p v-if="note" class="pt-3 text-sm text-ink-gray-5">{{ note }}</p>
         </div>
-      </div>
+      </ScrollArea>
     </section>
 
-    <!-- The open record. The list narrows to make room and takes the full width back when it closes. -->
+    <!-- The open record. The list narrows to a column to make room and takes the full width back on close. -->
     <section v-if="hasDetail" class="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Details">
       <router-view :key="$route.params.name" />
     </section>
@@ -51,7 +57,8 @@
 <script setup>
 import { computed, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Badge, Button, Skeleton, TabButtons, useList } from "frappe-ui"
+import { Badge, Button, ScrollArea, Select, Skeleton, TabButtons, useList } from "frappe-ui"
+import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list"
 import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "@/pages/ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
@@ -91,9 +98,23 @@ const list = useList({
 const { data, isFetching, error } = list
 const rows = computed(() => data.value || [])
 
-const gridStyle = computed(() => ({
-  gridTemplateColumns: props.columns.map((c) => c.width || "minmax(0, 1fr)").join(" "),
-}))
+// The first column is the row's title. Columns marked `sub` fold into a second line under it, as the
+// frappe-ui tickets list does, so the table keeps few columns and the title keeps its room.
+const subs = computed(() => props.columns.filter((c) => c.sub))
+const cols = computed(() => props.columns.filter((c) => !c.sub))
+const badgeCol = computed(() => cols.value.find((c, i) => i > 0 && c.badge && i === cols.value.length - 1))
+const tableCols = computed(() => cols.value.slice(1))
+const template = computed(() =>
+  compact.value
+    ? ["minmax(0,1fr)", ...(badgeCol.value ? ["7.5rem"] : [])]
+    : ["minmax(0,1fr)", ...tableCols.value.map((c) => c.width || "minmax(0,1fr)")],
+)
+const subtitle = (row) => {
+  const fields = compact.value ? [...subs.value, ...tableCols.value.filter((c) => c !== badgeCol.value)] : subs.value
+  return fields.map((c) => format(row[c.field], c)).filter((v) => v !== "—").join(" · ")
+}
+const active = computed(() => route.params.name || null)
+const rowTo = (row) => (props.rowRoute && router.hasRoute(props.rowRoute) ? { name: props.rowRoute, params: { name: row.name } } : undefined)
 
 function format(value, column) {
   if (value == null || value === "") return "—"
@@ -102,7 +123,4 @@ function format(value, column) {
 }
 // A button or row only works when its screen exists, so an unbuilt route shows nothing.
 const canAct = computed(() => props.action && router.hasRoute(props.action.to.name))
-function open(row) {
-  if (props.rowRoute && router.hasRoute(props.rowRoute)) router.push({ name: props.rowRoute, params: { name: row.name } })
-}
 </script>
