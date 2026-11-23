@@ -2,8 +2,8 @@
   <div class="flex flex-col gap-6 px-3 py-5 sm:px-5">
     <StatStrip :items="strip" />
     <div class="grid gap-8 lg:grid-cols-2">
-      <BarChart :config="statusChart" />
-      <BarChart :config="exerciseChart" />
+      <section class="h-72 min-w-0"><BarChart v-bind="statusChart" /></section>
+      <section class="h-72 min-w-0"><BarChart v-bind="exerciseChart" /></section>
     </div>
   </div>
 </template>
@@ -27,6 +27,6 @@ const tally = (key) => {
   for (const i of props.items) m[i[key] || "None"] = (m[i[key] || "None"] || 0) + 1
   return Object.entries(m).map(([k, v]) => ({ name: k, count: v }))
 }
-const statusChart = computed(() => ({ title: "By status", subtitle: "Items now", data: props.statuses.map((s) => ({ name: s, count: count((i) => i.status === s) })), xAxis: { key: "name", type: "category" }, yAxis: { title: "Items" }, series: [{ name: "Items", key: "count" }], card: false }))
-const exerciseChart = computed(() => ({ title: "By exercise", subtitle: "Items per exercise", data: tally("campaign"), xAxis: { key: "name", type: "category" }, yAxis: { title: "Items" }, series: [{ name: "Items", key: "count" }], card: false }))
+const statusChart = computed(() => ({ card: false, data: props.statuses.map((s) => ({ name: s, count: count((i) => i.status === s) })), x: "name", y: ["count"], horizontal: true, title: "By status", subtitle: "Items now" }))
+const exerciseChart = computed(() => ({ card: false, data: tally("campaign"), x: "name", y: ["count"], horizontal: true, title: "By exercise", subtitle: "Items per exercise" }))
 </script>
