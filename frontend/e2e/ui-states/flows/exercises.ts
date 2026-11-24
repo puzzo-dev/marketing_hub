@@ -14,10 +14,9 @@ const holds = new WeakMap<Scene, Hold>();
 const LIST = /get_list.*Marketing(%20|\+| )Campaign|Marketing%20Campaign.*get_list/;
 
 /**
- * The Exercises list, from the first request to a record open beside it.
- * In the code: `ListScreen.vue`'s v-if chain (Skeleton, ErrorState, empty, List),
- * `hasDetail` (the nested `:name` route) which narrows the list to 400px, and the
- * Tweak panel's "A record opens" which turns the beside layout into a full page.
+ * The Exercises list, from the first request to a record open on its own page.
+ * In the code: `ListScreen.vue`'s v-if chain (Skeleton, ErrorState, empty, List) and
+ * the `Exercise` route, a page of its own with the list behind it.
  */
 const machine = setup({ types: { events: {} as Event } }).createMachine({
 	id: "exercises",
@@ -36,7 +35,7 @@ const machine = setup({ types: { events: {} as Event } }).createMachine({
 			on: { OPEN: "detailOpen" },
 		},
 		detailOpen: {
-			meta: { description: "A record is open: the list narrows to 400px with title and status only; the record fills the rest." },
+			meta: { description: "A record is open on its own page: breadcrumbs back to Exercises, the tabs below." },
 			on: { CLOSE: "loaded" },
 		},
 	},

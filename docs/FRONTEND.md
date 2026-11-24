@@ -24,9 +24,7 @@ uses no other component library.
   shell's page scroll off (list screens, Approvals); every other route scrolls inside the shell.
 - Every header is 48px with the same gutter (`px-3 sm:px-5`): the sidebar header, `PageHeader`
   (`AppHeader`) and `PaneHeader`, so they sit on one line.
-- A list screen is full width. Opening a record (a nested route such as `/content/:name`) narrows
-  the list to a 400px column and shows the record beside it; closing the record gives the width
-  back. On a phone the record replaces the list.
+- A list screen is always full width. Every record opens on a page of its own (`/placements/:name`, `/content/:name`, and so on) through `RecordPage`: the record's details take the wide left column; attachments (`AttachmentList`) and meta take the narrow right column (320px). On a phone the right column stacks under the details. Approvals is the one two-pane screen, because it is a queue of decisions, not a record.
 - The sidebar footer holds Settings, Help and the collapse toggle. The header menu switches to
   another installed app, opens Settings or Desk, and logs out.
 
@@ -63,7 +61,7 @@ in `frontend/`, then `bench migrate`, before the first look.
 
 ## Screens beyond the lists
 
-- **Purchase orders, leads, placements, exercises, content, out-of-home:** a record opens beside its list (nested route `:name`); the list narrows to 400px and goes full width again on close. Nothing opens on a page of its own except the "new" forms.
+- **Purchase orders, leads, placements, exercises, content, out-of-home:** a record opens on its own page with details on the left and attachments and meta on the right (`RecordPage`). The list keeps the full width.
 - **Content views:** Content has a view switch (List, Kanban, Calendar, Report) on one route; there is no calendar page. frappe-ui 1.2.0 has no Kanban or Report component and only an experimental Calendar, so `ContentKanban`, `ContentCalendar` and the report are local components built from frappe-ui parts.
 - **Out of home map** (`/out-of-home-map`): Leaflet with OpenStreetMap tiles; a booking is drawn where its OOH Site's latitude and longitude are. Needs `yarn install` for `leaflet`.
 - **Proof of posting** (`/proof/:name`): a phone page; day and night photos attach to the OOH Booking as files.

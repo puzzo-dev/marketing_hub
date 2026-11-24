@@ -1,12 +1,13 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-  <PaneHeader :title="doc?.campaign_name || name" :close="{ name: 'Exercises' }">
+  <AppHeader :title="doc?.campaign_name || name" :back="{ name: 'Exercises' }">
+      <template #title><Breadcrumbs :items="[{ label: 'Exercises', route: { name: 'Exercises' } }, { label: doc?.campaign_name || name }]" /></template>
       <template #actions>
         <Button v-if="canEditDirectly" label="Edit" icon-left="lucide-pencil" :route="{ name: 'EditExercise', params: { name } }" />
         <Button v-else-if="canRequest" variant="solid" label="Request a change" @click="showRequest = true" />
         <Button v-else-if="isOOH" variant="solid" label="New booking" icon-left="lucide-plus" :route="{ name: 'NewOOHBooking' }" />
       </template>
-    </PaneHeader>
+    </AppHeader>
   <div class="min-h-0 flex-1 overflow-y-auto">
 
   <div v-if="!doc && !error" class="flex flex-col gap-3 px-3 py-4 sm:px-5" aria-busy="true"><Skeleton class="h-8 w-64" /><Skeleton class="h-40 w-full" /></div>
@@ -48,8 +49,8 @@
 
 <script setup>
 import { computed, ref } from "vue"
-import { Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
-import PaneHeader from "@/components/PaneHeader.vue"
+import { Breadcrumbs, Button, Skeleton, Tabs, useDoc, useList } from "frappe-ui"
+import AppHeader from "@/components/AppHeader.vue"
 import DataList from "@/components/DataList.vue"
 import FieldRows from "@/components/FieldRows.vue"
 import StatStrip from "@/components/StatStrip.vue"

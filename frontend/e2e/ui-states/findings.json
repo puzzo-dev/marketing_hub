@@ -1,11 +1,5 @@
 {
- "exercises": [
-  {
-   "title": "Open record and Tweak 'A record opens' are two layouts of one machine",
-   "detail": "ListScreen derives split/compact from route child, viewport and the openIn tweak; no single state value exists.",
-   "fix": "Keep the derivation in one computed (stacked/split) as now; tests should assert on it."
-  }
- ],
+ "exercises": [],
  "approvals": [
   {
    "title": "Approve and Reject have no distinct in-flight state per button",

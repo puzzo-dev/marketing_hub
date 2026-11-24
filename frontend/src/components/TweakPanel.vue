@@ -6,10 +6,6 @@
         <TabButtons v-model="density" :options="[{ label: 'Compact', value: 'compact' }, { label: 'Relaxed', value: 'relaxed' }]" />
       </div>
       <div class="flex flex-col gap-1.5">
-        <span class="text-sm text-ink-gray-6">A record opens</span>
-        <TabButtons v-model="openIn" :options="[{ label: 'Beside the list', value: 'beside' }, { label: 'Full page', value: 'page' }]" />
-      </div>
-      <div class="flex flex-col gap-1.5">
         <span class="text-sm text-ink-gray-6">Page width</span>
         <TabButtons v-model="width" :options="[{ label: 'Full', value: 'full' }, { label: 'Column', value: 'column' }]" />
       </div>
@@ -22,7 +18,7 @@
 import { computed, ref } from "vue"
 import { Button, TabButtons } from "frappe-ui"
 import { fullWidth } from "@/lib/layout"
-import { density, openIn } from "@/lib/tweaks"
+import { density } from "@/lib/tweaks"
 
 const open = ref(false)
 const width = computed({ get: () => (fullWidth.value ? "full" : "column"), set: (v) => (fullWidth.value = v === "full") })

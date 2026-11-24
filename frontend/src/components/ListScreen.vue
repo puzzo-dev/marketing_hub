@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-0 flex-1">
-    <section v-if="!(stacked && hasDetail)" class="flex min-h-0 flex-col" :class="split ? 'w-[400px] shrink-0 border-e' : 'min-w-0 flex-1'" :aria-label="title">
+    <section class="flex min-h-0 min-w-0 flex-1 flex-col" :aria-label="title">
       <PaneHeader :title="title">
         <template #actions>
           <template v-if="statuses.length">
@@ -19,7 +19,7 @@
           <ErrorState v-else-if="error" icon="lucide-triangle-alert" title="Something went wrong on our side" text="Nothing was lost. Try again." action-label="Try again" @action="list.reload?.() || list.execute?.()" />
           <ErrorState v-else-if="!isFetching && !rows.length" icon="lucide-folder" :title="emptyTitle" :text="emptyText" :action-label="canAct ? action.label : undefined" @action="$router.push(action.to)" />
 
-          <List v-else class="w-full list-row-px-3" :columns="template" :row-height="rowHeight(!!subs.length || compact)" :active="active">
+          <List v-else class="w-full list-row-px-3" :columns="template" :row-height="rowHeight(!!subs.length || compact)">
             <ListHeader v-if="!compact">
               <ListHeaderCell>{{ cols[0].label }}</ListHeaderCell>
               <ListHeaderCell v-for="c in tableCols" :key="c.field" :class="c.currency && 'justify-end'">{{ c.label }}</ListHeaderCell>
@@ -48,23 +48,18 @@
         </div>
       </ScrollArea>
     </section>
-
-    <!-- The open record. The list narrows to a column to make room and takes the full width back on close. -->
-    <section v-if="hasDetail" class="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Details">
-      <router-view :key="$route.params.name" />
-    </section>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { useRouter } from "vue-router"
 import { Badge, Button, ScrollArea, Select, Skeleton, TabButtons, useList } from "frappe-ui"
 import { List, ListCell, ListHeader, ListHeaderCell, ListRow, ListRows } from "frappe-ui/list"
 import PaneHeader from "@/components/PaneHeader.vue"
 import ErrorState from "@/pages/ErrorState.vue"
 import { badgeTheme } from "@/lib/status"
-import { openIn, rowHeight } from "@/lib/tweaks"
+import { rowHeight } from "@/lib/tweaks"
 import { isMobile } from "@/lib/viewport"
 
 const props = defineProps({
@@ -84,13 +79,8 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const route = useRoute()
-// A record is open when the child route is showing; the list then narrows to a column.
-const hasDetail = computed(() => route.name === props.rowRoute)
-// On a phone, or when the Tweak panel says "Full page", an open record replaces the list.
-const stacked = computed(() => isMobile.value || openIn.value === "page")
-const split = computed(() => hasDetail.value && !stacked.value)
-const compact = computed(() => isMobile.value || split.value)
+// A record opens on a page of its own, so the list always has the full width.
+const compact = computed(() => isMobile.value)
 const status = ref("All")
 const statusButtons = computed(() => ["All", ...props.statuses].map((s) => ({ label: s, value: s })))
 
@@ -119,7 +109,6 @@ const subtitle = (row) => {
   const fields = compact.value ? [...subs.value, ...tableCols.value.filter((c) => c !== badgeCol.value)] : subs.value
   return fields.map((c) => format(row[c.field], c)).filter((v) => v !== "—").join(" · ")
 }
-const active = computed(() => route.params.name || null)
 const rowTo = (row) => (props.rowRoute && router.hasRoute(props.rowRoute) ? { name: props.rowRoute, params: { name: row.name } } : undefined)
 
 function format(value, column) {
